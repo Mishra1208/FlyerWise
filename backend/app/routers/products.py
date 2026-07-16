@@ -16,6 +16,67 @@ from app.schemas import (
     PriceWithStore, StoreResponse
 )
 
+from unidecode import unidecode
+
+FR_EN_QUERY_TRANSLATIONS = {
+    "tomate": "tomato",
+    "tomates": "tomato",
+    "pomme": "apple",
+    "pommes": "apple",
+    "lait": "milk",
+    "pain": "bread",
+    "beurre": "butter",
+    "fromage": "cheese",
+    "poulet": "chicken",
+    "boeuf": "beef",
+    "porc": "pork",
+    "oeuf": "egg",
+    "oeufs": "egg",
+    "riz": "rice",
+    "sucre": "sugar",
+    "sel": "salt",
+    "oignon": "onion",
+    "oignons": "onion",
+    "patate": "potato",
+    "patates": "potato",
+    "pomme de terre": "potato",
+    "pommes de terre": "potato",
+    "fraises": "strawberry",
+    "fraise": "strawberry",
+    "banane": "banana",
+    "bananes": "banana",
+    "grappe": "vine",
+    "vigne": "vine",
+}
+
+def translate_query_to_english(q: str) -> str:
+    """Translate common French grocery terms to English for bilingual search support."""
+    # Lowercase & remove accents
+    name = unidecode(q.lower().strip())
+    
+    # Simple token phrase translations
+    words = name.split()
+    translated_words = []
+    i = 0
+    while i < len(words):
+        matched = False
+        # check 3-word phrase (pomme de terre)
+        for phrase_len in range(3, 0, -1):
+            if i + phrase_len <= len(words):
+                phrase = " ".join(words[i : i + phrase_len])
+                if phrase in FR_EN_QUERY_TRANSLATIONS:
+                    translated_words.append(FR_EN_QUERY_TRANSLATIONS[phrase])
+                    i += phrase_len
+                    matched = True
+                    break
+        if not matched:
+            word = words[i]
+            translated_words.append(FR_EN_QUERY_TRANSLATIONS.get(word, word))
+            i += 1
+            
+    return " ".join(translated_words)
+
+
 router = APIRouter(prefix="/products", tags=["products"])
 
 
@@ -30,8 +91,11 @@ def search_products(
     Uses PostgreSQL full-text search with trigram fallback for fuzzy matching.
     Returns products grouped with their prices across stores, lowest price highlighted.
     """
+    # Translate bilingual query tokens
+    q_translated = translate_query_to_english(q)
+
     # Step 1: Full-text search on normalized product names
-    fts_query = func.plainto_tsquery("english", q)
+    fts_query = func.plainto_tsquery("english", q_translated)
     fts_results = (
         db.query(Product)
         .filter(
@@ -45,8 +109,8 @@ def search_products(
     if not fts_results:
         fts_results = (
             db.query(Product)
-            .filter(Product.normalized_name.op("%")(q))  # pg_trgm similarity
-            .order_by(func.similarity(Product.normalized_name, q).desc())
+            .filter(Product.normalized_name.op("%")(q_translated))  # pg_trgm similarity
+            .order_by(func.similarity(Product.normalized_name, q_translated).desc())
             .limit(50)
             .all()
         )

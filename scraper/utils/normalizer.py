@@ -77,6 +77,9 @@ FR_EN_TRANSLATIONS = {
     "citrons": "lemons",
     "lime": "lime",
     "grappe": "vine",
+    "grappes": "vine",
+    "vigne": "vine",
+    "vignes": "vine",
     "bio": "organic",
     "frais": "fresh",
     "congele": "frozen",
@@ -195,6 +198,46 @@ def normalize_product_name(raw_name: str) -> str:
 
     # Step 6: Clean up whitespace
     name = " ".join(words).strip()
+
+    # Step 7: Canonical product grouping (group messy names under standard terms)
+    if "tomato" in name or "tomatoes" in name:
+        if "roma" in name:
+            name = "roma tomatoes"
+        elif any(x in name for x in ["vine", "grappe", "cluster", "stemmed"]):
+            name = "vine tomatoes"
+        elif any(x in name for x in ["grape", "raisin"]):
+            name = "grape tomatoes"
+        elif any(x in name for x in ["cherry", "cerise"]):
+            name = "cherry tomatoes"
+        elif any(x in name for x in ["beefsteak", "serre", "hothouse"]):
+            name = "hothouse tomatoes"
+        else:
+            name = "red tomatoes"
+    elif "milk" in name or "lait" in name:
+        if "2%" in name or "2 %" in name or "2percent" in name:
+            name = "2% milk"
+        elif "1%" in name or "1 %" in name or "1percent" in name:
+            name = "1% milk"
+        elif "skim" in name or "ecreme" in name:
+            name = "skim milk"
+        elif "whole" in name or "entier" in name or "homo" in name or "3.25" in name:
+            name = "3.25% milk"
+    elif "butter" in name or "beurre" in name:
+        if "unsalted" in name or "sans sel" in name or "doux" in name:
+            name = "unsalted butter"
+        elif "salted" in name or "sale" in name:
+            name = "salted butter"
+        else:
+            name = "butter"
+    elif "egg" in name or "eggs" in name or "oeuf" in name or "oeufs" in name:
+        if "large" in name or "gros" in name:
+            name = "large eggs"
+        elif "medium" in name or "moyen" in name:
+            name = "medium eggs"
+        else:
+            name = "eggs"
+    elif "banana" in name or "bananas" in name or "banane" in name or "bananes" in name:
+        name = "bananas"
 
     return name
 

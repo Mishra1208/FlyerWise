@@ -9,7 +9,7 @@ from decimal import Decimal, InvalidOperation
 from typing import Optional
 
 
-def parse_price(price_text: str) -> Optional[float]:
+def parse_price(price_text) -> Optional[float]:
     """
     Parse a price value from flyer text.
 
@@ -22,14 +22,20 @@ def parse_price(price_text: str) -> Optional[float]:
     - "SAVE $2.00" (returns None, this is savings not price)
     - "$4.99 - $6.99" (returns lowest)
     - "2 for 5.00"
+    - "2.0" or "3.5" (single-digit decimals)
+    - "2" or "14" (whole numbers)
 
     Returns:
         float: The parsed price value, or None if unparsable.
     """
-    if not price_text:
+    if price_text is None:
         return None
 
-    text = price_text.strip()
+    # Handle float/int direct inputs
+    if isinstance(price_text, (int, float)):
+        return float(price_text)
+
+    text = str(price_text).strip()
 
     # Skip if it's a "SAVE" or "SAVINGS" text
     if re.match(r"^(?:save|savings|rabais|economisez)", text, re.IGNORECASE):
@@ -55,8 +61,8 @@ def parse_price(price_text: str) -> Optional[float]:
         low = float(range_match.group(1).replace(",", "."))
         return round(low, 2)
 
-    # Standard price extraction: find first number that looks like a price
-    price_match = re.search(r"(\d+[.,]\d{2})", text)
+    # Standard price extraction: find first number that looks like a decimal price (1 or 2 decimals)
+    price_match = re.search(r"(\d+[.,]\d{1,2})\b", text)
     if price_match:
         price_str = price_match.group(1).replace(",", ".")
         try:
@@ -64,11 +70,14 @@ def parse_price(price_text: str) -> Optional[float]:
         except ValueError:
             pass
 
-    # Whole number price (e.g., "$5" or "5$")
-    whole_match = re.search(r"\$\s*(\d+)\b|\b(\d+)\s*\$", text)
+    # Whole number price (e.g., "$5" or "5$" or just "5")
+    whole_match = re.search(r"\$\s*(\d+)\b|\b(\d+)\s*\$|\b(\d+)\b", text)
     if whole_match:
-        value = whole_match.group(1) or whole_match.group(2)
-        return float(value)
+        value = whole_match.group(1) or whole_match.group(2) or whole_match.group(3)
+        try:
+            return float(value)
+        except ValueError:
+            pass
 
     return None
 

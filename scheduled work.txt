@@ -1,0 +1,8 @@
+"We are ready to start the Machine Learning and price forecasting phase for FlyerWise. Here is what we need to do:
+
+Scraper Cron Job: Set up an automated weekly background job (using APScheduler in our backend) to run the flyer scraper every Thursday morning to build our store-specific database going forward.
+StatCan Historical Import: Write a Python script to fetch the public Statistics Canada (StatCan) monthly average grocery retail price CSV dataset, import it into our database, and map it to our product categories (to get years of immediate historical data).
+Machine Learning Model: Build a Python-based forecasting model (using Scikit-learn or Prophet) trained on this data to predict:
+The probability of a product going on sale next week.
+The expected price trend (increasing, stable, decreasing).
+API & UI Integration: Create backend endpoints to expose these predictions, and display a "Buy/Wait Advisor" badge on the frontend product cards (e.g., 'Best Time to Buy' or 'Price expected to drop next week')."
