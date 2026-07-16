@@ -44,6 +44,8 @@ class DatabaseWriter:
 
     def __init__(self, database_url: str = None):
         url = database_url or ScraperConfig.DATABASE_URL
+        if url.startswith("postgresql://"):
+            url = url.replace("postgresql://", "postgresql+psycopg://", 1)
         self.engine = create_engine(url, echo=False)
         self.SessionLocal = sessionmaker(bind=self.engine)
 

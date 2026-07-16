@@ -1,23 +1,23 @@
 """
 FlyerWise — Walmart Canada Scraper
 
-Scrapes weekly flyer data from walmart.ca.
-Walmart uses a Flipp-powered iframe for their flyer display.
-
-Target URL: https://www.walmart.ca/flyer
-Location: Hardcoded to postal code H4G 2Y5 (Montreal area)
+Scrapes weekly flyer data from walmart.ca using the Flipp JSON API.
+Uses requests to directly fetch and parse structured JSON data.
 """
 
 import logging
+from datetime import date
+from dateutil.parser import isoparse
 
-from scraper.base_scraper import BaseScraper, ScrapedProduct
 from scraper.config import ScraperConfig
+from scraper.base_scraper import BaseScraper, ScrapedProduct
+from scraper.utils.parser import parse_price, parse_savings, parse_unit, parse_quantity
 
 logger = logging.getLogger(__name__)
 
 
 class WalmartScraper(BaseScraper):
-    """Scraper for Walmart Canada weekly flyers."""
+    """Scraper for Walmart Canada weekly flyers using the Flipp API."""
 
     def __init__(self):
         config = ScraperConfig.STORES["walmart"]
@@ -28,47 +28,81 @@ class WalmartScraper(BaseScraper):
         )
 
     def setup_driver(self):
-        """Initialize Chrome driver for Walmart."""
-        self.driver = self.make_driver()
-        logger.info(f"Driver initialized for {self.store_name}")
+        """No browser driver needed for API-based scraper."""
+        pass
 
     def navigate_to_flyer(self):
-        """
-        Navigate to Walmart flyer page.
-
-        TODO (Phase 2): Implement full navigation logic:
-        1. Navigate to walmart.ca/flyer
-        2. Handle location/postal code prompt (set to H4G 2Y5)
-        3. Wait for Flipp iframe to fully load
-        4. Switch into the iframe context
-        """
-        logger.info(f"Navigating to {self.flyer_url}")
-        self.driver.get(self.flyer_url)
-        self.random_delay(3, 5)
-
-        # TODO: Handle postal code popup
-        # TODO: Wait for Flipp iframe
-        # TODO: Switch to iframe
-
-        logger.info("Navigation complete — ready to extract")
+        """No browser navigation needed for API-based scraper."""
+        pass
 
     def extract_products(self) -> list[ScrapedProduct]:
         """
-        Extract all products from the Walmart flyer.
-
-        TODO (Phase 2): Implement full extraction logic:
-        1. Find all product items in the Flipp iframe
-        2. Click each item to load its detail panel
-        3. Extract: name, price, description, image, dates
-        4. Parse price text into structured data
-        5. Return list of ScrapedProduct objects
+        Extract all products from the Walmart flyer via Flipp JSON API.
         """
-        logger.info("Extracting products from Walmart flyer...")
-
-        products: list[ScrapedProduct] = []
-
-        # TODO: Implement extraction in Phase 2
-        # This stub will be replaced with actual Selenium logic
-
-        logger.info(f"Extracted {len(products)} products from {self.store_name}")
-        return products
+        postal_code = self.config.DEFAULT_POSTAL_CODE.replace(" ", "")
+        
+        # 1. Fetch flyers list for the postal code
+        url = f"https://backflipp.wishabi.com/flipp/flyers?locale=en&postal_code={postal_code}"
+        logger.info(f"Fetching flyers for Walmart in {postal_code}...")
+        data = self.fetch_json(url)
+        if not data:
+            return []
+            
+        flyers = data.get("flyers", [])
+        
+        # Filter for Walmart flyers
+        walmart_flyers = [f for f in flyers if f.get("merchant") == self.store_name]
+        if not walmart_flyers:
+            logger.warning(f"No active Walmart flyers found for postal code {postal_code}")
+            return []
+            
+        logger.info(f"Found {len(walmart_flyers)} active Walmart flyer(s)")
+        
+        scraped_products = []
+        
+        for flyer_data in walmart_flyers:
+            flyer_id = flyer_data.get("id")
+            valid_from = isoparse(flyer_data.get("valid_from")).date()
+            valid_to = isoparse(flyer_data.get("valid_to")).date()
+            
+            logger.info(f"Fetching items for Walmart flyer {flyer_id} ({valid_from} to {valid_to})...")
+            
+            flyer_url = f"https://backflipp.wishabi.com/flipp/flyers/{flyer_id}"
+            flyer_json = self.fetch_json(flyer_url)
+            if not flyer_json:
+                continue
+                
+            items = flyer_json.get("items", [])
+            logger.info(f"Retrieved {len(items)} items from Walmart flyer {flyer_id}")
+            
+            for item in items:
+                raw_name = item.get("name")
+                price_str = item.get("price")
+                
+                # Verify price is valid
+                price_val = parse_price(price_str)
+                if price_val is None:
+                    continue
+                    
+                discount_val = item.get("discount")
+                savings = f"Save {discount_val}%" if discount_val else None
+                
+                product = ScrapedProduct(
+                    raw_name=raw_name,
+                    current_price=price_val,
+                    original_price=None,
+                    savings=savings,
+                    unit=parse_unit(raw_name),
+                    quantity=parse_quantity(raw_name),
+                    price_text=price_str,
+                    description=None,
+                    image_url=item.get("cutout_image_url"),
+                    brand=item.get("brand"),
+                    valid_from=valid_from,
+                    valid_until=valid_to
+                )
+                scraped_products.append(product)
+                
+            self.random_delay(1.0, 2.0)
+            
+        return scraped_products

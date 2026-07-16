@@ -1,26 +1,23 @@
 """
 FlyerWise — Metro (Quebec/Ontario) Scraper
 
-Scrapes weekly flyer data from metro.ca.
-Metro may use a different flyer system than Flipp — needs investigation.
-
-Target URL: https://www.metro.ca/en/flyer
-Location: Hardcoded to postal code H4G 2Y5 (Montreal area)
-
-Note: Metro's flyer system may differ from Walmart/Maxi.
-      Phase 2 research will determine the exact approach.
+Scrapes weekly flyer data from metro.ca using the Flipp JSON API.
+Uses requests to directly fetch and parse structured JSON data.
 """
 
 import logging
+from datetime import date
+from dateutil.parser import isoparse
 
-from scraper.base_scraper import BaseScraper, ScrapedProduct
 from scraper.config import ScraperConfig
+from scraper.base_scraper import BaseScraper, ScrapedProduct
+from scraper.utils.parser import parse_price, parse_savings, parse_unit, parse_quantity
 
 logger = logging.getLogger(__name__)
 
 
 class MetroScraper(BaseScraper):
-    """Scraper for Metro weekly flyers."""
+    """Scraper for Metro weekly flyers using the Flipp API."""
 
     def __init__(self):
         config = ScraperConfig.STORES["metro"]
@@ -31,41 +28,81 @@ class MetroScraper(BaseScraper):
         )
 
     def setup_driver(self):
-        """Initialize Chrome driver for Metro."""
-        self.driver = self.make_driver()
-        logger.info(f"Driver initialized for {self.store_name}")
+        """No browser driver needed for API-based scraper."""
+        pass
 
     def navigate_to_flyer(self):
-        """
-        Navigate to Metro flyer page.
-
-        TODO (Phase 2): Implement full navigation logic:
-        1. Navigate to metro.ca/en/flyer
-        2. Handle store selection / postal code prompt (H4G 2Y5)
-        3. Determine flyer rendering method (Flipp iframe vs custom)
-        4. Wait for flyer content to load
-        """
-        logger.info(f"Navigating to {self.flyer_url}")
-        self.driver.get(self.flyer_url)
-        self.random_delay(3, 5)
-
-        # TODO: Handle store selection
-        # TODO: Determine flyer type and wait for content
-
-        logger.info("Navigation complete — ready to extract")
+        """No browser navigation needed for API-based scraper."""
+        pass
 
     def extract_products(self) -> list[ScrapedProduct]:
         """
-        Extract all products from the Metro flyer.
-
-        TODO (Phase 2): Implement extraction logic.
-        Metro's flyer structure may differ from Walmart/Maxi.
+        Extract all products from the Metro flyer via Flipp JSON API.
         """
-        logger.info("Extracting products from Metro flyer...")
-
-        products: list[ScrapedProduct] = []
-
-        # TODO: Implement extraction in Phase 2
-
-        logger.info(f"Extracted {len(products)} products from {self.store_name}")
-        return products
+        postal_code = self.config.DEFAULT_POSTAL_CODE.replace(" ", "")
+        
+        # 1. Fetch flyers list for the postal code
+        url = f"https://backflipp.wishabi.com/flipp/flyers?locale=en&postal_code={postal_code}"
+        logger.info(f"Fetching flyers for Metro in {postal_code}...")
+        data = self.fetch_json(url)
+        if not data:
+            return []
+            
+        flyers = data.get("flyers", [])
+        
+        # Filter for Metro flyers
+        metro_flyers = [f for f in flyers if f.get("merchant") == self.store_name]
+        if not metro_flyers:
+            logger.warning(f"No active Metro flyers found for postal code {postal_code}")
+            return []
+            
+        logger.info(f"Found {len(metro_flyers)} active Metro flyer(s)")
+        
+        scraped_products = []
+        
+        for flyer_data in metro_flyers:
+            flyer_id = flyer_data.get("id")
+            valid_from = isoparse(flyer_data.get("valid_from")).date()
+            valid_to = isoparse(flyer_data.get("valid_to")).date()
+            
+            logger.info(f"Fetching items for Metro flyer {flyer_id} ({valid_from} to {valid_to})...")
+            
+            flyer_url = f"https://backflipp.wishabi.com/flipp/flyers/{flyer_id}"
+            flyer_json = self.fetch_json(flyer_url)
+            if not flyer_json:
+                continue
+                
+            items = flyer_json.get("items", [])
+            logger.info(f"Retrieved {len(items)} items from Metro flyer {flyer_id}")
+            
+            for item in items:
+                raw_name = item.get("name")
+                price_str = item.get("price")
+                
+                # Verify price is valid
+                price_val = parse_price(price_str)
+                if price_val is None:
+                    continue
+                    
+                discount_val = item.get("discount")
+                savings = f"Save {discount_val}%" if discount_val else None
+                
+                product = ScrapedProduct(
+                    raw_name=raw_name,
+                    current_price=price_val,
+                    original_price=None,
+                    savings=savings,
+                    unit=parse_unit(raw_name),
+                    quantity=parse_quantity(raw_name),
+                    price_text=price_str,
+                    description=None,
+                    image_url=item.get("cutout_image_url"),
+                    brand=item.get("brand"),
+                    valid_from=valid_from,
+                    valid_until=valid_to
+                )
+                scraped_products.append(product)
+                
+            self.random_delay(1.0, 2.0)
+            
+        return scraped_products
