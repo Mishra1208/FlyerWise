@@ -16,7 +16,7 @@ class ScraperConfig:
     # Database
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL",
-        "postgresql://flyerwise_user:flyerwise_pass@localhost:5432/flyerwise_db",
+        "postgresql://flyerwise_user:flyerwise_pass@localhost:5433/flyerwise_db",
     )
 
     # Scraper settings

@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
     # Database
-    database_url: str = "postgresql://flyerwise_user:flyerwise_pass@localhost:5432/flyerwise_db"
+    database_url: str = "postgresql://flyerwise_user:flyerwise_pass@localhost:5433/flyerwise_db"
 
     # Server
     backend_host: str = "0.0.0.0"
