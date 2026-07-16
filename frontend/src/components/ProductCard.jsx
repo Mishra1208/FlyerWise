@@ -1,50 +1,56 @@
 import React from "react";
-import { IoChevronForward } from "react-icons/io5";
+import { IoChevronForwardOutline } from "react-icons/io5";
 
 export default function ProductCard({ result, onClick }) {
   const { product, prices, lowest_price, savings_potential } = result;
 
   return (
     <div 
-      className="glass" 
+      className="card animate-fade" 
       onClick={() => onClick(product)}
       style={{
-        borderRadius: "var(--radius-md)",
-        padding: "20px",
+        padding: "24px",
         cursor: "pointer",
-        transition: "var(--transition)",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        gap: "16px",
+        gap: "18px",
         height: "100%",
-        border: "1px solid var(--bg-card-border)",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = "translateY(-4px)";
-        e.currentTarget.style.borderColor = "var(--primary-glow)";
-        e.currentTarget.style.boxShadow = "var(--shadow-md), var(--shadow-glow)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "translateY(0)";
-        e.currentTarget.style.borderColor = "var(--bg-card-border)";
-        e.currentTarget.style.boxShadow = "var(--shadow-sm)";
+        position: "relative",
+        overflow: "hidden",
       }}
     >
-      {/* Product Information header */}
+      {/* Discount/Savings Badge */}
+      {savings_potential > 0 && (
+        <div 
+          className="badge badge-deal"
+          style={{
+            position: "absolute",
+            top: "16px",
+            right: "16px",
+            boxShadow: "0 4px 10px rgba(229, 62, 62, 0.2)",
+            fontSize: "11px",
+            letterSpacing: "0.5px",
+          }}
+        >
+          Save ${parseFloat(savings_potential).toFixed(2)}
+        </div>
+      )}
+
+      {/* Product Image & Title Section */}
       <div style={{ display: "flex", gap: "16px" }}>
         {/* Product Image */}
         <div style={{
           width: "80px",
           height: "80px",
           borderRadius: "var(--radius-sm)",
-          background: "white",
-          padding: "6px",
+          backgroundColor: "#F8FAFC",
+          padding: "8px",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           flexShrink: 0,
-          border: "1px solid rgba(0,0,0,0.05)",
+          border: "1px solid rgba(0, 0, 0, 0.04)",
         }}>
           <img 
             src={product.image_url || "https://images.unsplash.com/photo-1542838132-92c53300491e?w=120"} 
@@ -61,19 +67,20 @@ export default function ProductCard({ result, onClick }) {
         </div>
 
         {/* Product Info */}
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ flex: 1, minWidth: 0, pt: "4px" }}>
           {product.brand && (
             <span style={{
-              fontSize: "12px",
-              fontWeight: 600,
+              fontSize: "11px",
+              fontWeight: 700,
               textTransform: "uppercase",
-              letterSpacing: "0.5px",
-              color: "var(--primary-light)",
+              letterSpacing: "0.8px",
+              color: "var(--text-muted)",
+              display: "block",
             }}>{product.brand}</span>
           )}
           <h3 style={{
             fontSize: "16px",
-            fontWeight: 600,
+            fontWeight: 700,
             color: "var(--text-primary)",
             margin: "2px 0 6px 0",
             whiteSpace: "nowrap",
@@ -84,9 +91,10 @@ export default function ProductCard({ result, onClick }) {
           </h3>
           <span style={{
             fontSize: "12px",
-            color: "var(--text-muted)",
-            background: "rgba(255,255,255,0.04)",
-            padding: "2px 8px",
+            color: "var(--accent)",
+            fontWeight: 600,
+            backgroundColor: "rgba(91, 140, 81, 0.08)",
+            padding: "3px 8px",
             borderRadius: "4px",
           }}>{product.category || "Grocery"}</span>
         </div>
@@ -97,9 +105,10 @@ export default function ProductCard({ result, onClick }) {
         display: "flex",
         flexDirection: "column",
         gap: "10px",
-        background: "rgba(0, 0, 0, 0.15)",
-        padding: "12px",
-        borderRadius: "var(--radius-sm)",
+        backgroundColor: "#F8FAFC",
+        padding: "14px",
+        borderRadius: "var(--radius-md)",
+        border: "1px solid var(--border-color)",
       }}>
         {prices.map((price) => (
           <div key={price.id} style={{
@@ -108,26 +117,23 @@ export default function ProductCard({ result, onClick }) {
             alignItems: "center",
             fontSize: "14px",
           }}>
-            {/* Store Name Badge */}
+            {/* Store Name & Indicator */}
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <span style={{
                 width: "8px",
                 height: "8px",
                 borderRadius: "50%",
-                background: price.store.color || "#ccc",
+                backgroundColor: price.store.color || "#ccc",
+                display: "inline-block",
               }}></span>
               <span style={{
-                fontWeight: 500,
+                fontWeight: 600,
                 color: "var(--text-secondary)",
               }}>{price.store.name}</span>
             </div>
 
-            {/* Price tag */}
-            <div style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-            }}>
+            {/* Price Tag with unit */}
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               {price.unit && (
                 <span style={{
                   fontSize: "11px",
@@ -136,12 +142,12 @@ export default function ProductCard({ result, onClick }) {
               )}
               <span style={{
                 fontWeight: 700,
-                fontSize: price.is_lowest ? "16px" : "14px",
-                color: price.is_lowest ? "var(--primary-light)" : "var(--text-primary)",
-                background: price.is_lowest ? "rgba(16, 185, 129, 0.1)" : "transparent",
+                fontSize: price.is_lowest ? "15px" : "14px",
+                color: price.is_lowest ? "var(--accent-hover)" : "var(--text-primary)",
+                backgroundColor: price.is_lowest ? "rgba(91, 140, 81, 0.12)" : "transparent",
                 padding: price.is_lowest ? "2px 8px" : 0,
                 borderRadius: "4px",
-                border: price.is_lowest ? "1px solid hsla(150, 84%, 40%, 0.3)" : "none",
+                border: price.is_lowest ? "1px solid rgba(91, 140, 81, 0.2)" : "none",
               }}>
                 ${parseFloat(price.current_price).toFixed(2)}
               </span>
@@ -150,36 +156,39 @@ export default function ProductCard({ result, onClick }) {
         ))}
       </div>
 
-      {/* Card Footer detail trigger */}
+      {/* Card Footer Compare action */}
       <div style={{
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        borderTop: "1px solid var(--bg-card-border)",
-        paddingTop: "12px",
+        borderTop: "1px solid var(--border-color)",
+        paddingTop: "14px",
         fontSize: "13px",
       }}>
-        {savings_potential > 0 ? (
-          <span style={{
-            color: "var(--accent)",
-            fontWeight: 600,
-          }}>
-            Save up to ${parseFloat(savings_potential).toFixed(2)}!
-          </span>
-        ) : (
-          <span style={{ color: "var(--text-muted)" }}>Available in {prices.length} stores</span>
-        )}
+        <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>
+          Available in {prices.length} stores
+        </span>
         
         <span style={{
           display: "flex",
           alignItems: "center",
           gap: "4px",
-          color: "var(--primary-light)",
-          fontWeight: 600,
-        }}>
-          Compare <IoChevronForward size={14} />
+          color: "var(--accent)",
+          fontWeight: 700,
+          transition: "var(--transition)",
+        }}
+        className="compare-link"
+        >
+          Compare Prices <IoChevronForwardOutline size={14} />
         </span>
       </div>
+
+      <style>{`
+        .card:hover .compare-link {
+          color: var(--accent-hover);
+          transform: translateX(3px);
+        }
+      `}</style>
     </div>
   );
 }

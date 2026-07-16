@@ -76,31 +76,32 @@ export default function SearchResults() {
   };
 
   return (
-    <div style={{ padding: "40px 0" }}>
+    <div style={{ padding: "50px 0", backgroundColor: "var(--bg-body)", minHeight: "80vh" }}>
       <div className="container">
         {/* Back and search navigation row */}
         <div style={{
           display: "flex",
           alignItems: "center",
-          gap: "20px",
-          marginBottom: "32px",
+          gap: "16px",
+          marginBottom: "40px",
         }}>
           <button 
             onClick={() => navigate("/")}
             style={{
               padding: "10px",
               borderRadius: "50%",
-              background: "var(--bg-card-border)",
-              border: "1px solid var(--bg-card-border)",
-              color: "var(--text-secondary)",
+              backgroundColor: "#FFFFFF",
+              border: "1px solid var(--border-color)",
+              color: "var(--text-primary)",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               transition: "var(--transition)",
+              boxShadow: "var(--shadow-sm)",
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text-primary)"; e.currentTarget.style.transform = "translateX(-2px)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-secondary)"; e.currentTarget.style.transform = "translateX(0)"; }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = "var(--accent)"; e.currentTarget.style.transform = "translateX(-2px)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-primary)"; e.currentTarget.style.transform = "translateX(0)"; }}
           >
             <IoArrowBackOutline size={20} />
           </button>
@@ -111,44 +112,50 @@ export default function SearchResults() {
         </div>
 
         {/* Filters and Grid Layout */}
-        <div style={{
+        <div className="search-layout" style={{
           display: "grid",
-          gridTemplateColumns: "250px 1fr",
+          gridTemplateColumns: "260px 1fr",
           gap: "40px",
           alignItems: "start",
         }}>
           {/* Filters Sidebar */}
-          <aside className="glass" style={{
+          <aside style={{
+            backgroundColor: "#FFFFFF",
             padding: "24px",
             borderRadius: "var(--radius-md)",
-            border: "1px solid var(--bg-card-border)",
+            border: "1px solid var(--border-color)",
             position: "sticky",
             top: "100px",
+            boxShadow: "var(--shadow-sm)",
           }}>
             <h3 style={{
-              fontSize: "18px",
-              marginBottom: "16px",
+              fontSize: "16px",
+              fontWeight: 700,
+              color: "var(--text-primary)",
+              marginBottom: "20px",
               display: "flex",
               alignItems: "center",
               gap: "8px",
+              borderBottom: "1px solid var(--border-color)",
+              paddingBottom: "12px",
             }}>
-              <IoFunnelOutline style={{ color: "var(--primary-light)" }} />
+              <IoFunnelOutline style={{ color: "var(--accent)" }} />
               <span>Filters</span>
             </h3>
 
             <div>
               <span style={{
-                fontSize: "12px",
-                fontWeight: 600,
+                fontSize: "11px",
+                fontWeight: 700,
                 textTransform: "uppercase",
                 color: "var(--text-muted)",
-                letterSpacing: "0.5px",
+                letterSpacing: "0.8px",
                 display: "block",
-                marginBottom: "12px",
+                marginBottom: "14px",
               }}>Stores</span>
 
               {/* Stores toggles */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 {Object.keys(activeStores).map((slug) => (
                   <label key={slug} style={{
                     display: "flex",
@@ -156,14 +163,15 @@ export default function SearchResults() {
                     gap: "10px",
                     cursor: "pointer",
                     fontSize: "14px",
-                    color: activeStores[slug] ? "var(--text-primary)" : "var(--text-secondary)",
+                    fontWeight: 500,
+                    color: activeStores[slug] ? "var(--text-primary)" : "var(--text-muted)",
                   }}>
                     <input
                       type="checkbox"
                       checked={activeStores[slug]}
                       onChange={() => toggleStore(slug)}
                       style={{
-                        accentColor: "var(--primary)",
+                        accentColor: "var(--accent)",
                         width: "16px",
                         height: "16px",
                         cursor: "pointer",
@@ -184,22 +192,24 @@ export default function SearchResults() {
               alignItems: "center",
               marginBottom: "20px",
             }}>
-              <span style={{ color: "var(--text-secondary)", fontSize: "14px" }}>
+              <span style={{ color: "var(--text-secondary)", fontSize: "14px", fontWeight: 500 }}>
                 Showing <strong>{filteredResults.length}</strong> matching item(s) for "{query}"
               </span>
             </div>
 
             {loading ? (
-              <div style={{ textAlign: "center", padding: "60px 0", color: "var(--text-secondary)" }}>Searching grocery flyers...</div>
+              <div style={{ textAlign: "center", padding: "60px 0", color: "var(--text-muted)", fontSize: "15px" }}>Searching grocery flyers...</div>
             ) : filteredResults.length === 0 ? (
-              <div className="glass" style={{
+              <div style={{
+                backgroundColor: "#FFFFFF",
                 padding: "60px",
                 textAlign: "center",
                 borderRadius: "var(--radius-md)",
-                border: "1px solid var(--bg-card-border)",
+                border: "1px solid var(--border-color)",
+                boxShadow: "var(--shadow-sm)",
               }}>
-                <h3 style={{ fontSize: "18px", color: "var(--text-secondary)", marginBottom: "8px" }}>No results found</h3>
-                <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>Try checking spelling or using a simpler search keyword.</p>
+                <h3 style={{ fontSize: "18px", color: "var(--text-primary)", fontWeight: 700, marginBottom: "8px" }}>No results found</h3>
+                <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>Try checking spelling or using a simpler search keyword like 'tomato' or 'apple'.</p>
               </div>
             ) : (
               <div style={{
@@ -227,6 +237,19 @@ export default function SearchResults() {
           onClose={() => setSelectedProduct(null)}
         />
       )}
+
+      {/* Responsive layout styles via inline CSS injection */}
+      <style>{`
+        @media (max-width: 768px) {
+          .search-layout {
+            grid-template-columns: 1fr !important;
+            gap: 24px !important;
+          }
+          .search-layout aside {
+            position: static !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

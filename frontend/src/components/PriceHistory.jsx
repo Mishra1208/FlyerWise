@@ -22,7 +22,7 @@ ChartJS.register(
   Legend
 );
 
-export default function PriceHistory({ productId, storeColors = {} }) {
+export default function PriceHistory({ productId }) {
   const [historyData, setHistoryData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -68,7 +68,7 @@ export default function PriceHistory({ productId, storeColors = {} }) {
             label: group.label,
             data: alignedData,
             borderColor: group.color,
-            backgroundColor: group.color + "22",
+            backgroundColor: group.color + "11",
             tension: 0.3,
             spanGaps: true,
             pointRadius: 5,
@@ -90,7 +90,7 @@ export default function PriceHistory({ productId, storeColors = {} }) {
   }, [productId]);
 
   if (loading) {
-    return <div style={{ color: "var(--text-secondary)", textAlign: "center", padding: "20px" }}>Loading price trends...</div>;
+    return <div style={{ color: "var(--text-muted)", textAlign: "center", padding: "20px" }}>Loading price trends...</div>;
   }
 
   if (!historyData || historyData.datasets.length === 0) {
@@ -104,29 +104,33 @@ export default function PriceHistory({ productId, storeColors = {} }) {
       legend: {
         position: "bottom",
         labels: {
-          color: "#e2e8f0",
-          font: { family: "Plus Jakarta Sans", weight: "500" },
+          color: "#1B365D",
+          font: { family: "Inter", weight: "600", size: 12 },
         },
       },
       tooltip: {
-        backgroundColor: "rgba(15, 23, 42, 0.9)",
-        titleColor: "#f8fafc",
-        bodyColor: "#f1f5f9",
-        borderColor: "rgba(255,255,255,0.08)",
+        backgroundColor: "#FFFFFF",
+        titleColor: "#1B365D",
+        bodyColor: "#5A6B80",
+        borderColor: "#E2E8F0",
         borderWidth: 1,
         padding: 12,
         cornerRadius: 8,
+        titleFont: { family: "Inter", weight: "700" },
+        bodyFont: { family: "Inter" },
+        shadowColor: "rgba(0,0,0,0.1)",
       },
     },
     scales: {
       x: {
-        grid: { color: "rgba(255, 255, 255, 0.05)" },
-        ticks: { color: "#94a3b8" },
+        grid: { color: "rgba(0, 0, 0, 0.04)" },
+        ticks: { color: "#5A6B80", font: { family: "Inter" } },
       },
       y: {
-        grid: { color: "rgba(255, 255, 255, 0.05)" },
+        grid: { color: "rgba(0, 0, 0, 0.04)" },
         ticks: { 
-          color: "#94a3b8",
+          color: "#5A6B80",
+          font: { family: "Inter" },
           callback: (value) => `$${value.toFixed(2)}`,
         },
       },

@@ -15,46 +15,60 @@ export default function SearchBar({ initialValue = "", onSearch, placeholder = "
     <form onSubmit={handleSubmit} style={{
       width: "100%",
       position: "relative",
-    }}>
-      <input
-        type="text"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder={placeholder}
-        style={{
-          width: "100%",
-          padding: "18px 24px",
-          paddingLeft: "58px",
-          borderRadius: "var(--radius-md)",
-          background: "rgba(255, 255, 255, 0.03)",
-          border: "1px solid var(--bg-card-border)",
-          fontSize: "16px",
-          color: "var(--text-primary)",
-          transition: "var(--transition)",
-          boxShadow: "inset 0 2px 4px rgba(0,0,0,0.1)",
-        }}
-        onFocus={(e) => {
-          e.target.style.borderColor = "var(--primary-light)";
-          e.target.style.background = "rgba(255, 255, 255, 0.05)";
-          e.target.style.boxShadow = "var(--shadow-glow)";
-        }}
-        onBlur={(e) => {
-          e.target.style.borderColor = "var(--bg-card-border)";
-          e.target.style.background = "rgba(255, 255, 255, 0.03)";
-          e.target.style.boxShadow = "inset 0 2px 4px rgba(0,0,0,0.1)";
-        }}
-      />
-      <button type="submit" style={{
-        position: "absolute",
-        left: "20px",
-        top: "50%",
-        transform: "translateY(-50%)",
-        color: "var(--text-muted)",
-        cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      background: "#FFFFFF",
+      borderRadius: "var(--radius-md)",
+      border: "1px solid var(--border-color)",
+      padding: "6px",
+      boxShadow: "var(--shadow-sm)",
+      transition: "var(--transition)",
+    }}
+    onFocusCapture={(e) => {
+      e.currentTarget.style.borderColor = "var(--accent)";
+      e.currentTarget.style.boxShadow = "0 0 0 4px var(--accent-glow)";
+    }}
+    onBlurCapture={(e) => {
+      e.currentTarget.style.borderColor = "var(--border-color)";
+      e.currentTarget.style.boxShadow = "var(--shadow-sm)";
+    }}
+    >
+      <div style={{
         display: "flex",
         alignItems: "center",
+        flex: 1,
+        paddingLeft: "12px",
+        gap: "10px",
       }}>
-        <IoSearchOutline size={22} />
+        <IoSearchOutline size={20} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={placeholder}
+          style={{
+            width: "100%",
+            padding: "12px 6px",
+            fontSize: "15px",
+            color: "var(--text-primary)",
+            fontWeight: 500,
+          }}
+        />
+      </div>
+      
+      <button 
+        type="submit" 
+        className="btn btn-primary"
+        style={{
+          padding: "10px 24px",
+          borderRadius: "8px",
+          fontSize: "14px",
+          fontWeight: 700,
+          letterSpacing: "0.2px",
+          flexShrink: 0,
+        }}
+      >
+        Search
       </button>
     </form>
   );
