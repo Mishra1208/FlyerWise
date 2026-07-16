@@ -1,0 +1,146 @@
+/* ==========================================================================
+   FlyerWise Global Styling System
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* Color Palette - Vibrant Emerald & Slate */
+  --primary-hue: 150;
+  --primary-saturation: 84%;
+  --primary: hsl(var(--primary-hue), var(--primary-saturation), 40%);
+  --primary-light: hsl(var(--primary-hue), var(--primary-saturation), 48%);
+  --primary-dark: hsl(var(--primary-hue), var(--primary-saturation), 32%);
+  --primary-glow: hsla(var(--primary-hue), var(--primary-saturation), 40%, 0.15);
+
+  --accent-hue: 342;
+  --accent: hsl(var(--accent-hue), 85%, 52%); /* Neon rose */
+  --accent-glow: hsla(var(--accent-hue), 85%, 52%, 0.15);
+
+  /* Neutrals - Premium Dark Theme by default */
+  --bg-dark: hsl(222, 47%, 6%);
+  --bg-card: hsl(223, 40%, 10%);
+  --bg-card-border: hsla(223, 40%, 20%, 0.4);
+  --bg-glass: rgba(13, 20, 38, 0.65);
+  
+  --text-primary: hsl(210, 40%, 98%);
+  --text-secondary: hsl(215, 20%, 74%);
+  --text-muted: hsl(215, 16%, 52%);
+
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 24px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --ease-fast: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-elastic: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition: all 0.3s var(--ease-fast);
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 24px var(--primary-glow);
+}
+
+/* Light mode overrides if requested (custom theme support) */
+.light-mode {
+  --bg-dark: hsl(210, 40%, 98%);
+  --bg-card: hsl(0, 0%, 100%);
+  --bg-card-border: hsla(210, 40%, 90%, 0.8);
+  --bg-glass: rgba(255, 255, 255, 0.8);
+  --text-primary: hsl(222, 47%, 6%);
+  --text-secondary: hsl(215, 25%, 30%);
+  --text-muted: hsl(215, 16%, 50%);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.12);
+}
+
+/* Reset & Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background-color 0.4s var(--ease-fast);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.25;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button, input {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  outline: none;
+}
+
+/* Glassmorphism utility */
+.glass {
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid var(--bg-card-border);
+  box-shadow: var(--shadow-md);
+}
+
+/* Scrollbar Customization */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-card-border);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-light);
+}
+
+/* Layout Utilities */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Custom Gradient Animation for Landing page */
+@keyframes gradient-bg {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--primary-light) 0%, #38bdf8 50%, var(--accent) 100%);
+  background-size: 200% auto;
+  animation: gradient-bg 8s linear infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
