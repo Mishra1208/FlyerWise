@@ -101,32 +101,78 @@ export default function ScannerModal({ isOpen, onClose, onDetected }) {
     // Ignore frame scan errors
   };
 
-  // Perform Tesseract OCR text extraction on an image file
+  // Helper to create a rotated canvas from an image file
+  const createRotatedCanvas = (imageFile, degrees) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = URL.createObjectURL(imageFile);
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        if (degrees === 90 || degrees === 270) {
+          canvas.width = img.height;
+          canvas.height = img.width;
+        } else {
+          canvas.width = img.width;
+          canvas.height = img.height;
+        }
+
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate((degrees * Math.PI) / 180);
+        ctx.drawImage(img, -img.width / 2, -img.height / 2);
+
+        canvas.toBlob((blob) => resolve(blob), "image/jpeg");
+      };
+    });
+  };
+
+  // Perform Tesseract OCR text extraction with auto-rotation for sideways photos
   const handleImageOCR = async (file) => {
     if (!file) return;
 
     setImagePreview(URL.createObjectURL(file));
     setProcessing(true);
-    setStatusMessage("AI analyzing product packaging text...");
+    setStatusMessage("AI analyzing product photo (0° & 90° rotations)...");
 
     try {
       const worker = await createWorker("eng+fra");
-      const ret = await worker.recognize(file);
+
+      // Pass 1: 0 degrees (original image)
+      let ret = await worker.recognize(file);
+      let rawText = ret.data.text || "";
+      let cleaned = cleanOCRText(rawText);
+
+      // Pass 2: If no terms found, try 90 degrees rotation (for vertical sideways packaging)
+      if (!cleaned) {
+        setStatusMessage("Rotated scan (90°)...");
+        const rotated90Blob = await createRotatedCanvas(file, 90);
+        ret = await worker.recognize(rotated90Blob);
+        rawText = ret.data.text || "";
+        cleaned = cleanOCRText(rawText);
+      }
+
+      // Pass 3: If still no terms found, try 270 degrees rotation
+      if (!cleaned) {
+        setStatusMessage("Rotated scan (270°)...");
+        const rotated270Blob = await createRotatedCanvas(file, 270);
+        ret = await worker.recognize(rotated270Blob);
+        rawText = ret.data.text || "";
+        cleaned = cleanOCRText(rawText);
+      }
+
       await worker.terminate();
 
-      const rawText = ret.data.text || "";
-      // Clean OCR text: remove special symbols, extract product keywords
-      const cleaned = cleanOCRText(rawText);
-      
       if (cleaned) {
         setDetectedText(cleaned);
         setStatusMessage(`Recognized: "${cleaned}"`);
       } else {
-        setStatusMessage("Could not read text clearly. Try typing keywords.");
+        setDetectedText("");
+        setStatusMessage("No grocery item recognized in photo. Please scan barcode or enter product name.");
       }
     } catch (err) {
       console.error("OCR error:", err);
-      setStatusMessage("Failed to process image. Try another photo.");
+      setStatusMessage("Failed to process image. Try another photo or barcode.");
     } finally {
       setProcessing(false);
     }
@@ -160,7 +206,7 @@ export default function ScannerModal({ isOpen, onClose, onDetected }) {
   const cleanOCRText = (text) => {
     if (!text) return "";
 
-    // 1. First check if any barcode digit sequence (12 or 13 digits) is in the OCR text
+    // 1. Check if any barcode digit sequence (12 or 13 digits) is in the OCR text
     const digitMatch = text.match(/\b\d{12,13}\b/);
     if (digitMatch) {
       const barcode = digitMatch[0];
@@ -191,20 +237,6 @@ export default function ScannerModal({ isOpen, onClose, onDetected }) {
     const matchedTerms = [...foundBrands, ...foundItems];
     if (matchedTerms.length > 0) {
       return matchedTerms.join(" ");
-    }
-
-    // 3. Fallback: If no dictionary match, extract any clean line >= 4 letters that has valid words
-    const lines = text
-      .split("\n")
-      .map((l) => l.replace(/[^\w\s\u00C0-\u00FF]/gi, " ").trim())
-      .filter((l) => l.length >= 4 && !/^\d+$/.test(l));
-
-    for (const line of lines) {
-      // Avoid garbage noise lines with single-letter words like "y _" or "fl il y L"
-      const lineWords = line.split(/\s+/).filter((w) => w.length >= 3);
-      if (lineWords.length >= 1) {
-        return lineWords.join(" ");
-      }
     }
 
     return "";
