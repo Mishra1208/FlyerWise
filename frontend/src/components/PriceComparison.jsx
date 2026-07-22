@@ -270,7 +270,8 @@ export default function PriceComparison({ product, onClose }) {
                       )}
                     </div>
                   </div>
-                ))}
+                );
+              })}
               </div>
             )}
           </div>
