@@ -49,8 +49,8 @@ export default function SearchResults() {
 
   // Filter results based on selected stores checkbox status
   const filteredResults = results.map((result) => {
-    // Filter the prices for this product based on store toggle
-    const filteredPrices = result.prices.filter((p) => activeStores[p.store.slug]);
+    // Show all store prices by default unless explicitly set to false by checkbox
+    const filteredPrices = result.prices.filter((p) => activeStores[p.store.slug] !== false);
     
     if (filteredPrices.length === 0) return null;
 

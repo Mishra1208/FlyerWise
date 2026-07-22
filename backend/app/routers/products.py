@@ -96,20 +96,34 @@ def search_products(
     (active, expiring_today, upcoming, recent_sale).
     """
     # Translate bilingual query tokens
+    # Translate bilingual query tokens
     q_translated = translate_query_to_english(q)
 
-    # Step 1: Full-text search on BOTH normalized_name AND search_tags
+    # Build bilingual query patterns
+    q_raw = q.lower().strip()
+    q_trans = q_translated.lower().strip()
+    equiv_terms = [q_raw, q_trans]
+
+    if q_raw in ("butter", "beurre") or q_trans in ("butter", "beurre"):
+        equiv_terms.extend(["butter", "beurre", "margarine", "ghee"])
+
+    # Step 1: Search on raw_name, normalized_name, and search_tags
     fts_query = func.plainto_tsquery("english", q_translated)
-    
     name_match = func.to_tsvector("english", Product.normalized_name).op("@@")(fts_query)
     tags_match = func.to_tsvector(
         "english", func.coalesce(Product.search_tags, "")
     ).op("@@")(fts_query)
-    
+
+    from sqlalchemy import or_
+    title_conditions = [
+        Product.raw_name.ilike(f"%{term}%") | Product.normalized_name.ilike(f"%{term}%")
+        for term in set(equiv_terms)
+    ]
+
     fts_results = (
         db.query(Product)
-        .filter(name_match | tags_match)
-        .limit(50)
+        .filter(or_(*title_conditions) | name_match | tags_match)
+        .limit(100)
         .all()
     )
 
@@ -119,7 +133,7 @@ def search_products(
             db.query(Product)
             .filter(Product.normalized_name.op("%")(q_translated))  # pg_trgm similarity
             .order_by(func.similarity(Product.normalized_name, q_translated).desc())
-            .limit(50)
+            .limit(100)
             .all()
         )
 
@@ -263,8 +277,17 @@ def search_products(
             )
         )
 
-    # Sort results: items with more store coverage first, then by lowest price
-    results.sort(key=lambda r: (-r.store_count, r.lowest_price or Decimal("999")))
+    # Sort results:
+    # 1. Exact/partial title matches (products containing search query word in raw_name) come FIRST!
+    # 2. Then by store count descending
+    # 3. Then by lowest price ascending
+    def rank_key(r: SearchResult):
+        raw_l = r.product.raw_name.lower()
+        norm_l = r.product.normalized_name.lower()
+        is_title_match = any(term in raw_l or term in norm_l for term in equiv_terms)
+        return (not is_title_match, -r.store_count, r.lowest_price or Decimal("999"))
+
+    results.sort(key=rank_key)
 
     # Log the search (fire-and-forget, don't block response)
     from app.models import SearchHistory
