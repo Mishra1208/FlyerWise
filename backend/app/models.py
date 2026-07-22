@@ -144,6 +144,88 @@ class SearchHistory(Base):
     )
 
 
+class RawProductRecord(Base):
+    """Preserves raw JSON crawler records before cleaning/normalization."""
+
+    __tablename__ = "raw_product_records"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    store_id: Mapped[int] = mapped_column(ForeignKey("stores.id", ondelete="CASCADE"), nullable=False)
+    crawl_run_id: Mapped[str | None] = mapped_column(String(100))
+    flyer_id_str: Mapped[str | None] = mapped_column(String(100))
+    raw_name: Mapped[str] = mapped_column(String(500), nullable=False)
+    raw_price_text: Mapped[str | None] = mapped_column(String(200))
+    raw_payload: Mapped[str | None] = mapped_column(Text)  # Stores JSON payload string
+    processing_status: Mapped[str] = mapped_column(String(50), default="pending")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class CanonicalProduct(Base):
+    """Unified master product entity for cross-store matching."""
+
+    __tablename__ = "canonical_products"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    canonical_name: Mapped[str] = mapped_column(String(500), unique=True, nullable=False)
+    brand: Mapped[str | None] = mapped_column(String(200))
+    category: Mapped[str | None] = mapped_column(String(100))
+    barcode: Mapped[str | None] = mapped_column(String(100))
+    default_unit: Mapped[str | None] = mapped_column(String(50))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    store_products: Mapped[list["StoreProduct"]] = relationship(back_populates="canonical_product")
+
+
+class StoreProduct(Base):
+    """Links store-specific flyer product names to a unified CanonicalProduct."""
+
+    __tablename__ = "store_products"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    store_id: Mapped[int] = mapped_column(ForeignKey("stores.id", ondelete="CASCADE"), nullable=False)
+    canonical_product_id: Mapped[int | None] = mapped_column(
+        ForeignKey("canonical_products.id", ondelete="SET NULL")
+    )
+    store_product_name: Mapped[str] = mapped_column(String(500), nullable=False)
+    store_sku: Mapped[str | None] = mapped_column(String(100))
+    matching_confidence: Mapped[Decimal] = mapped_column(Numeric(5, 2), default=1.0)
+
+    canonical_product: Mapped["CanonicalProduct | None"] = relationship(back_populates="store_products")
+
+
+class ShoppingList(Base):
+    """User shopping list for basket optimization."""
+
+    __tablename__ = "shopping_lists"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    session_id: Mapped[str | None] = mapped_column(String(100))
+    name: Mapped[str] = mapped_column(String(200), default="My Shopping List")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    items: Mapped[list["ShoppingListItem"]] = relationship(back_populates="shopping_list", cascade="all, delete-orphan")
+
+
+class ShoppingListItem(Base):
+    """Individual item in a shopping list."""
+
+    __tablename__ = "shopping_list_items"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    list_id: Mapped[int] = mapped_column(ForeignKey("shopping_lists.id", ondelete="CASCADE"), nullable=False)
+    product_name: Mapped[str] = mapped_column(String(500), nullable=False)
+    quantity: Mapped[int] = mapped_column(Integer, default=1)
+    preferred_unit: Mapped[str | None] = mapped_column(String(50))
+
+    shopping_list: Mapped["ShoppingList"] = relationship(back_populates="items")
+
+
 class ScrapeLog(Base):
     """Tracks scraper execution history for monitoring."""
 

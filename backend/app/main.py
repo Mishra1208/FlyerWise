@@ -102,6 +102,35 @@ def get_scraper_status():
     }
 
 
+from typing import List
+from pydantic import BaseModel
+
+class BasketOptimizeRequest(BaseModel):
+    items: list[str]
+
+from app.services.basket_optimizer import optimize_basket
+from app.services.price_intelligence import calculate_price_intelligence
+from app.services.matching_engine import auto_cluster_all_products
+
+@app.post("/api/basket/optimize", tags=["basket"])
+def optimize_shopping_basket(req: BasketOptimizeRequest, db: Session = Depends(get_db)):
+    """Calculate best single-store and two-store combination basket for a list of items."""
+    return optimize_basket(db, req.items)
+
+
+@app.get("/api/products/{product_id}/intelligence", tags=["intelligence"])
+def get_product_intelligence(product_id: int, db: Session = Depends(get_db)):
+    """Fetch 90-day price statistics, deal quality score, and buy/wait recommendations."""
+    return calculate_price_intelligence(db, product_id)
+
+
+@app.post("/api/matching/cluster", tags=["matching"])
+def cluster_canonical_products(db: Session = Depends(get_db)):
+    """Trigger canonical product clustering engine across raw store products."""
+    count = auto_cluster_all_products(db)
+    return {"status": "success", "clustered_count": count}
+
+
 @app.get("/api/health", response_model=HealthResponse, tags=["health"])
 def health_check(db: Session = Depends(get_db)):
     """Health check with database stats."""

@@ -11,6 +11,7 @@ import {
   IoFlameOutline
 } from "react-icons/io5";
 import SearchBar from "../components/SearchBar";
+import SmartBasketOptimizer from "../components/SmartBasketOptimizer";
 import { PriceService } from "../services/api";
 import heroBanner from "../assets/hero_banner.png";
 import whyFlyerwise from "../assets/why_flyerwise.png";
@@ -157,7 +158,12 @@ export default function Home() {
       </section>
 
       {/* Spacer to account for overlay stats strip */}
-      <div style={{ height: "1px", marginBottom: "-40px" }}></div>
+      <div style={{ height: "40px" }}></div>
+
+      {/* SMART BASKET OPTIMIZER SECTION */}
+      <section className="container">
+        <SmartBasketOptimizer />
+      </section>
 
       {/* 2. HOW IT WORKS SECTION */}
       <section id="how-it-works" className="container" style={{ scrollMarginTop: "100px" }}>

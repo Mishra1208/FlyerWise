@@ -53,4 +53,18 @@ export const PriceService = {
   },
 };
 
+export const BasketService = {
+  optimize: async (items) => {
+    const response = await API.post("/basket/optimize", { items });
+    return response.data;
+  },
+};
+
+export const IntelligenceService = {
+  getIntelligence: async (productId) => {
+    const response = await API.get(`/products/${productId}/intelligence`);
+    return response.data;
+  },
+};
+
 export default API;

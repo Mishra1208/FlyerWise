@@ -20,7 +20,7 @@ import os
 # Add backend to path so we can import models
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "backend"))
 
-from app.models import Store, Flyer, Product, Price, ScrapeLog
+from app.models import Store, Flyer, Product, Price, ScrapeLog, RawProductRecord, CanonicalProduct, StoreProduct
 from app.database import Base
 
 from scraper.config import ScraperConfig
@@ -236,15 +236,37 @@ class DatabaseWriter:
             session.add(scrape_log)
             session.flush()
 
+            import json
             for scraped in products:
                 try:
-                    product = self.find_or_create_product(session, scraped)
-                    self.insert_price(session, product, store, flyer, scraped)
+                    product = self.get_or_create_product(session, scraped)
+                    self.save_price(session, store, flyer, product, scraped)
+
+                    # Preserve raw crawler record in raw_product_records
+                    raw_rec = RawProductRecord(
+                        store_id=store.id,
+                        flyer_id_str=str(flyer.id),
+                        raw_name=scraped.raw_name,
+                        raw_price_text=scraped.price_text,
+                        raw_payload=json.dumps({
+                            "raw_name": scraped.raw_name,
+                            "current_price": str(scraped.current_price),
+                            "savings": scraped.savings,
+                            "unit": scraped.unit,
+                            "quantity": scraped.quantity,
+                            "image_url": scraped.image_url,
+                            "brand": scraped.brand,
+                            "valid_from": str(scraped.valid_from),
+                            "valid_until": str(scraped.valid_until),
+                        }),
+                        processing_status="completed"
+                    )
+                    session.add(raw_rec)
+
                     saved_count += 1
                 except Exception as e:
-                    logger.warning(
-                        f"Failed to save product '{scraped.raw_name}': {e}"
-                    )
+                    logger.warning(f"Error saving product '{scraped.raw_name}': {e}")
+                    session.rollback()
                     continue
 
             # Update flyer item count
