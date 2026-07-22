@@ -21,6 +21,8 @@ export default function ScannerModal({ isOpen, onClose, onDetected }) {
   const scannerRef = useRef(null);
   const fileInputRef = useRef(null);
 
+  const [manualBarcode, setManualBarcode] = useState("");
+
   // Stop barcode scanner when tab changes or modal closes
   useEffect(() => {
     if (!isOpen || activeTab !== "barcode") {
@@ -382,8 +384,57 @@ export default function ScannerModal({ isOpen, onClose, onDetected }) {
         <div style={{ padding: "24px", minHeight: "260px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
           {/* BARCODE TAB */}
           {activeTab === "barcode" && (
-            <div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               <div id="barcode-reader" style={{ width: "100%", borderRadius: "var(--radius-md)", overflow: "hidden" }}></div>
+
+              {/* Manual Barcode Entry Option */}
+              <div style={{
+                paddingTop: "14px",
+                borderTop: "1px dashed var(--border-color)",
+                display: "flex",
+                flexDirection: "column",
+                gap: "8px",
+              }}>
+                <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>
+                  Or enter barcode number manually
+                </span>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (manualBarcode.trim()) {
+                      onBarcodeSuccess(manualBarcode.trim());
+                    }
+                  }}
+                  style={{ display: "flex", gap: "8px" }}
+                >
+                  <input
+                    type="text"
+                    placeholder="e.g. 066096123306"
+                    value={manualBarcode}
+                    onChange={(e) => setManualBarcode(e.target.value)}
+                    style={{
+                      flex: 1,
+                      padding: "10px 14px",
+                      borderRadius: "var(--radius-sm)",
+                      border: "1px solid var(--border-color)",
+                      fontSize: "14px",
+                      fontWeight: 600,
+                    }}
+                  />
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    style={{
+                      padding: "10px 16px",
+                      fontSize: "13px",
+                      fontWeight: 700,
+                      flexShrink: 0,
+                    }}
+                  >
+                    Lookup Barcode
+                  </button>
+                </form>
+              </div>
             </div>
           )}
 
