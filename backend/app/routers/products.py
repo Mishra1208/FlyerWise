@@ -218,6 +218,22 @@ def search_products(
         if not price_entries:
             continue
 
+        # Deduplicate identical store price listings (e.g. repeated flyer entries for same store/price)
+        seen_keys = set()
+        unique_price_entries = []
+        for p_entry in price_entries:
+            dedup_key = (
+                p_entry.store.id,
+                float(p_entry.current_price),
+                p_entry.unit or "",
+                p_entry.flyer_status,
+            )
+            if dedup_key not in seen_keys:
+                seen_keys.add(dedup_key)
+                unique_price_entries.append(p_entry)
+
+        price_entries = unique_price_entries
+
         # Mark lowest price among active/expiring/upcoming prices
         active_entries = [p for p in price_entries if not p.is_historical]
         lowest_ref = active_entries if active_entries else price_entries

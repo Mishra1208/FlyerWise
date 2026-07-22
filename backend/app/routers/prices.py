@@ -41,8 +41,14 @@ def compare_prices(product_id: int, db: Session = Depends(get_db)):
 
     lowest = prices[0].current_price
 
+    seen_keys = set()
     result = []
     for price in prices:
+        dedup_key = (price.store_id, float(price.current_price), price.unit or "")
+        if dedup_key in seen_keys:
+            continue
+        seen_keys.add(dedup_key)
+
         store = db.query(Store).filter(Store.id == price.store_id).first()
         result.append(
             PriceWithStore(
