@@ -489,6 +489,34 @@ BRAND_TAG_RULES = {
         "triggers": ["salade", "salad", "mesclun", "mix"],
         "tags": "spinach lettuce arugula salad salade greens leafy épinard laitue",
     },
+    "lactantia": {
+        "triggers": ["beurre", "butter", "salé", "doux", "baratté", "churned", "lait", "milk", "crème", "cream"],
+        "tags": "butter beurre salted unsalted baratté churned milk lait dairy cream crème",
+    },
+    "quebon": {
+        "triggers": ["lait", "milk", "crème", "cream", "beurre", "butter"],
+        "tags": "milk lait dairy cream crème 2% 1% 3.25% homo skim écrémé",
+    },
+    "natrel": {
+        "triggers": ["lait", "milk", "crème", "cream", "beurre", "butter", "fine filtre"],
+        "tags": "milk lait dairy cream crème fine filtré lactose free sans lactose",
+    },
+    "beatrice": {
+        "triggers": ["lait", "milk", "crème", "cream"],
+        "tags": "milk lait dairy cream crème",
+    },
+    "saputo": {
+        "triggers": ["fromage", "cheese", "mozzarella", "cheddar"],
+        "tags": "cheese fromage mozzarella cheddar dairy produit laitier",
+    },
+    "p'tit quebec": {
+        "triggers": ["fromage", "cheese", "cheddar"],
+        "tags": "cheese fromage cheddar rape shredded block morceau",
+    },
+    "black diamond": {
+        "triggers": ["fromage", "cheese", "cheddar", "ficello", "string"],
+        "tags": "cheese fromage cheddar string ficello dairy",
+    },
 }
 
 

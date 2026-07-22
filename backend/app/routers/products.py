@@ -263,6 +263,41 @@ def search_products(
     )
 
 
+from app.services.barcode import BarcodeResolver
+
+
+@router.get("/barcode/{barcode_number}")
+def search_by_barcode(
+    barcode_number: str,
+    flyer_filter: str = Query("all"),
+    db: Session = Depends(get_db),
+):
+    """
+    Lookup a universal UPC/EAN barcode via Open Food Facts API,
+    resolve canonical brand & product title, and return cross-store flyer deals.
+    """
+    barcode_info = BarcodeResolver.resolve(barcode_number)
+
+    if not barcode_info or not barcode_info.get("canonical_query"):
+        # Fallback: search raw barcode string directly
+        return search_products(q=barcode_number, flyer_filter=flyer_filter, db=db)
+
+    # Search FlyerWise database using the resolved canonical query terms (brand + name)
+    search_query = barcode_info["canonical_query"]
+    search_res = search_products(q=search_query, flyer_filter=flyer_filter, db=db)
+
+    return {
+        "barcode": barcode_info["barcode"],
+        "resolved_brand": barcode_info.get("brand"),
+        "resolved_name": barcode_info.get("product_name"),
+        "resolved_quantity": barcode_info.get("quantity"),
+        "canonical_query": search_query,
+        "query": search_res.query,
+        "total_results": search_res.total_results,
+        "results": search_res.results,
+    }
+
+
 @router.get("/{product_id}", response_model=ProductResponse)
 def get_product(product_id: int, db: Session = Depends(get_db)):
     """Get a specific product by ID."""

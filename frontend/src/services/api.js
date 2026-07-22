@@ -23,6 +23,12 @@ export const ProductService = {
     });
     return response.data;
   },
+  getByBarcode: async (barcode, flyerFilter = "all") => {
+    const response = await API.get(`/products/barcode/${barcode}`, {
+      params: { flyer_filter: flyerFilter },
+    });
+    return response.data;
+  },
   getById: async (id) => {
     const response = await API.get(`/products/${id}`);
     return response.data;

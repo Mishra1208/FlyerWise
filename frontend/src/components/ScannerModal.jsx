@@ -73,20 +73,20 @@ export default function ScannerModal({ isOpen, onClose, onDetected }) {
   };
 
   const onBarcodeSuccess = async (decodedText) => {
-    setStatusMessage(`Barcode found: ${decodedText}. Fetching product info...`);
+    setStatusMessage(`Barcode found: ${decodedText}. Resolving product...`);
     stopBarcodeScanner();
     setProcessing(true);
 
     try {
-      // Lookup Open Food Facts free API
-      const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${decodedText}.json`);
+      // Query FlyerWise backend barcode resolver
+      const res = await fetch(`http://localhost:8000/api/products/barcode/${decodedText}`);
       const data = await res.json();
-      if (data && data.product && data.product.product_name) {
-        const productName = data.product.product_name;
-        setDetectedText(productName);
-        setStatusMessage(`Found: ${productName}`);
+      if (data && data.canonical_query) {
+        const queryText = data.canonical_query;
+        const brand = data.resolved_brand ? ` (${data.resolved_brand})` : "";
+        setDetectedText(queryText);
+        setStatusMessage(`Resolved: ${data.resolved_name || queryText}${brand}`);
       } else {
-        // Fallback to barcode number
         setDetectedText(decodedText);
         setStatusMessage(`Barcode: ${decodedText}`);
       }
