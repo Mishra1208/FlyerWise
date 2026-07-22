@@ -20,32 +20,15 @@ export default function ProductCard({ result, onClick }) {
         overflow: "hidden",
       }}
     >
-      {/* Discount/Savings Badge */}
-      {savings_potential > 0 && (
-        <div 
-          className="badge badge-deal"
-          style={{
-            position: "absolute",
-            top: "16px",
-            right: "16px",
-            boxShadow: "0 4px 10px rgba(229, 62, 62, 0.2)",
-            fontSize: "11px",
-            letterSpacing: "0.5px",
-          }}
-        >
-          Save ${parseFloat(savings_potential).toFixed(2)}
-        </div>
-      )}
-
-      {/* Product Image & Title Section */}
-      <div style={{ display: "flex", gap: "16px" }}>
+      {/* Product Image, Title, & Savings Badge Header */}
+      <div style={{ display: "flex", gap: "14px", alignItems: "flex-start", justifyContent: "space-between" }}>
         {/* Product Image */}
         <div style={{
-          width: "80px",
-          height: "80px",
+          width: "72px",
+          height: "72px",
           borderRadius: "var(--radius-sm)",
           backgroundColor: "#F8FAFC",
-          padding: "8px",
+          padding: "6px",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -67,7 +50,7 @@ export default function ProductCard({ result, onClick }) {
         </div>
 
         {/* Product Info */}
-        <div style={{ flex: 1, minWidth: 0, pt: "4px" }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           {product.brand && (
             <span style={{
               fontSize: "11px",
@@ -79,18 +62,19 @@ export default function ProductCard({ result, onClick }) {
             }}>{product.brand}</span>
           )}
           <h3 style={{
-            fontSize: "16px",
+            fontSize: "15px",
             fontWeight: 700,
             color: "var(--text-primary)",
             margin: "2px 0 6px 0",
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",
+            paddingRight: "4px",
           }} title={product.raw_name}>
             {product.raw_name}
           </h3>
           <span style={{
-            fontSize: "12px",
+            fontSize: "11px",
             color: "var(--accent)",
             fontWeight: 600,
             backgroundColor: "rgba(91, 140, 81, 0.08)",
@@ -98,6 +82,24 @@ export default function ProductCard({ result, onClick }) {
             borderRadius: "4px",
           }}>{product.category || "Grocery"}</span>
         </div>
+
+        {/* Discount/Savings Badge */}
+        {savings_potential > 0 && (
+          <div 
+            className="badge badge-deal"
+            style={{
+              fontSize: "11px",
+              letterSpacing: "0.5px",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+              alignSelf: "flex-start",
+              boxShadow: "0 2px 6px rgba(229, 62, 62, 0.15)",
+              padding: "4px 8px",
+            }}
+          >
+            SAVE ${parseFloat(savings_potential).toFixed(2)}
+          </div>
+        )}
       </div>
 
       {/* Stores and Prices list */}
