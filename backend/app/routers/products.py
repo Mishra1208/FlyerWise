@@ -5,7 +5,7 @@ Endpoints for searching products and retrieving product details.
 """
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import text, func
 from decimal import Decimal
 
@@ -127,27 +127,36 @@ def search_products(
     cutoff_past = today - timedelta(days=14)
     cutoff_future = today + timedelta(days=7)
 
-    for product in fts_results:
-        # Get prices for this product within relevant window (recent past to upcoming preview)
-        all_prices = (
-            db.query(Price)
-            .join(Store, Price.store_id == Store.id)
-            .filter(
-                Price.product_id == product.id,
-                # Include prices valid until recent past or starting in near future
-                (Price.valid_until >= cutoff_past) | (Price.valid_until.is_(None)),
-                (Price.valid_from <= cutoff_future) | (Price.valid_from.is_(None)),
-            )
-            .order_by(Price.current_price.asc())
-            .all()
-        )
+    product_ids = [p.id for p in fts_results]
+    if not product_ids:
+        return SearchResponse(query=q, total_results=0, results=[])
 
-        if not all_prices:
+    # Batch query ALL prices for matched products in 1 fast query with joined stores
+    all_matched_prices = (
+        db.query(Price)
+        .options(joinedload(Price.store))
+        .filter(
+            Price.product_id.in_(product_ids),
+            (Price.valid_until >= cutoff_past) | (Price.valid_until.is_(None)),
+            (Price.valid_from <= cutoff_future) | (Price.valid_from.is_(None)),
+        )
+        .order_by(Price.current_price.asc())
+        .all()
+    )
+
+    # Group prices by product_id
+    prices_by_product = {}
+    for p in all_matched_prices:
+        prices_by_product.setdefault(p.product_id, []).append(p)
+
+    for product in fts_results:
+        product_prices = prices_by_product.get(product.id, [])
+        if not product_prices:
             continue
 
         # Build price entries with flyer status classification
         price_entries = []
-        for price in all_prices:
+        for price in product_prices:
             # Classify flyer status
             v_until = price.valid_until
             v_from = price.valid_from
@@ -173,7 +182,7 @@ def search_products(
             elif flyer_filter == "recent" and status != "recent_sale":
                 continue
 
-            store = db.query(Store).filter(Store.id == price.store_id).first()
+            store = price.store
             price_entries.append(
                 PriceWithStore(
                     id=price.id,
@@ -198,7 +207,7 @@ def search_products(
                         color=store.color,
                         created_at=store.created_at,
                     ),
-                    is_lowest=False,  # Updated below
+                    is_lowest=False,
                     flyer_status=status,
                     is_historical=is_hist,
                 )
