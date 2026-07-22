@@ -79,6 +79,7 @@ class Product(Base):
     normalized_name: Mapped[str] = mapped_column(String(500), nullable=False)
     category: Mapped[str | None] = mapped_column(String(100))
     brand: Mapped[str | None] = mapped_column(String(200))
+    search_tags: Mapped[str | None] = mapped_column(Text)
     image_url: Mapped[str | None] = mapped_column(String(500))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()

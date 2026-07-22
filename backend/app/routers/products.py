@@ -94,18 +94,22 @@ def search_products(
     # Translate bilingual query tokens
     q_translated = translate_query_to_english(q)
 
-    # Step 1: Full-text search on normalized product names
+    # Step 1: Full-text search on BOTH normalized_name AND search_tags
     fts_query = func.plainto_tsquery("english", q_translated)
+    
+    name_match = func.to_tsvector("english", Product.normalized_name).op("@@")(fts_query)
+    tags_match = func.to_tsvector(
+        "english", func.coalesce(Product.search_tags, "")
+    ).op("@@")(fts_query)
+    
     fts_results = (
         db.query(Product)
-        .filter(
-            func.to_tsvector("english", Product.normalized_name).op("@@")(fts_query)
-        )
+        .filter(name_match | tags_match)
         .limit(50)
         .all()
     )
 
-    # Step 2: If no FTS results, fall back to trigram similarity
+    # Step 2: If no FTS results, fall back to trigram similarity on name
     if not fts_results:
         fts_results = (
             db.query(Product)

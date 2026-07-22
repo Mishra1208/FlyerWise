@@ -25,7 +25,7 @@ from app.database import Base
 
 from scraper.config import ScraperConfig
 from scraper.base_scraper import ScrapedProduct
-from scraper.utils.normalizer import normalize_product_name, extract_brand, guess_category
+from scraper.utils.normalizer import normalize_product_name, extract_brand, guess_category, generate_search_tags
 
 logger = logging.getLogger(__name__)
 
@@ -108,6 +108,7 @@ class DatabaseWriter:
         normalized = normalize_product_name(scraped.raw_name)
         brand = scraped.brand or extract_brand(scraped.raw_name)
         category = scraped.category or guess_category(normalized)
+        tags = generate_search_tags(scraped.raw_name, brand)
 
         # Try to find by exact normalized name
         product = (
@@ -122,6 +123,9 @@ class DatabaseWriter:
                 product.image_url = scraped.image_url
             if category and not product.category:
                 product.category = category
+            # Always refresh tags (picks up rule improvements)
+            if tags:
+                product.search_tags = tags
             return product
 
         # Create new product
@@ -130,6 +134,7 @@ class DatabaseWriter:
             normalized_name=normalized,
             category=category,
             brand=brand,
+            search_tags=tags,
             image_url=scraped.image_url,
         )
         session.add(product)

@@ -48,6 +48,7 @@ CREATE TABLE products (
     normalized_name VARCHAR(500) NOT NULL,
     category VARCHAR(100),
     brand VARCHAR(200),
+    search_tags TEXT,                      -- Bilingual synonym tags for enhanced search
     image_url VARCHAR(500),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -56,6 +57,10 @@ CREATE TABLE products (
 -- Full-text search index on normalized name
 CREATE INDEX idx_products_fts ON products
     USING GIN (to_tsvector('english', normalized_name));
+
+-- Full-text search index on search tags (synonym tagging system)
+CREATE INDEX idx_products_tags_fts ON products
+    USING GIN (to_tsvector('english', COALESCE(search_tags, '')));
 
 -- Trigram index for fuzzy matching
 CREATE INDEX idx_products_trgm ON products

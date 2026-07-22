@@ -340,3 +340,222 @@ def guess_category(normalized_name: str) -> str | None:
                 return category
 
     return None
+
+
+# ============================================================
+# SYNONYM TAGGING SYSTEM
+# ============================================================
+
+# Bilingual synonym expansions: if ANY of the trigger words appear
+# in the raw product name, ALL the associated tags are added.
+# This lets users search in English OR French and find the product.
+KEYWORD_TAG_EXPANSIONS = {
+    # --- Leafy greens / salads ---
+    "spinach":   "spinach épinard epinard greens leafy verdure feuille",
+    "épinard":   "spinach épinard epinard greens leafy verdure feuille",
+    "epinard":   "spinach épinard epinard greens leafy verdure feuille",
+    "lettuce":   "lettuce laitue salad salade greens leafy",
+    "laitue":    "lettuce laitue salad salade greens leafy",
+    "arugula":   "arugula roquette rocket greens leafy salad salade",
+    "roquette":  "arugula roquette rocket greens leafy salad salade",
+    "kale":      "kale chou frise greens leafy",
+    # --- Tomatoes ---
+    "tomato":    "tomato tomate tomatoes tomates",
+    "tomate":    "tomato tomate tomatoes tomates",
+    # --- Root vegetables ---
+    "potato":    "potato patate pomme terre potatoes patates",
+    "patate":    "potato patate pomme terre potatoes patates",
+    "carrot":    "carrot carotte carrots carottes",
+    "carotte":   "carrot carotte carrots carottes",
+    "onion":     "onion oignon onions oignons",
+    "oignon":    "onion oignon onions oignons",
+    # --- Fruits ---
+    "apple":     "apple pomme apples pommes fruit",
+    "pomme":     "apple pomme apples pommes fruit",
+    "banana":    "banana banane bananas bananes fruit",
+    "banane":    "banana banane bananas bananes fruit",
+    "strawberry":"strawberry fraise strawberries fraises berry berries fruit",
+    "fraise":    "strawberry fraise strawberries fraises berry berries fruit",
+    "blueberry": "blueberry bleuet blueberries bleuets berry berries fruit",
+    "bleuet":    "blueberry bleuet blueberries bleuets berry berries fruit",
+    "grape":     "grape raisin grapes raisins fruit",
+    "raisin":    "grape raisin grapes raisins fruit",
+    "orange":    "orange oranges agrume citrus fruit",
+    "lemon":     "lemon citron lemons citrons agrume citrus fruit",
+    "citron":    "lemon citron lemons citrons agrume citrus fruit",
+    "avocado":   "avocado avocat avocados avocats fruit",
+    "avocat":    "avocado avocat avocados avocats fruit",
+    "mango":     "mango mangue mangos mangoes mangues fruit",
+    "mangue":    "mango mangue mangos mangoes mangues fruit",
+    "watermelon":"watermelon melon eau pasteque fruit",
+    "pineapple": "pineapple ananas fruit",
+    "ananas":    "pineapple ananas fruit",
+    "peach":     "peach peche peaches peches fruit",
+    "pear":      "pear poire pears poires fruit",
+    "poire":     "pear poire pears poires fruit",
+    "cherry":    "cherry cerise cherries cerises fruit",
+    "cerise":    "cherry cerise cherries cerises fruit",
+    # --- Proteins ---
+    "chicken":   "chicken poulet poultry volaille",
+    "poulet":    "chicken poulet poultry volaille",
+    "beef":      "beef boeuf meat viande",
+    "boeuf":     "beef boeuf meat viande",
+    "pork":      "pork porc meat viande",
+    "porc":      "pork porc meat viande",
+    "shrimp":    "shrimp crevette crevettes seafood fruits mer",
+    "crevette":  "shrimp crevette crevettes seafood fruits mer",
+    "salmon":    "salmon saumon fish poisson seafood",
+    "saumon":    "salmon saumon fish poisson seafood",
+    "tuna":      "tuna thon fish poisson seafood",
+    "thon":      "tuna thon fish poisson seafood",
+    "ham":       "ham jambon meat viande charcuterie",
+    "jambon":    "ham jambon meat viande charcuterie",
+    "bacon":     "bacon meat viande",
+    "sausage":   "sausage saucisse meat viande",
+    "saucisse":  "sausage saucisse meat viande",
+    # --- Dairy ---
+    "milk":      "milk lait dairy laitier",
+    "lait":      "milk lait dairy laitier",
+    "cheese":    "cheese fromage dairy laitier",
+    "fromage":   "cheese fromage dairy laitier",
+    "yogurt":    "yogurt yogourt dairy laitier",
+    "yogourt":   "yogurt yogourt dairy laitier",
+    "butter":    "butter beurre dairy laitier",
+    "beurre":    "butter beurre dairy laitier",
+    "cream":     "cream crème creme dairy laitier",
+    "egg":       "egg oeuf eggs oeufs dairy",
+    "oeuf":      "egg oeuf eggs oeufs dairy",
+    # --- Bakery ---
+    "bread":     "bread pain bakery boulangerie",
+    "pain":      "bread pain bakery boulangerie",
+    # --- Pantry ---
+    "rice":      "rice riz grain",
+    "riz":       "rice riz grain",
+    "pasta":     "pasta pâtes pates noodle",
+    "pâtes":     "pasta pâtes pates noodle",
+    "cereal":    "cereal céréales cereales breakfast",
+    "sugar":     "sugar sucre",
+    "sucre":     "sugar sucre",
+    "oil":       "oil huile cooking",
+    "huile":     "oil huile cooking",
+    "sauce":     "sauce condiment",
+    "soup":      "soup soupe",
+    "soupe":     "soup soupe",
+    # --- Beverages ---
+    "juice":     "juice jus beverage boisson drink",
+    "jus":       "juice jus beverage boisson drink",
+    "coffee":    "coffee café cafe beverage boisson",
+    "café":      "coffee café cafe beverage boisson",
+    "tea":       "tea thé the beverage boisson",
+    # --- Snacks ---
+    "chips":     "chips croustilles snack",
+    "croustilles": "chips croustilles snack",
+    "chocolate": "chocolate chocolat snack candy",
+    "chocolat":  "chocolate chocolat snack candy",
+    "cookie":    "cookie biscuit cookies biscuits snack",
+    "biscuit":   "cookie biscuit cookies biscuits snack",
+    # --- Household ---
+    "detergent": "detergent détergent laundry lessive cleaning",
+    "soap":      "soap savon cleaning",
+    "savon":     "soap savon cleaning",
+}
+
+# Brand-based tag rules: if the brand matches, inject extra tags
+# regardless of whether the product name contains those keywords.
+# This is the KEY innovation that solves the Attitude salad problem.
+BRAND_TAG_RULES = {
+    "attitude": {
+        # Attitude Fraîche salads are always spinach/arugula/spring mix
+        "triggers": ["salade", "salad", "fraiche", "fraîche", "spring", "mix"],
+        "tags": "spinach arugula lettuce spring mix baby greens salad salade épinard epinard laitue roquette leafy verdure organic bio fresh frais",
+    },
+    "popeye": {
+        "triggers": ["spinach", "épinard", "epinard"],
+        "tags": "spinach épinard epinard greens leafy canned frozen",
+    },
+    "dole": {
+        "triggers": ["salade", "salad", "mix", "blend"],
+        "tags": "spinach lettuce arugula salad salade greens leafy épinard laitue",
+    },
+    "earthbound": {
+        "triggers": ["salade", "salad", "organic", "bio", "spring"],
+        "tags": "spinach lettuce arugula salad salade greens leafy organic bio épinard laitue",
+    },
+    "your fresh market": {
+        "triggers": ["spinach", "épinard"],
+        "tags": "spinach épinard epinard greens leafy fresh frais",
+    },
+    "irresistibles": {
+        "triggers": ["salade", "salad", "mesclun", "mix"],
+        "tags": "spinach lettuce arugula salad salade greens leafy épinard laitue",
+    },
+}
+
+
+def generate_search_tags(raw_name: str, brand: str | None = None) -> str:
+    """
+    Generate search tags for a product based on its name and brand.
+
+    This is the core of the Synonym Tagging System. It solves the problem
+    where products like "SALADES ATTITUDE FRAÎCHE, 142 G" don't contain
+    the word "spinach" but should appear when a user searches for spinach.
+
+    Strategy:
+    1. Expand every keyword found in the product name with bilingual synonyms
+    2. Apply brand-specific rules (e.g., Attitude salads → spinach tags)
+    3. Deduplicate and return as a space-separated string
+
+    Args:
+        raw_name: The original product name from the flyer
+        brand: The product brand (if known)
+
+    Returns:
+        Space-separated string of search tags, or empty string
+    """
+    if not raw_name:
+        return ""
+
+    # Normalize for matching
+    name_lower = unidecode(raw_name.lower().strip())
+    tags = set()
+
+    # --- Step 1: Keyword-based expansion ---
+    # For every word in the product name, check if it triggers synonym expansion
+    name_words = set(re.split(r'[\s,|/\-]+', name_lower))
+    for word in name_words:
+        if word in KEYWORD_TAG_EXPANSIONS:
+            for tag in KEYWORD_TAG_EXPANSIONS[word].split():
+                tags.add(tag)
+
+    # --- Step 2: Brand-based rules ---
+    if brand:
+        brand_lower = unidecode(brand.lower().strip())
+        for brand_key, rule in BRAND_TAG_RULES.items():
+            if brand_key in brand_lower:
+                # Check if any trigger word appears in the product name
+                if any(trigger in name_lower for trigger in rule["triggers"]):
+                    for tag in rule["tags"].split():
+                        tags.add(tag)
+                break  # Only match one brand rule
+
+    # --- Step 3: Generic variety detection ---
+    # Products with "certaines variétés" / "assorted varieties" / "selected"
+    # are multi-variety products — add broader category tags
+    variety_indicators = [
+        "certaines varietes", "varietes", "assorted", "selected varieties",
+        "assortiment", "au choix",
+    ]
+    if any(indicator in name_lower for indicator in variety_indicators):
+        # If we already have some tags from brand rules, expand them
+        # If it's a salad brand, make sure spinach/lettuce are tagged
+        if brand:
+            brand_lower = unidecode(brand.lower().strip())
+            if brand_lower in ("attitude", "dole", "earthbound", "irresistibles"):
+                for tag in "spinach lettuce arugula salad salade greens épinard laitue roquette".split():
+                    tags.add(tag)
+
+    # Remove any single-character tags and empty strings
+    tags = {t for t in tags if len(t) > 1}
+
+    return " ".join(sorted(tags))
+
