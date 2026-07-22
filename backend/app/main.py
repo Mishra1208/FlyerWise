@@ -17,13 +17,17 @@ from app.schemas import HealthResponse
 from app.routers import stores, products, prices
 
 
+from app.services.scheduler import start_scheduler, shutdown_scheduler, run_weekly_grocery_scrape, last_scrape_status, is_scraping_in_progress
+from fastapi import BackgroundTasks
+
+
 settings = get_settings()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown events."""
-    # Startup: verify database connection
+    # Startup: verify database connection & start scheduler
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
@@ -31,9 +35,11 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"❌ Database connection failed: {e}")
 
+    start_scheduler()
     yield
 
     # Shutdown: cleanup
+    shutdown_scheduler()
     print("👋 FlyerWise API shutting down")
 
 
@@ -74,6 +80,25 @@ def root():
         "version": "0.1.0",
         "docs": "/docs",
         "description": "Grocery price comparison for Canadian stores",
+    }
+
+
+@app.post("/api/scraper/trigger", tags=["scraper"])
+def trigger_universal_scrape(background_tasks: BackgroundTasks):
+    """Manually trigger the Universal Grocery Scraper for all retailers on Flipp."""
+    if is_scraping_in_progress:
+        return {"status": "in_progress", "message": "A scrape run is already in progress."}
+
+    background_tasks.add_task(run_weekly_grocery_scrape)
+    return {"status": "started", "message": "Universal Grocery Scraper launched in background."}
+
+
+@app.get("/api/scraper/status", tags=["scraper"])
+def get_scraper_status():
+    """Check current status and results of the Universal Scraper."""
+    return {
+        "in_progress": is_scraping_in_progress,
+        "last_status": last_scrape_status
     }
 
 

@@ -52,14 +52,25 @@ class DatabaseWriter:
     def get_session(self) -> Session:
         return self.SessionLocal()
 
-    def get_or_create_store(self, session: Session, store_slug: str) -> Store:
-        """Get a store by slug, or raise if it doesn't exist (stores are seeded)."""
+    def get_or_create_store(
+        self,
+        session: Session,
+        store_slug: str,
+        store_name: Optional[str] = None,
+        logo_url: Optional[str] = None,
+    ) -> Store:
+        """Get a store by slug, or dynamically create if it doesn't exist."""
         store = session.query(Store).filter(Store.slug == store_slug).first()
         if not store:
-            raise ValueError(
-                f"Store '{store_slug}' not found in database. "
-                f"Make sure seed data has been loaded."
+            name = store_name or store_slug.replace("-", " ").title()
+            logger.info(f"➕ Auto-creating missing store: {name} ({store_slug})")
+            store = Store(
+                name=name,
+                slug=store_slug,
+                logo_url=logo_url,
             )
+            session.add(store)
+            session.flush()
         return store
 
     def create_flyer(
@@ -200,6 +211,8 @@ class DatabaseWriter:
         flyer_start: date,
         flyer_end: date,
         flyer_url: Optional[str] = None,
+        store_name: Optional[str] = None,
+        logo_url: Optional[str] = None,
     ) -> int:
         """
         Save a batch of scraped products to the database.
@@ -213,7 +226,9 @@ class DatabaseWriter:
         saved_count = 0
 
         try:
-            store = self.get_or_create_store(session, store_slug)
+            store = self.get_or_create_store(
+                session, store_slug=store_slug, store_name=store_name, logo_url=logo_url
+            )
             flyer = self.create_flyer(session, store, flyer_start, flyer_end, flyer_url)
 
             # Start scrape log

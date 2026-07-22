@@ -4,6 +4,7 @@ FlyerWise Configuration
 Loads settings from environment variables / .env file.
 """
 
+import os
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 
@@ -28,7 +29,7 @@ class Settings(BaseSettings):
     frontend_url: str = "http://localhost:5173"
 
     model_config = {
-        "env_file": "../.env",
+        "env_file": os.path.join(os.path.dirname(__file__), "..", "..", ".env"),
         "env_file_encoding": "utf-8",
         "extra": "ignore",
     }

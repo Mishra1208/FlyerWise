@@ -30,6 +30,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger("flyerwise.scraper")
 
+from scraper.universal_scraper import UniversalGroceryScraper
+
 # Map store slugs to scraper classes
 SCRAPERS = {
     "walmart": WalmartScraper,
@@ -93,6 +95,17 @@ def main():
         help="Specific store to scrape (default: all stores)",
     )
     parser.add_argument(
+        "--universal",
+        action="store_true",
+        help="Discover and scrape ALL 70+ grocery store flyers on Flipp",
+    )
+    parser.add_argument(
+        "--postal",
+        type=str,
+        default="H3B2Y5",
+        help="Postal code to discover store flyers for (default: H3B2Y5)",
+    )
+    parser.add_argument(
         "--list-stores",
         action="store_true",
         help="List all available store scrapers",
@@ -108,18 +121,19 @@ def main():
     # Ensure data directories exist
     ScraperConfig.ensure_dirs()
 
-    if args.store:
+    if args.universal:
+        logger.info(f"🚀 Running Universal Scraper for postal code: {args.postal}...")
+        scraper = UniversalGroceryScraper(postal_codes=[args.postal])
+        result = scraper.run_universal_scrape()
+        logger.info(f"🎉 Universal Scrape Complete: {result}")
+    elif args.store:
         # Scrape a single store
         run_scraper(args.store)
     else:
-        # Scrape all stores
-        logger.info("🚀 Running all scrapers...")
-        for slug in SCRAPERS:
-            try:
-                run_scraper(slug)
-            except Exception as e:
-                logger.error(f"Failed to scrape {slug}: {e}", exc_info=True)
-                continue
+        # Scrape default stores + universal discovery
+        logger.info("🚀 Running Universal Grocery Scraper across all retailers...")
+        scraper = UniversalGroceryScraper(postal_codes=[args.postal, "H2X1Y4", "K1P5W3"])
+        scraper.run_universal_scrape()
 
     logger.info("🏁 All scraping complete!")
 

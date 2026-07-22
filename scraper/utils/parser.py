@@ -105,22 +105,28 @@ def parse_savings(text: str) -> Optional[str]:
     return None
 
 
-def parse_unit(text: str) -> Optional[str]:
+def parse_unit(text: str, print_id: Optional[str] = None) -> Optional[str]:
     """
-    Extract unit information from price text.
+    Extract unit information from price text, raw_name, or Flipp print_id.
 
     Examples:
-    - "$4.99/lb"   → "per lb"
-    - "$2.99/kg"   → "per kg"
-    - "$0.99 each" → "each"
-    - "$3.49/100g" → "per 100g"
+    - print_id="20143381001_KG" → "lb / kg"
+    - print_id="20811201_EA"    → "each"
+    - "$4.99/lb"                 → "per lb"
     """
+    if print_id:
+        p_upper = str(print_id).upper()
+        if p_upper.endswith("_KG"):
+            return "lb / kg"
+        elif p_upper.endswith("_EA"):
+            return "each"
+
     if not text:
         return None
 
     unit_patterns = [
-        (r"/\s*lb\b|per\s+lb\b", "per lb"),
-        (r"/\s*kg\b|per\s+kg\b", "per kg"),
+        (r"/\s*lb\b|per\s+lb\b|\blb\b", "per lb"),
+        (r"/\s*kg\b|per\s+kg\b|\bkg\b", "per kg"),
         (r"/\s*100\s*g\b|per\s+100\s*g\b", "per 100g"),
         (r"/\s*l\b|per\s+l(?:itre)?\b", "per L"),
         (r"\beach\b|/\s*ea\b|chacun", "each"),
@@ -135,15 +141,21 @@ def parse_unit(text: str) -> Optional[str]:
 
 def parse_quantity(text: str) -> Optional[str]:
     """
-    Extract quantity/multi-buy information.
+    Extract package weight/volume size or multi-buy quantity.
 
     Examples:
-    - "2 for $5"      → "2 for $5.00"
-    - "3/$10"         → "3 for $10.00"
-    - "Buy 2 get 1"   → "Buy 2 get 1"
+    - "TOMATES CERISES AXIANY PC, 567 mL" → "567 mL"
+    - "MACARONI & CHEESE, 170 g"          → "170 g"
+    - "TOMATES SANS NOM®, 2,5 LB"          → "2.5 LB"
+    - "2 for $5"                            → "2 for $5.00"
     """
     if not text:
         return None
+
+    # Match weight/volume size embedded in product title (e.g. ", 567 mL", ", 170 g", ", 2.5 LB", ", 4 L")
+    size_match = re.search(r",?\s*(\d+(?:[.,]\d+)?\s*(?:g|kg|ml|l|lb|oz|un\.?))\b", text, re.IGNORECASE)
+    if size_match:
+        return size_match.group(1).strip()
 
     multi_match = re.search(
         r"(\d+)\s*(?:for|/|pour)\s*\$?\s*(\d+[.,]?\d*)",
