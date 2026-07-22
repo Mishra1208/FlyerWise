@@ -13,11 +13,13 @@
     "@rolldown/binding-darwin-arm64": "^1.2.0",
     "axios": "^1.18.1",
     "chart.js": "^4.5.1",
+    "html5-qrcode": "^2.3.8",
     "react": "^19.2.7",
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.2.7",
     "react-icons": "^5.7.0",
-    "react-router-dom": "^7.18.1"
+    "react-router-dom": "^7.18.1",
+    "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",

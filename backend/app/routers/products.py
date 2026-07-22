@@ -79,6 +79,8 @@ def translate_query_to_english(q: str) -> str:
 
 from datetime import date, timedelta
 
+router = APIRouter(prefix="/products", tags=["products"])
+
 
 @router.get("/search", response_model=SearchResponse)
 def search_products(
