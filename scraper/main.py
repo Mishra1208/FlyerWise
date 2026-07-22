@@ -16,7 +16,10 @@ import sys
 from datetime import date, timedelta
 
 from scraper.config import ScraperConfig
-from scraper.stores import WalmartScraper, MaxiScraper, MetroScraper
+from scraper.stores import (
+    WalmartScraper, MaxiScraper, MetroScraper,
+    IGAScraper, SuperCScraper, ProvigoScraper
+)
 from scraper.utils.db_writer import DatabaseWriter
 
 # Configure logging
@@ -32,6 +35,9 @@ SCRAPERS = {
     "walmart": WalmartScraper,
     "maxi": MaxiScraper,
     "metro": MetroScraper,
+    "iga": IGAScraper,
+    "superc": SuperCScraper,
+    "provigo": ProvigoScraper,
 }
 
 

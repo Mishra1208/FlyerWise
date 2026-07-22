@@ -15,11 +15,16 @@ export default function SearchResults() {
   const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  // Store filters state
+  const [flyerFilter, setFlyerFilter] = useState("all");
+
+  // Store filters state for 6 major Quebec retailers
   const [activeStores, setActiveStores] = useState({
     walmart: true,
     maxi: true,
     metro: true,
+    iga: true,
+    superc: true,
+    provigo: true,
   });
 
   const handleSearch = (newQuery) => {
@@ -31,7 +36,7 @@ export default function SearchResults() {
       if (!query) return;
       setLoading(true);
       try {
-        const data = await ProductService.search(query);
+        const data = await ProductService.search(query, flyerFilter);
         setResults(data.results || []);
       } catch (err) {
         console.error("Search failed:", err);
@@ -40,7 +45,7 @@ export default function SearchResults() {
       }
     }
     performSearch();
-  }, [query]);
+  }, [query, flyerFilter]);
 
   // Filter results based on selected stores checkbox status
   const filteredResults = results.map((result) => {
@@ -83,7 +88,7 @@ export default function SearchResults() {
           display: "flex",
           alignItems: "center",
           gap: "16px",
-          marginBottom: "40px",
+          marginBottom: "30px",
         }}>
           <button 
             onClick={() => navigate("/")}
@@ -109,6 +114,48 @@ export default function SearchResults() {
           <div style={{ flex: 1, maxWidth: "600px" }}>
             <SearchBar initialValue={query} onSearch={handleSearch} />
           </div>
+        </div>
+
+        {/* Flyer Status Filter Tabs */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          marginBottom: "30px",
+          flexWrap: "wrap",
+          backgroundColor: "#FFFFFF",
+          padding: "8px 14px",
+          borderRadius: "var(--radius-md)",
+          border: "1px solid var(--border-color)",
+          boxShadow: "var(--shadow-sm)",
+        }}>
+          <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-secondary)", marginRight: "6px" }}>
+            Flyer Period:
+          </span>
+          {[
+            { id: "all", label: "🌟 All Deals (Current + Preview + Recent)" },
+            { id: "active", label: "🟢 Active Flyers Only" },
+            { id: "upcoming", label: "📅 Next Week Preview" },
+            { id: "recent", label: "📜 Recent Sales" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setFlyerFilter(tab.id)}
+              style={{
+                padding: "6px 14px",
+                borderRadius: "var(--radius-sm)",
+                fontSize: "13px",
+                fontWeight: 600,
+                cursor: "pointer",
+                border: flyerFilter === tab.id ? "1px solid var(--accent)" : "1px solid transparent",
+                backgroundColor: flyerFilter === tab.id ? "rgba(91, 140, 81, 0.12)" : "transparent",
+                color: flyerFilter === tab.id ? "var(--accent-hover)" : "var(--text-secondary)",
+                transition: "var(--transition)",
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         {/* Filters and Grid Layout */}
@@ -152,24 +199,31 @@ export default function SearchResults() {
                 letterSpacing: "0.8px",
                 display: "block",
                 marginBottom: "14px",
-              }}>Stores</span>
+              }}>Stores (6 Quebec Chains)</span>
 
               {/* Stores toggles */}
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                {Object.keys(activeStores).map((slug) => (
-                  <label key={slug} style={{
+                {[
+                  { slug: "walmart", name: "Walmart" },
+                  { slug: "maxi", name: "Maxi" },
+                  { slug: "metro", name: "Metro" },
+                  { slug: "iga", name: "IGA" },
+                  { slug: "superc", name: "Super C" },
+                  { slug: "provigo", name: "Provigo" },
+                ].map((st) => (
+                  <label key={st.slug} style={{
                     display: "flex",
                     alignItems: "center",
                     gap: "10px",
                     cursor: "pointer",
                     fontSize: "14px",
                     fontWeight: 500,
-                    color: activeStores[slug] ? "var(--text-primary)" : "var(--text-muted)",
+                    color: activeStores[st.slug] ? "var(--text-primary)" : "var(--text-muted)",
                   }}>
                     <input
                       type="checkbox"
-                      checked={activeStores[slug]}
-                      onChange={() => toggleStore(slug)}
+                      checked={!!activeStores[st.slug]}
+                      onChange={() => toggleStore(st.slug)}
                       style={{
                         accentColor: "var(--accent)",
                         width: "16px",
@@ -177,7 +231,7 @@ export default function SearchResults() {
                         cursor: "pointer",
                       }}
                     />
-                    <span style={{ textTransform: "capitalize" }}>{slug}</span>
+                    <span>{st.name}</span>
                   </label>
                 ))}
               </div>

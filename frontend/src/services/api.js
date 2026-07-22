@@ -17,9 +17,9 @@ export const StoreService = {
 };
 
 export const ProductService = {
-  search: async (query) => {
+  search: async (query, flyerFilter = "all") => {
     const response = await API.get("/products/search", {
-      params: { q: query },
+      params: { q: query, flyer_filter: flyerFilter },
     });
     return response.data;
   },

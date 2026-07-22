@@ -50,6 +50,21 @@ class ScraperConfig:
             "flyer_url": "https://www.metro.ca/en/flyer",
             "slug": "metro",
         },
+        "iga": {
+            "name": "IGA",
+            "flyer_url": "https://www.iga.net/en/flyer",
+            "slug": "iga",
+        },
+        "superc": {
+            "name": "Super C",
+            "flyer_url": "https://www.superc.ca/en/flyer",
+            "slug": "superc",
+        },
+        "provigo": {
+            "name": "Provigo",
+            "flyer_url": "https://www.provigo.ca/en/flyer",
+            "slug": "provigo",
+        },
     }
 
     @classmethod

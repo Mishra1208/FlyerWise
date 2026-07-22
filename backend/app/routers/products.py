@@ -77,19 +77,21 @@ def translate_query_to_english(q: str) -> str:
     return " ".join(translated_words)
 
 
-router = APIRouter(prefix="/products", tags=["products"])
+from datetime import date, timedelta
 
 
 @router.get("/search", response_model=SearchResponse)
 def search_products(
     q: str = Query(..., min_length=1, max_length=200, description="Search query"),
+    flyer_filter: str = Query("all", description="Flyer status filter: all, active, upcoming, recent"),
     db: Session = Depends(get_db),
 ):
     """
     Search for products across all stores.
 
     Uses PostgreSQL full-text search with trigram fallback for fuzzy matching.
-    Returns products grouped with their prices across stores, lowest price highlighted.
+    Returns products grouped with their prices across stores, classified by flyer status
+    (active, expiring_today, upcoming, recent_sale).
     """
     # Translate bilingual query tokens
     q_translated = translate_query_to_english(q)
@@ -121,29 +123,56 @@ def search_products(
 
     # Step 3: Build search results with prices from all stores
     results: list[SearchResult] = []
+    today = date.today()
+    cutoff_past = today - timedelta(days=14)
+    cutoff_future = today + timedelta(days=7)
+
     for product in fts_results:
-        # Get all active prices for this product
-        prices = (
+        # Get prices for this product within relevant window (recent past to upcoming preview)
+        all_prices = (
             db.query(Price)
             .join(Store, Price.store_id == Store.id)
             .filter(
                 Price.product_id == product.id,
-                Price.valid_until >= func.current_date(),
+                # Include prices valid until recent past or starting in near future
+                (Price.valid_until >= cutoff_past) | (Price.valid_until.is_(None)),
+                (Price.valid_from <= cutoff_future) | (Price.valid_from.is_(None)),
             )
             .order_by(Price.current_price.asc())
             .all()
         )
 
-        if not prices:
+        if not all_prices:
             continue
 
-        # Find lowest price
-        lowest = min(p.current_price for p in prices)
-        highest = max(p.current_price for p in prices)
-
-        # Build price entries with store info and "is_lowest" flag
+        # Build price entries with flyer status classification
         price_entries = []
-        for price in prices:
+        for price in all_prices:
+            # Classify flyer status
+            v_until = price.valid_until
+            v_from = price.valid_from
+
+            if v_until and v_until < today:
+                status = "recent_sale"
+                is_hist = True
+            elif v_from and v_from > today:
+                status = "upcoming"
+                is_hist = False
+            elif v_until and v_until == today:
+                status = "expiring_today"
+                is_hist = False
+            else:
+                status = "active"
+                is_hist = False
+
+            # Apply user flyer_filter if set
+            if flyer_filter == "active" and status not in ("active", "expiring_today"):
+                continue
+            elif flyer_filter == "upcoming" and status != "upcoming":
+                continue
+            elif flyer_filter == "recent" and status != "recent_sale":
+                continue
+
             store = db.query(Store).filter(Store.id == price.store_id).first()
             price_entries.append(
                 PriceWithStore(
@@ -169,9 +198,24 @@ def search_products(
                         color=store.color,
                         created_at=store.created_at,
                     ),
-                    is_lowest=(price.current_price == lowest),
+                    is_lowest=False,  # Updated below
+                    flyer_status=status,
+                    is_historical=is_hist,
                 )
             )
+
+        if not price_entries:
+            continue
+
+        # Mark lowest price among active/expiring/upcoming prices
+        active_entries = [p for p in price_entries if not p.is_historical]
+        lowest_ref = active_entries if active_entries else price_entries
+        lowest_val = min(p.current_price for p in lowest_ref)
+        highest_val = max(p.current_price for p in lowest_ref)
+
+        for p_entry in price_entries:
+            if p_entry.current_price == lowest_val and not p_entry.is_historical:
+                p_entry.is_lowest = True
 
         results.append(
             SearchResult(
@@ -185,10 +229,10 @@ def search_products(
                     created_at=product.created_at,
                 ),
                 prices=price_entries,
-                lowest_price=lowest,
-                highest_price=highest,
-                savings_potential=highest - lowest if len(price_entries) > 1 else Decimal("0"),
-                store_count=len(price_entries),
+                lowest_price=lowest_val,
+                highest_price=highest_val,
+                savings_potential=highest_val - lowest_val if len(price_entries) > 1 else Decimal("0"),
+                store_count=len(set(p.store.id for p in price_entries)),
             )
         )
 

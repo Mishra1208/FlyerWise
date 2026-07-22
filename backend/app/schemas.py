@@ -81,6 +81,8 @@ class PriceWithStore(PriceBase):
     product_id: int
     store: StoreResponse
     is_lowest: bool = False
+    flyer_status: str = "active"  # "active" | "expiring_today" | "upcoming" | "recent_sale"
+    is_historical: bool = False
 
     model_config = ConfigDict(from_attributes=True)
 

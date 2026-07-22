@@ -110,50 +110,97 @@ export default function ProductCard({ result, onClick }) {
         borderRadius: "var(--radius-md)",
         border: "1px solid var(--border-color)",
       }}>
-        {prices.map((price) => (
-          <div key={price.id} style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            fontSize: "14px",
-          }}>
-            {/* Store Name & Indicator */}
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        {prices.map((price) => {
+          // Status badge config
+          let statusBadge = null;
+          if (price.flyer_status === "expiring_today") {
+            statusBadge = (
               <span style={{
-                width: "8px",
-                height: "8px",
-                borderRadius: "50%",
-                backgroundColor: price.store.color || "#ccc",
-                display: "inline-block",
-              }}></span>
-              <span style={{
-                fontWeight: 600,
-                color: "var(--text-secondary)",
-              }}>{price.store.name}</span>
-            </div>
-
-            {/* Price Tag with unit */}
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              {price.unit && (
-                <span style={{
-                  fontSize: "11px",
-                  color: "var(--text-muted)",
-                }}>{price.unit}</span>
-              )}
-              <span style={{
+                fontSize: "10px",
                 fontWeight: 700,
-                fontSize: price.is_lowest ? "15px" : "14px",
-                color: price.is_lowest ? "var(--accent-hover)" : "var(--text-primary)",
-                backgroundColor: price.is_lowest ? "rgba(91, 140, 81, 0.12)" : "transparent",
-                padding: price.is_lowest ? "2px 8px" : 0,
+                color: "#D97706",
+                backgroundColor: "#FEF3C7",
+                padding: "2px 6px",
                 borderRadius: "4px",
-                border: price.is_lowest ? "1px solid rgba(91, 140, 81, 0.2)" : "none",
               }}>
-                ${parseFloat(price.current_price).toFixed(2)}
+                ⏳ Ends Today
               </span>
+            );
+          } else if (price.flyer_status === "upcoming") {
+            statusBadge = (
+              <span style={{
+                fontSize: "10px",
+                fontWeight: 700,
+                color: "#2563EB",
+                backgroundColor: "#EFF6FF",
+                padding: "2px 6px",
+                borderRadius: "4px",
+              }}>
+                📅 Preview
+              </span>
+            );
+          } else if (price.flyer_status === "recent_sale" || price.is_historical) {
+            statusBadge = (
+              <span style={{
+                fontSize: "10px",
+                fontWeight: 600,
+                color: "#64748B",
+                backgroundColor: "#F1F5F9",
+                padding: "2px 6px",
+                borderRadius: "4px",
+              }}>
+                📜 Last Sale
+              </span>
+            );
+          }
+
+          return (
+            <div key={price.id} style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              fontSize: "14px",
+              opacity: price.is_historical ? 0.75 : 1,
+            }}>
+              {/* Store Name & Indicator */}
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span style={{
+                  width: "8px",
+                  height: "8px",
+                  borderRadius: "50%",
+                  backgroundColor: price.store.color || "#ccc",
+                  display: "inline-block",
+                }}></span>
+                <span style={{
+                  fontWeight: 600,
+                  color: "var(--text-secondary)",
+                }}>{price.store.name}</span>
+                {statusBadge}
+              </div>
+
+              {/* Price Tag with unit */}
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                {price.unit && (
+                  <span style={{
+                    fontSize: "11px",
+                    color: "var(--text-muted)",
+                  }}>{price.unit}</span>
+                )}
+                <span style={{
+                  fontWeight: 700,
+                  fontSize: price.is_lowest ? "15px" : "14px",
+                  color: price.is_lowest ? "var(--accent-hover)" : "var(--text-primary)",
+                  backgroundColor: price.is_lowest ? "rgba(91, 140, 81, 0.12)" : "transparent",
+                  padding: price.is_lowest ? "2px 8px" : 0,
+                  borderRadius: "4px",
+                  border: price.is_lowest ? "1px solid rgba(91, 140, 81, 0.2)" : "none",
+                }}>
+                  ${parseFloat(price.current_price).toFixed(2)}
+                </span>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Card Footer Compare action */}

@@ -148,45 +148,99 @@ export default function PriceComparison({ product, onClose }) {
               <div style={{ textAlign: "center", padding: "30px", color: "var(--text-muted)", fontSize: "15px" }}>Comparing store prices...</div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                {prices.map((price) => (
-                  <div key={price.id} style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    padding: "16px 20px",
-                    borderRadius: "var(--radius-md)",
-                    backgroundColor: price.is_lowest ? "rgba(91, 140, 81, 0.05)" : "#FFFFFF",
-                    border: price.is_lowest 
-                      ? "1px solid rgba(91, 140, 81, 0.25)" 
-                      : "1px solid var(--border-color)",
-                    boxShadow: price.is_lowest ? "var(--shadow-glow)" : "none",
-                  }}>
-                    {/* Store details */}
-                    <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                {prices.map((price) => {
+                  let statusBadge = null;
+                  if (price.flyer_status === "expiring_today") {
+                    statusBadge = (
                       <span style={{
-                        width: "10px",
-                        height: "10px",
-                        borderRadius: "50%",
-                        backgroundColor: price.store.color || "#ccc",
-                      }}></span>
-                      <div>
-                        <strong style={{ fontSize: "16px", color: "var(--text-primary)", fontWeight: 700 }}>{price.store.name}</strong>
-                        {price.savings && (
-                          <span style={{
-                            marginLeft: "10px",
-                            fontSize: "11px",
-                            backgroundColor: "rgba(229, 62, 62, 0.1)",
-                            color: "var(--accent-red)",
-                            padding: "2px 8px",
-                            borderRadius: "4px",
-                            fontWeight: 700,
-                          }}>{price.savings}</span>
-                        )}
-                        <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "3px" }}>
-                          Valid until {new Date(price.valid_until).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        color: "#D97706",
+                        backgroundColor: "#FEF3C7",
+                        padding: "2px 8px",
+                        borderRadius: "4px",
+                        marginLeft: "8px",
+                      }}>
+                        ⏳ Ends Today
+                      </span>
+                    );
+                  } else if (price.flyer_status === "upcoming") {
+                    statusBadge = (
+                      <span style={{
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        color: "#2563EB",
+                        backgroundColor: "#EFF6FF",
+                        padding: "2px 8px",
+                        borderRadius: "4px",
+                        marginLeft: "8px",
+                      }}>
+                        📅 Preview
+                      </span>
+                    );
+                  } else if (price.flyer_status === "recent_sale" || price.is_historical) {
+                    statusBadge = (
+                      <span style={{
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        color: "#64748B",
+                        backgroundColor: "#F1F5F9",
+                        padding: "2px 8px",
+                        borderRadius: "4px",
+                        marginLeft: "8px",
+                      }}>
+                        📜 Last Sale
+                      </span>
+                    );
+                  }
+
+                  const dateStr = price.valid_from && price.valid_until
+                    ? `${new Date(price.valid_from).toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${new Date(price.valid_until).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
+                    : price.valid_until
+                    ? `Valid until ${new Date(price.valid_until).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
+                    : "Active Flyer";
+
+                  return (
+                    <div key={price.id} style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: "16px 20px",
+                      borderRadius: "var(--radius-md)",
+                      backgroundColor: price.is_lowest ? "rgba(91, 140, 81, 0.05)" : "#FFFFFF",
+                      border: price.is_lowest 
+                        ? "1px solid rgba(91, 140, 81, 0.25)" 
+                        : "1px solid var(--border-color)",
+                      boxShadow: price.is_lowest ? "var(--shadow-glow)" : "none",
+                      opacity: price.is_historical ? 0.75 : 1,
+                    }}>
+                      {/* Store details */}
+                      <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                        <span style={{
+                          width: "10px",
+                          height: "10px",
+                          borderRadius: "50%",
+                          backgroundColor: price.store.color || "#ccc",
+                        }}></span>
+                        <div>
+                          <strong style={{ fontSize: "16px", color: "var(--text-primary)", fontWeight: 700 }}>{price.store.name}</strong>
+                          {statusBadge}
+                          {price.savings && (
+                            <span style={{
+                              marginLeft: "8px",
+                              fontSize: "11px",
+                              backgroundColor: "rgba(229, 62, 62, 0.1)",
+                              color: "var(--accent-red)",
+                              padding: "2px 8px",
+                              borderRadius: "4px",
+                              fontWeight: 700,
+                            }}>{price.savings}</span>
+                          )}
+                          <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "3px" }}>
+                            {dateStr}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
                     {/* Price Tag */}
                     <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
