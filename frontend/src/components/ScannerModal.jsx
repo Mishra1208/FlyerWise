@@ -132,33 +132,79 @@ export default function ScannerModal({ isOpen, onClose, onDetected }) {
     }
   };
 
-  // Clean raw OCR output to pick out brand & item keywords
+  // Smart Grocery Dictionary (Brands + Produce + Dairy + Meat + Pantry)
+  const GROCERY_BRANDS = [
+    "lactantia", "agropur", "attitude", "popeye", "dole", "kraft", "heinz",
+    "natrel", "beatrice", "selection", "great value", "compliments", "irresistibles",
+    "oasis", "tropicana", "danone", "kellogg", "general mills", "quaker",
+    "black diamond", "saputo", "parmalat", "iogo", "astro", "cheerios",
+    "campbell", "bick", "tostitos", "lay", "doritos", "pringles"
+  ];
+
+  const GROCERY_ITEMS = [
+    "beurre", "butter", "lait", "milk", "fromage", "cheese", "yogourt", "yogurt",
+    "creme", "cream", "oeuf", "eggs", "pain", "bread", "tomate", "tomates", "tomato",
+    "tomatoes", "epinard", "épinard", "epinards", "épinards", "spinach", "salade",
+    "salad", "lettuce", "laitue", "arugula", "roquette", "poulet", "chicken",
+    "boeuf", "beef", "porc", "pork", "crevette", "shrimp", "saumon", "salmon",
+    "jus", "juice", "pomme", "apples", "apple", "banane", "bananas", "banana",
+    "fraise", "strawberries", "strawberry", "bleuet", "blueberries", "blueberry",
+    "raisin", "grapes", "grape", "orange", "oranges", "citron", "lemon", "lemons",
+    "avocat", "avocado", "avocados", "patate", "potatoes", "potato", "carotte",
+    "carrots", "carrot", "oignon", "onions", "onion", "riz", "rice", "pates",
+    "pasta", "cereales", "cereal", "huile", "oil", "sucre", "sugar", "cafe",
+    "coffee", "the", "tea", "chips", "croustilles", "biscuit", "cookies"
+  ];
+
+  // Clean raw OCR output to pick out brand & item keywords cleanly
   const cleanOCRText = (text) => {
     if (!text) return "";
-    
-    // Split lines and filter out short/noise lines
-    const lines = text
-      .split("\n")
-      .map((l) => l.trim())
-      .filter((l) => l.length > 2 && !/^\d+$/.test(l) && !/^\W+$/.test(l));
 
-    // Look for lines containing known grocery words or brands
-    const groceryKeywords = [
-      "attitude", "spinach", "épinard", "tomates", "tomatoes", "milk", "lait",
-      "popeye", "dole", "kraft", "heinz", "salad", "salade", "chicken", "poulet",
-      "butter", "beurre", "cheese", "fromage", "apple", "pomme", "juice", "jus"
-    ];
+    // 1. First check if any barcode digit sequence (12 or 13 digits) is in the OCR text
+    const digitMatch = text.match(/\b\d{12,13}\b/);
+    if (digitMatch) {
+      const barcode = digitMatch[0];
+      onBarcodeSuccess(barcode);
+      return "";
+    }
 
-    for (const line of lines) {
-      const lineLower = line.lowerCase ? line.lowerCase() : line.toLowerCase();
-      if (groceryKeywords.some((kw) => lineLower.includes(kw))) {
-        return line.replace(/[^\w\s\u00C0-\u00FF]/gi, " ").trim();
+    // 2. Normalize text: convert to lowercase and strip special symbols
+    const cleanRaw = text
+      .toLowerCase()
+      .replace(/[^\w\s\u00C0-\u00FF]/gi, " ");
+
+    const words = cleanRaw.split(/\s+/).filter((w) => w.length > 1);
+
+    const foundBrands = [];
+    const foundItems = [];
+
+    for (const w of words) {
+      if (GROCERY_BRANDS.includes(w) && !foundBrands.includes(w)) {
+        foundBrands.push(w);
+      }
+      if (GROCERY_ITEMS.includes(w) && !foundItems.includes(w)) {
+        foundItems.push(w);
       }
     }
 
-    // Fallback to top non-empty line
-    if (lines.length > 0) {
-      return lines[0].replace(/[^\w\s\u00C0-\u00FF]/gi, " ").slice(0, 40).trim();
+    // Combine matched brand + item keywords (e.g. "lactantia beurre" or "lait")
+    const matchedTerms = [...foundBrands, ...foundItems];
+    if (matchedTerms.length > 0) {
+      return matchedTerms.join(" ");
+    }
+
+    // 3. Fallback: If no dictionary match, extract any clean line >= 4 letters that has valid words
+    const lines = text
+      .split("\n")
+      .map((l) => l.replace(/[^\w\s\u00C0-\u00FF]/gi, " ").trim())
+      .filter((l) => l.length >= 4 && !/^\d+$/.test(l));
+
+    for (const line of lines) {
+      // Avoid garbage noise lines with single-letter words like "y _" or "fl il y L"
+      const lineWords = line.split(/\s+/).filter((w) => w.length >= 3);
+      if (lineWords.length >= 1) {
+        return lineWords.join(" ");
+      }
     }
 
     return "";
