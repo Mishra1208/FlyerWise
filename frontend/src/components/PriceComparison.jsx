@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { IoCloseOutline, IoCheckmarkCircleOutline, IoFlashOutline, IoRibbonOutline, IoTimeOutline } from "react-icons/io5";
 import { PriceService } from "../services/api";
+import { getFlyerCountdown } from "../utils/timeUtils";
 import PriceHistory from "./PriceHistory";
 
 export default function PriceComparison({ product: rawProduct, prices: rawPrices, onClose }) {
@@ -233,25 +234,24 @@ export default function PriceComparison({ product: rawProduct, prices: rawPrices
                   const storeName = price.store?.name || price.store_name || "Grocery Store";
                   const storeColor = price.store?.color || price.store_color || "#10B981";
 
-                  let statusBadge = (
-                    <span style={{ fontSize: "11px", fontWeight: 800, color: "#047857", backgroundColor: "#D1FAE5", padding: "3px 10px", borderRadius: "12px" }}>
-                      ⚡ Active Flyer
+                  const countdown = getFlyerCountdown(price.valid_until, price.valid_from, price.flyer_status);
+                  const statusBadge = (
+                    <span style={{
+                      fontSize: "11px",
+                      fontWeight: 800,
+                      color: countdown.color,
+                      backgroundColor: countdown.bg,
+                      border: `1px solid ${countdown.color}33`,
+                      padding: "3px 10px",
+                      borderRadius: "12px",
+                      boxShadow: countdown.isUrgent ? `0 0 10px ${countdown.color}33` : "none",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "4px"
+                    }}>
+                      {countdown.text}
                     </span>
                   );
-
-                  if (price.flyer_status === "expiring_today") {
-                    statusBadge = (
-                      <span style={{ fontSize: "11px", fontWeight: 800, color: "#D97706", backgroundColor: "#FEF3C7", padding: "3px 10px", borderRadius: "12px" }}>
-                        ⏳ Ends Today
-                      </span>
-                    );
-                  } else if (price.flyer_status === "upcoming") {
-                    statusBadge = (
-                      <span style={{ fontSize: "11px", fontWeight: 800, color: "#2563EB", backgroundColor: "#EFF6FF", padding: "3px 10px", borderRadius: "12px" }}>
-                        📅 Preview
-                      </span>
-                    );
-                  }
 
                   const dateStr = price.valid_from && price.valid_until
                     ? `${new Date(price.valid_from).toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${new Date(price.valid_until).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
