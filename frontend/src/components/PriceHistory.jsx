@@ -164,6 +164,11 @@ export default function PriceHistory({ productId }) {
               <div style={{ fontSize: "18px", fontWeight: 800, color: "#059669" }}>
                 ${parseFloat(intelligence.lowest_recorded).toFixed(2)}
               </div>
+              {intelligence.lowest_recorded_store && (
+                <span style={{ fontSize: "11px", color: "#047857", fontWeight: 600 }}>
+                  ({intelligence.lowest_recorded_store})
+                </span>
+              )}
             </div>
           )}
 
@@ -182,6 +187,11 @@ export default function PriceHistory({ productId }) {
               <div style={{ fontSize: "18px", fontWeight: 800, color: "#DC2626" }}>
                 ${parseFloat(intelligence.highest_recorded).toFixed(2)}
               </div>
+              {intelligence.highest_recorded_store && (
+                <span style={{ fontSize: "11px", color: "#991B1B", fontWeight: 600 }}>
+                  ({intelligence.highest_recorded_store})
+                </span>
+              )}
             </div>
           )}
         </div>

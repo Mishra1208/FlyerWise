@@ -25,15 +25,16 @@ def calculate_price_intelligence(db: Session, product_id: int) -> Dict[str, Any]
     if not product:
         return {"error": f"Product {product_id} not found"}
 
-    # Fetch historical prices for this product across all flyers
-    historical_prices = (
-        db.query(Price)
+    # Fetch historical prices with store details for this product across all flyers
+    historical_records = (
+        db.query(Price, Store)
+        .join(Store, Price.store_id == Store.id)
         .filter(Price.product_id == product_id)
         .order_by(Price.valid_from.desc())
         .all()
     )
 
-    if not historical_prices:
+    if not historical_records:
         return {
             "product_id": product_id,
             "product_name": product.raw_name,
@@ -43,8 +44,8 @@ def calculate_price_intelligence(db: Session, product_id: int) -> Dict[str, Any]
             "recommendation": "Normal price based on available history"
         }
 
-    prices_list = [float(p.current_price) for p in historical_prices if p.current_price is not None]
-    if not prices_list:
+    prices_tuples = [(float(p.current_price), s.name) for p, s in historical_records if p.current_price is not None]
+    if not prices_tuples:
         return {
             "product_id": product_id,
             "product_name": product.raw_name,
@@ -54,10 +55,19 @@ def calculate_price_intelligence(db: Session, product_id: int) -> Dict[str, Any]
             "recommendation": "Standard pricing"
         }
 
+    prices_list = [val for val, _ in prices_tuples]
     current_price = prices_list[0]
     median_price = float(statistics.median(prices_list))
-    min_price = float(min(prices_list))
-    max_price = float(max(prices_list))
+    
+    min_tuple = min(prices_tuples, key=lambda x: x[0])
+    max_tuple = max(prices_tuples, key=lambda x: x[0])
+
+    min_price = min_tuple[0]
+    lowest_store = min_tuple[1]
+    
+    max_price = max_tuple[0]
+    highest_store = max_tuple[1]
+
     avg_price = float(statistics.mean(prices_list))
 
     # Compute discount relative to 90-day median
@@ -96,7 +106,9 @@ def calculate_price_intelligence(db: Session, product_id: int) -> Dict[str, Any]
         "current_price": current_price,
         "median_90_day": round(median_price, 2),
         "lowest_recorded": round(min_price, 2),
+        "lowest_recorded_store": lowest_store,
         "highest_recorded": round(max_price, 2),
+        "highest_recorded_store": highest_store,
         "average_price": round(avg_price, 2),
         "discount_pct_from_median": discount_pct,
         "deal_score": deal_score,
