@@ -52,13 +52,14 @@ export default function Home() {
   }, []);
 
   const majorRetailers = [
-    { name: "Walmart", color: "#0071CE", tag: "Everyday Low Prices" },
-    { name: "Maxi", color: "#ED1C24", tag: "Quebec Discount Leader" },
-    { name: "Metro", color: "#003DA5", tag: "Fresh Grocery Specials" },
-    { name: "IGA", color: "#E31837", tag: "Weekly Flyer Deals" },
-    { name: "Super C", color: "#E30613", tag: "Low Price Guarantee" },
-    { name: "Provigo", color: "#D32F2F", tag: "Quality Fresh Produce" },
-    { name: "Costco Canada", color: "#0060A9", tag: "Bulk Warehouse Deals" },
+    { name: "Walmart", color: "#0071CE", tag: "Everyday Low Prices", logo: "🛒", bg: "#EFF6FF" },
+    { name: "Maxi", color: "#ED1C24", tag: "Quebec Discount Leader", logo: "🍎", bg: "#FEF2F2" },
+    { name: "Metro", color: "#003DA5", tag: "Fresh Grocery Specials", logo: "🥩", bg: "#EFF6FF" },
+    { name: "IGA", color: "#E31837", tag: "Weekly Flyer Deals", logo: "🥖", bg: "#FEF2F2" },
+    { name: "Super C", color: "#E30613", tag: "Low Price Guarantee", logo: "⚡", bg: "#FEF2F2" },
+    { name: "Provigo", color: "#D32F2F", tag: "Quality Fresh Produce", logo: "🍊", bg: "#FEF2F2" },
+    { name: "Costco Canada", color: "#0060A9", tag: "Bulk Warehouse Deals", logo: "📦", bg: "#EFF6FF" },
+    { name: "Adonis", color: "#16A34A", tag: "Fresh Mediterranean", logo: "🫒", bg: "#F0FDF4" },
   ];
 
   const quickCategories = [
@@ -90,12 +91,12 @@ export default function Home() {
   ];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "90px", paddingBottom: "80px", backgroundColor: "#F8FAFC" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "45px", paddingBottom: "80px", backgroundColor: "#F8FAFC" }}>
       
       {/* 1. ULTRA-PREMIUM HERO BANNER SECTION */}
       <section style={{
         position: "relative",
-        minHeight: "560px",
+        minHeight: "540px",
         background: "linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%)",
         display: "flex",
         flexDirection: "column",
@@ -103,7 +104,7 @@ export default function Home() {
         alignItems: "center",
         color: "#FFFFFF",
         textAlign: "center",
-        padding: "80px 24px 100px 24px",
+        padding: "70px 24px 90px 24px",
       }}>
         {/* Animated background ambient glow spots */}
         <div style={{
@@ -231,7 +232,7 @@ export default function Home() {
       </section>
 
       {/* 2. LIVE STATS STRIP CARD */}
-      <div className="container" style={{ position: "relative", zIndex: 10, marginTop: "-60px" }}>
+      <div className="container" style={{ position: "relative", zIndex: 10, marginTop: "-50px" }}>
         <div style={{
           backgroundColor: "#FFFFFF",
           border: "1px solid rgba(226, 232, 240, 0.9)",
@@ -243,54 +244,51 @@ export default function Home() {
           width: "100%",
           maxWidth: "960px",
           margin: "0 auto",
-          padding: "28px 20px",
+          padding: "24px 20px",
         }}>
           <div style={{ textAlign: "center", flex: 1, borderRight: "1px solid #E2E8F0", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", padding: "0 10px" }}>
-            <div style={{ width: "84px", height: "84px", flexShrink: 0 }}>
+            <div style={{ width: "76px", height: "76px", flexShrink: 0 }}>
               <DotLottieReact
                 src="https://lottie.host/7906886d-3553-4489-a88c-b0b1ccfaaafe/bU2n0WjiRD.lottie"
                 loop
                 autoplay
               />
             </div>
-            <div>
-              <h3 style={{ fontSize: "32px", color: "#0F172A", fontWeight: 900, margin: 0, fontFamily: "var(--font-headings)" }}>
+            <div style={{ textAlign: "left" }}>
+              <h3 style={{ fontSize: "30px", color: "#0F172A", fontWeight: 900, margin: 0, fontFamily: "var(--font-headings)" }}>
                 60+
               </h3>
-              <span style={{ fontSize: "13px", color: "#64748B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginTop: "6px", display: "block" }}>
+              <span style={{ fontSize: "12px", color: "#64748B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginTop: "4px", display: "block" }}>
                 Major Grocery Stores
               </span>
             </div>
           </div>
 
           <div style={{ textAlign: "center", flex: 1, borderRight: "1px solid #E2E8F0" }}>
-            <h3 style={{ fontSize: "32px", color: "#0F172A", fontWeight: 900, margin: 0, fontFamily: "var(--font-headings)" }}>
+            <h3 style={{ fontSize: "30px", color: "#0F172A", fontWeight: 900, margin: 0, fontFamily: "var(--font-headings)" }}>
               12,500+
             </h3>
-            <span style={{ fontSize: "13px", color: "#64748B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginTop: "6px", display: "block" }}>
+            <span style={{ fontSize: "12px", color: "#64748B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginTop: "4px", display: "block" }}>
               Flyer Items Scraped
             </span>
           </div>
 
           <div style={{ textAlign: "center", flex: 1 }}>
-            <h3 style={{ fontSize: "32px", color: "#059669", fontWeight: 900, margin: 0, fontFamily: "var(--font-headings)" }}>
+            <h3 style={{ fontSize: "30px", color: "#059669", fontWeight: 900, margin: 0, fontFamily: "var(--font-headings)" }}>
               Up to $45/wk
             </h3>
-            <span style={{ fontSize: "13px", color: "#047857", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginTop: "6px", display: "block" }}>
+            <span style={{ fontSize: "12px", color: "#047857", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginTop: "4px", display: "block" }}>
               Weekly Savings Potential ($2,300/yr)
             </span>
           </div>
         </div>
       </div>
 
-      {/* Spacer for overlapping stats strip */}
-      <div style={{ height: "40px" }}></div>
-
-      {/* 2. RETAILERS BRANDING LOGO STRIP */}
-      <section className="container">
-        <div style={{ textAlign: "center", marginBottom: "20px" }}>
+      {/* 3. RETAILERS BRANDING STYLISH CARDS */}
+      <section className="container" style={{ marginTop: "10px" }}>
+        <div style={{ textAlign: "center", marginBottom: "18px" }}>
           <span style={{ fontSize: "12px", fontWeight: 800, textTransform: "uppercase", color: "#64748B", letterSpacing: "1px" }}>
-            INDEXING LIVE FLYERS ACROSS TOP CANADIAN CHAINS
+            INDEXING LIVE FLYERS ACROSS TOP CANADIAN RETAILERS
           </span>
         </div>
 
@@ -298,42 +296,57 @@ export default function Home() {
           display: "flex",
           flexWrap: "wrap",
           justifyContent: "center",
-          gap: "16px",
+          gap: "14px",
         }}>
           {majorRetailers.map((r) => (
             <div
               key={r.name}
               style={{
                 backgroundColor: "#FFFFFF",
-                border: "1px solid #E2E8F0",
-                borderRadius: "16px",
-                padding: "14px 22px",
+                border: `1.5px solid ${r.color}33`,
+                borderRadius: "20px",
+                padding: "12px 20px",
                 display: "flex",
                 alignItems: "center",
-                gap: "10px",
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.02)",
+                gap: "12px",
+                boxShadow: "0 4px 15px rgba(0, 0, 0, 0.03)",
                 transition: "all 0.25s ease",
                 cursor: "pointer",
               }}
               onClick={() => handleSearch(r.name.toLowerCase())}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-3px)";
-                e.currentTarget.style.boxShadow = "0 8px 20px rgba(0,0,0,0.06)";
+                e.currentTarget.style.transform = "translateY(-5px) scale(1.02)";
+                e.currentTarget.style.boxShadow = `0 12px 25px ${r.color}25`;
+                e.currentTarget.style.borderColor = r.color;
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.02)";
+                e.currentTarget.style.transform = "translateY(0) scale(1)";
+                e.currentTarget.style.boxShadow = "0 4px 15px rgba(0, 0, 0, 0.03)";
+                e.currentTarget.style.borderColor = `${r.color}33`;
               }}
             >
-              <span style={{
-                width: "12px",
-                height: "12px",
-                borderRadius: "50%",
-                backgroundColor: r.color,
-                boxShadow: `0 0 8px ${r.color}66`
-              }} />
+              <div style={{
+                width: "40px",
+                height: "40px",
+                borderRadius: "14px",
+                backgroundColor: r.bg,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "20px",
+                border: `1px solid ${r.color}40`,
+                boxShadow: `0 2px 8px ${r.color}20`
+              }}>
+                {r.logo}
+              </div>
+
               <div>
-                <strong style={{ fontSize: "15px", color: "#0F172A", fontWeight: 800 }}>{r.name}</strong>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <strong style={{ fontSize: "15px", color: "#0F172A", fontWeight: 800 }}>{r.name}</strong>
+                  <span style={{ fontSize: "9px", fontWeight: 800, color: r.color, backgroundColor: r.bg, padding: "1px 6px", borderRadius: "8px" }}>
+                    ⚡ LIVE
+                  </span>
+                </div>
                 <span style={{ fontSize: "11px", color: "#64748B", display: "block" }}>{r.tag}</span>
               </div>
             </div>
