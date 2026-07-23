@@ -15,7 +15,7 @@ from app.schemas import (
     SearchResponse, SearchResult, ProductResponse,
     PriceWithStore, StoreResponse
 )
-from app.services.nutrition_helper import generate_product_details
+from app.services.nutrition_helper import generate_product_details, generate_fast_product_details
 
 from unidecode import unidecode
 
@@ -259,7 +259,7 @@ def search_products(
             if p_entry.current_price == lowest_val and not p_entry.is_historical:
                 p_entry.is_lowest = True
 
-        details = generate_product_details(product.raw_name, product.category, product.brand)
+        details = generate_fast_product_details(product.raw_name, product.category, product.brand)
         results.append(
             SearchResult(
                 product=ProductResponse(
