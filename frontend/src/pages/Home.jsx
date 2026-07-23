@@ -18,6 +18,7 @@ import {
 import SearchBar from "../components/SearchBar";
 import SmartBasketOptimizer from "../components/SmartBasketOptimizer";
 import { PriceService } from "../services/api";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -244,13 +245,22 @@ export default function Home() {
           margin: "0 auto",
           padding: "28px 20px",
         }}>
-          <div style={{ textAlign: "center", flex: 1, borderRight: "1px solid #E2E8F0" }}>
-            <h3 style={{ fontSize: "32px", color: "#0F172A", fontWeight: 900, margin: 0, fontFamily: "var(--font-headings)" }}>
-              60+
-            </h3>
-            <span style={{ fontSize: "13px", color: "#64748B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginTop: "6px", display: "block" }}>
-              Major Grocery Stores
-            </span>
+          <div style={{ textAlign: "center", flex: 1, borderRight: "1px solid #E2E8F0", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", padding: "0 10px" }}>
+            <div style={{ width: "84px", height: "84px", flexShrink: 0 }}>
+              <DotLottieReact
+                src="https://lottie.host/7906886d-3553-4489-a88c-b0b1ccfaaafe/bU2n0WjiRD.lottie"
+                loop
+                autoplay
+              />
+            </div>
+            <div>
+              <h3 style={{ fontSize: "32px", color: "#0F172A", fontWeight: 900, margin: 0, fontFamily: "var(--font-headings)" }}>
+                60+
+              </h3>
+              <span style={{ fontSize: "13px", color: "#64748B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginTop: "6px", display: "block" }}>
+                Major Grocery Stores
+              </span>
+            </div>
           </div>
 
           <div style={{ textAlign: "center", flex: 1, borderRight: "1px solid #E2E8F0" }}>

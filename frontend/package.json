@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@dotlottie/react-player": "^1.6.19",
+    "@lottiefiles/dotlottie-react": "^0.19.12",
     "@rolldown/binding-darwin-arm64": "^1.2.0",
     "axios": "^1.18.1",
     "chart.js": "^4.5.1",

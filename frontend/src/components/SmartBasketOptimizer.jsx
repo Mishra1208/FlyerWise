@@ -14,6 +14,7 @@ import {
 } from "react-icons/io5";
 import { useBasket } from "../contexts/BasketContext";
 import { useLocation } from "../contexts/LocationContext";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 export default function SmartBasketOptimizer() {
   const { 
@@ -103,40 +104,48 @@ export default function SmartBasketOptimizer() {
 
       {/* Header Bar */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{
-              backgroundColor: "rgba(16, 185, 129, 0.1)",
-              border: "1px solid rgba(16, 185, 129, 0.25)",
-              color: "#047857",
-              fontSize: "11px",
-              fontWeight: 800,
-              padding: "4px 10px",
-              borderRadius: "20px",
-              letterSpacing: "0.5px",
-              textTransform: "uppercase",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "4px"
-            }}>
-              <IoSparklesOutline size={13} /> AI Price Intelligence • {cityName || "Montreal"}
-            </span>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          <div style={{ width: "70px", height: "70px", flexShrink: 0 }}>
+            <DotLottieReact
+              src="https://lottie.host/7906886d-3553-4489-a88c-b0b1ccfaaafe/bU2n0WjiRD.lottie"
+              loop
+              autoplay
+            />
           </div>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{
+                backgroundColor: "rgba(16, 185, 129, 0.1)",
+                border: "1px solid rgba(16, 185, 129, 0.25)",
+                color: "#047857",
+                fontSize: "11px",
+                fontWeight: 800,
+                padding: "4px 10px",
+                borderRadius: "20px",
+                letterSpacing: "0.5px",
+                textTransform: "uppercase",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "4px"
+              }}>
+                <IoSparklesOutline size={13} /> AI Price Intelligence • {cityName || "Montreal"}
+              </span>
+            </div>
 
-          <h2 style={{ 
-            fontSize: "26px", 
-            color: "#0F172A", 
-            fontWeight: 800, 
-            display: "flex", 
-            alignItems: "center", 
-            gap: "10px", 
-            marginTop: "8px",
-            fontFamily: "var(--font-headings)",
-            letterSpacing: "-0.5px"
-          }}>
-            <IoCartOutline style={{ color: "#10B981" }} />
-            <span>My Smart Grocery Basket ({basketItems.length} {basketItems.length === 1 ? "Item" : "Items"})</span>
-          </h2>
+            <h2 style={{ 
+              fontSize: "26px", 
+              color: "#0F172A", 
+              fontWeight: 800, 
+              display: "flex", 
+              alignItems: "center", 
+              gap: "10px", 
+              marginTop: "4px",
+              fontFamily: "var(--font-headings)",
+              letterSpacing: "-0.5px"
+            }}>
+              <span>My Smart Grocery Basket ({basketItems.length} {basketItems.length === 1 ? "Item" : "Items"})</span>
+            </h2>
+          </div>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
