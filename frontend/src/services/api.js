@@ -56,8 +56,12 @@ export const PriceService = {
 };
 
 export const BasketService = {
-  optimize: async (items) => {
-    const response = await API.post("/basket/optimize", { items });
+  optimize: async (items, postalCode = null) => {
+    const payload = { items };
+    if (postalCode) {
+      payload.postal_code = postalCode.replace(/\s/g, "");
+    }
+    const response = await API.post("/basket/optimize", payload);
     return response.data;
   },
 };

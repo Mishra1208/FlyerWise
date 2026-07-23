@@ -10,7 +10,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { PriceService } from "../services/api";
+import { PriceService, IntelligenceService } from "../services/api";
 
 ChartJS.register(
   CategoryScale,
@@ -24,13 +24,19 @@ ChartJS.register(
 
 export default function PriceHistory({ productId }) {
   const [historyData, setHistoryData] = useState(null);
+  const [intelligence, setIntelligence] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchHistory() {
+    async function fetchHistoryAndIntel() {
       try {
-        const data = await PriceService.getHistory(productId);
+        const [data, intel] = await Promise.all([
+          PriceService.getHistory(productId),
+          IntelligenceService.getIntelligence(productId).catch(() => null),
+        ]);
         
+        setIntelligence(intel);
+
         // Group prices by store_id
         const storeGroups = {};
         const datesSet = new Set();
@@ -44,9 +50,9 @@ export default function PriceHistory({ productId }) {
           
           if (!storeGroups[price.store_id]) {
             storeGroups[price.store_id] = {
-              label: price.store_id === 1 ? "Walmart" : price.store_id === 2 ? "Maxi" : "Metro",
+              label: price.store_id === 1 ? "Walmart" : price.store_id === 2 ? "Maxi" : price.store_id === 3 ? "Metro" : price.store_id === 4 ? "IGA" : price.store_id === 5 ? "Super C" : "Provigo",
               prices: [],
-              color: price.store_id === 1 ? "#0071CE" : price.store_id === 2 ? "#ED1C24" : "#003DA5",
+              color: price.store_id === 1 ? "#0071CE" : price.store_id === 2 ? "#ED1C24" : price.store_id === 3 ? "#003DA5" : price.store_id === 4 ? "#C8102E" : price.store_id === 5 ? "#E31837" : "#000000",
             };
           }
           storeGroups[price.store_id].prices.push({
@@ -58,7 +64,6 @@ export default function PriceHistory({ productId }) {
         const labels = Array.from(datesSet).sort((a, b) => new Date(a) - new Date(b));
         
         const datasets = Object.values(storeGroups).map((group) => {
-          // Align prices with labels
           const alignedData = labels.map((label) => {
             const match = group.prices.find((p) => p.date === label);
             return match ? match.value : null;
@@ -85,16 +90,12 @@ export default function PriceHistory({ productId }) {
     }
 
     if (productId) {
-      fetchHistory();
+      fetchHistoryAndIntel();
     }
   }, [productId]);
 
   if (loading) {
-    return <div style={{ color: "var(--text-muted)", textAlign: "center", padding: "20px" }}>Loading price trends...</div>;
-  }
-
-  if (!historyData || historyData.datasets.length === 0) {
-    return <div style={{ color: "var(--text-muted)", textAlign: "center", padding: "20px" }}>No historical price trends available yet.</div>;
+    return <div style={{ color: "var(--text-muted)", textAlign: "center", padding: "20px" }}>Loading price trends & intelligence...</div>;
   }
 
   const options = {
@@ -138,8 +139,64 @@ export default function PriceHistory({ productId }) {
   };
 
   return (
-    <div style={{ height: "260px", position: "relative", width: "100%" }}>
-      <Line data={historyData} options={options} />
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px", width: "100%" }}>
+      {/* 90-Day Price Intelligence Stats Summary */}
+      {intelligence && intelligence.deal_score !== undefined && (
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
+          gap: "10px",
+          backgroundColor: "#F8FAFC",
+          padding: "14px",
+          borderRadius: "12px",
+          border: "1px solid #E2E8F0",
+        }}>
+          <div>
+            <span style={{ fontSize: "11px", color: "#64748B", fontWeight: 600 }}>Deal Score</span>
+            <div style={{ fontSize: "18px", fontWeight: 800, color: intelligence.deal_score >= 80 ? "#059669" : "#1B365D" }}>
+              {intelligence.deal_score}/100 {intelligence.badge_text ? `(${intelligence.badge_text})` : ""}
+            </div>
+          </div>
+
+          {intelligence.lowest_recorded && (
+            <div>
+              <span style={{ fontSize: "11px", color: "#64748B", fontWeight: 600 }}>Lowest Recorded</span>
+              <div style={{ fontSize: "18px", fontWeight: 800, color: "#059669" }}>
+                ${parseFloat(intelligence.lowest_recorded).toFixed(2)}
+              </div>
+            </div>
+          )}
+
+          {intelligence.median_90_day && (
+            <div>
+              <span style={{ fontSize: "11px", color: "#64748B", fontWeight: 600 }}>90-Day Median</span>
+              <div style={{ fontSize: "18px", fontWeight: 800, color: "#1B365D" }}>
+                ${parseFloat(intelligence.median_90_day).toFixed(2)}
+              </div>
+            </div>
+          )}
+
+          {intelligence.highest_recorded && (
+            <div>
+              <span style={{ fontSize: "11px", color: "#64748B", fontWeight: 600 }}>Highest Price</span>
+              <div style={{ fontSize: "18px", fontWeight: 800, color: "#DC2626" }}>
+                ${parseFloat(intelligence.highest_recorded).toFixed(2)}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Line Chart */}
+      {historyData && historyData.datasets.length > 0 ? (
+        <div style={{ height: "240px", position: "relative", width: "100%" }}>
+          <Line data={historyData} options={options} />
+        </div>
+      ) : (
+        <div style={{ color: "var(--text-muted)", textAlign: "center", padding: "20px" }}>
+          No historical price trends available yet for this item.
+        </div>
+      )}
     </div>
   );
 }

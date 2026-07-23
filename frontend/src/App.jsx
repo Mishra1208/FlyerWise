@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { LocationProvider } from "./contexts/LocationContext";
+import { BasketProvider } from "./contexts/BasketContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
@@ -9,7 +10,8 @@ import SearchResults from "./pages/SearchResults";
 export default function App() {
   return (
     <LocationProvider>
-      <Router>
+      <BasketProvider>
+        <Router>
         <div style={{
           display: "flex",
           flexDirection: "column",
@@ -30,6 +32,7 @@ export default function App() {
           <Footer />
         </div>
       </Router>
-    </LocationProvider>
+    </BasketProvider>
+  </LocationProvider>
   );
 }

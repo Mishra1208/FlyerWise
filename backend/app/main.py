@@ -107,6 +107,7 @@ from pydantic import BaseModel
 
 class BasketOptimizeRequest(BaseModel):
     items: list[str]
+    postal_code: str | None = None
 
 from app.services.basket_optimizer import optimize_basket
 from app.services.price_intelligence import calculate_price_intelligence
@@ -115,7 +116,7 @@ from app.services.matching_engine import auto_cluster_all_products
 @app.post("/api/basket/optimize", tags=["basket"])
 def optimize_shopping_basket(req: BasketOptimizeRequest, db: Session = Depends(get_db)):
     """Calculate best single-store and two-store combination basket for a list of items."""
-    return optimize_basket(db, req.items)
+    return optimize_basket(db, req.items, postal_code=req.postal_code)
 
 
 @app.get("/api/products/{product_id}/intelligence", tags=["intelligence"])

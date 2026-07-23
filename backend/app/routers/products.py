@@ -16,6 +16,7 @@ from app.schemas import (
     PriceWithStore, StoreResponse
 )
 from app.services.nutrition_helper import generate_product_details, generate_fast_product_details
+from app.services.price_intelligence import calculate_price_intelligence
 
 from unidecode import unidecode
 
@@ -261,6 +262,7 @@ def search_products(
                 p_entry.is_lowest = True
 
         details = generate_fast_product_details(product.raw_name, product.category, product.brand)
+        intel = calculate_price_intelligence(db, product.id)
         results.append(
             SearchResult(
                 product=ProductResponse(
@@ -281,6 +283,7 @@ def search_products(
                 highest_price=highest_val,
                 savings_potential=highest_val - lowest_val if len(price_entries) > 1 else Decimal("0"),
                 store_count=len(set(p.store.id for p in price_entries)),
+                intelligence=intel,
             )
         )
 

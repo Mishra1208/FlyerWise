@@ -103,6 +103,7 @@ class SearchResult(BaseModel):
     highest_price: Decimal | None = None
     savings_potential: Decimal | None = None  # highest - lowest
     store_count: int = 0
+    intelligence: dict | None = None
 
 
 class SearchResponse(BaseModel):

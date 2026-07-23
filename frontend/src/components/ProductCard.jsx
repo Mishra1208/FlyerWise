@@ -1,26 +1,47 @@
 import React from "react";
-import { IoChevronForwardOutline } from "react-icons/io5";
+import { IoChevronForwardOutline, IoCartOutline, IoCheckmarkCircleOutline } from "react-icons/io5";
+import { getFlyerCountdown } from "../utils/timeUtils";
+import { useBasket } from "../contexts/BasketContext";
 
 export default function ProductCard({ result, onClick }) {
-  const { product, prices, lowest_price, savings_potential } = result;
+  const { product, prices, lowest_price, savings_potential, intelligence } = result;
+  const { basketItems, addItem, removeItem } = useBasket();
+
+  const isItemInBasket = basketItems.some(
+    (i) => product.raw_name.toLowerCase().includes(i.toLowerCase()) || i.toLowerCase().includes(product.raw_name.toLowerCase())
+  );
+
+  const handleToggleBasket = (e) => {
+    e.stopPropagation();
+    if (isItemInBasket) {
+      // Find matching item query
+      const match = basketItems.find(
+        (i) => product.raw_name.toLowerCase().includes(i.toLowerCase()) || i.toLowerCase().includes(product.raw_name.toLowerCase())
+      );
+      if (match) removeItem(match);
+      else removeItem(product.raw_name);
+    } else {
+      addItem(product.raw_name);
+    }
+  };
 
   return (
     <div 
       className="card animate-fade" 
       onClick={() => onClick(result)}
       style={{
-        padding: "24px",
+        padding: "22px",
         cursor: "pointer",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        gap: "18px",
+        gap: "16px",
         height: "100%",
         position: "relative",
         overflow: "hidden",
       }}
     >
-      {/* Product Image, Title, & Savings Badge Header */}
+      {/* Product Image, Title, & Savings/Intelligence Badges Header */}
       <div style={{ display: "flex", gap: "14px", alignItems: "flex-start", justifyContent: "space-between" }}>
         {/* Product Image */}
         <div style={{
@@ -73,14 +94,34 @@ export default function ProductCard({ result, onClick }) {
           }} title={product.raw_name}>
             {product.raw_name}
           </h3>
-          <span style={{
-            fontSize: "11px",
-            color: "var(--accent)",
-            fontWeight: 600,
-            backgroundColor: "rgba(91, 140, 81, 0.08)",
-            padding: "3px 8px",
-            borderRadius: "4px",
-          }}>{product.category || "Grocery"}</span>
+          
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", alignItems: "center" }}>
+            <span style={{
+              fontSize: "11px",
+              color: "var(--accent)",
+              fontWeight: 600,
+              backgroundColor: "rgba(91, 140, 81, 0.08)",
+              padding: "2px 8px",
+              borderRadius: "4px",
+            }}>{product.category || "Grocery"}</span>
+
+            {/* Deal Score / Price Advisor Badge */}
+            {intelligence && intelligence.badge_text && (
+              <span style={{
+                fontSize: "11px",
+                fontWeight: 700,
+                color: intelligence.deal_score >= 80 ? "#065F46" : intelligence.deal_score >= 60 ? "#1E40AF" : "#92400E",
+                backgroundColor: intelligence.deal_score >= 80 ? "#D1FAE5" : intelligence.deal_score >= 60 ? "#DBEAFE" : "#FEF3C7",
+                padding: "2px 8px",
+                borderRadius: "4px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "3px",
+              }}>
+                {intelligence.badge_text}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Discount/Savings Badge */}
@@ -102,7 +143,7 @@ export default function ProductCard({ result, onClick }) {
         )}
       </div>
 
-      {/* Stores and Prices list */}
+      {/* Stores and Prices list with Live Countdowns */}
       <div style={{
         display: "flex",
         flexDirection: "column",
@@ -113,48 +154,7 @@ export default function ProductCard({ result, onClick }) {
         border: "1px solid var(--border-color)",
       }}>
         {prices.map((price) => {
-          // Status badge config
-          let statusBadge = null;
-          if (price.flyer_status === "expiring_today") {
-            statusBadge = (
-              <span style={{
-                fontSize: "10px",
-                fontWeight: 700,
-                color: "#D97706",
-                backgroundColor: "#FEF3C7",
-                padding: "2px 6px",
-                borderRadius: "4px",
-              }}>
-                ⏳ Ends Today
-              </span>
-            );
-          } else if (price.flyer_status === "upcoming") {
-            statusBadge = (
-              <span style={{
-                fontSize: "10px",
-                fontWeight: 700,
-                color: "#2563EB",
-                backgroundColor: "#EFF6FF",
-                padding: "2px 6px",
-                borderRadius: "4px",
-              }}>
-                📅 Preview
-              </span>
-            );
-          } else if (price.flyer_status === "recent_sale" || price.is_historical) {
-            statusBadge = (
-              <span style={{
-                fontSize: "10px",
-                fontWeight: 600,
-                color: "#64748B",
-                backgroundColor: "#F1F5F9",
-                padding: "2px 6px",
-                borderRadius: "4px",
-              }}>
-                📜 Last Sale
-              </span>
-            );
-          }
+          const countdown = getFlyerCountdown(price.valid_until, price.valid_from, price.flyer_status);
 
           return (
             <div key={price.id} style={{
@@ -164,7 +164,7 @@ export default function ProductCard({ result, onClick }) {
               fontSize: "14px",
               opacity: price.is_historical ? 0.75 : 1,
             }}>
-              {/* Store Name & Indicator */}
+              {/* Store Name & Countdown Badge */}
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <span style={{
                   width: "8px",
@@ -177,7 +177,19 @@ export default function ProductCard({ result, onClick }) {
                   fontWeight: 600,
                   color: "var(--text-secondary)",
                 }}>{price.store.name}</span>
-                {statusBadge}
+                
+                {/* Live Countdown Badge */}
+                <span style={{
+                  fontSize: "10px",
+                  fontWeight: 700,
+                  color: countdown.color,
+                  backgroundColor: countdown.bg,
+                  padding: "2px 6px",
+                  borderRadius: "4px",
+                  animation: countdown.isUrgent ? "pulse 2s infinite" : "none",
+                }}>
+                  {countdown.text}
+                </span>
               </div>
 
               {/* Price Tag with unit */}
@@ -205,37 +217,67 @@ export default function ProductCard({ result, onClick }) {
         })}
       </div>
 
-      {/* Card Footer Actions */}
+      {/* Card Footer Actions (Details, Basket, Compare) */}
       <div style={{
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
         borderTop: "1px solid var(--border-color)",
-        paddingTop: "14px",
+        paddingTop: "12px",
         fontSize: "13px",
       }}>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onClick(result);
-          }}
-          style={{
-            backgroundColor: "rgba(91, 140, 81, 0.08)",
-            border: "1px solid rgba(91, 140, 81, 0.2)",
-            color: "var(--accent-hover)",
-            padding: "5px 12px",
-            borderRadius: "6px",
-            fontSize: "12px",
-            fontWeight: 700,
-            cursor: "pointer",
-            transition: "all 0.2s",
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "var(--accent)"; e.currentTarget.style.color = "#FFF"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "rgba(91, 140, 81, 0.08)"; e.currentTarget.style.color = "var(--accent-hover)"; }}
-        >
-          📖 Product Details
-        </button>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClick(result);
+            }}
+            style={{
+              backgroundColor: "rgba(91, 140, 81, 0.08)",
+              border: "1px solid rgba(91, 140, 81, 0.2)",
+              color: "var(--accent-hover)",
+              padding: "5px 10px",
+              borderRadius: "6px",
+              fontSize: "12px",
+              fontWeight: 700,
+              cursor: "pointer",
+              transition: "all 0.2s",
+            }}
+          >
+            📖 Details
+          </button>
+
+          {/* + Add to Basket Button */}
+          <button
+            type="button"
+            onClick={handleToggleBasket}
+            style={{
+              backgroundColor: isItemInBasket ? "#ECFDF5" : "rgba(27, 54, 93, 0.06)",
+              border: isItemInBasket ? "1px solid #10B981" : "1px solid rgba(27, 54, 93, 0.15)",
+              color: isItemInBasket ? "#047857" : "var(--primary)",
+              padding: "5px 10px",
+              borderRadius: "6px",
+              fontSize: "12px",
+              fontWeight: 700,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              transition: "all 0.2s",
+            }}
+          >
+            {isItemInBasket ? (
+              <>
+                <IoCheckmarkCircleOutline size={14} color="#10B981" /> Added
+              </>
+            ) : (
+              <>
+                <IoCartOutline size={14} /> + Basket
+              </>
+            )}
+          </button>
+        </div>
         
         <span style={{
           display: "flex",
@@ -247,7 +289,7 @@ export default function ProductCard({ result, onClick }) {
         }}
         className="compare-link"
         >
-          Compare Prices <IoChevronForwardOutline size={14} />
+          Compare <IoChevronForwardOutline size={14} />
         </span>
       </div>
 
@@ -255,6 +297,10 @@ export default function ProductCard({ result, onClick }) {
         .card:hover .compare-link {
           color: var(--accent-hover);
           transform: translateX(3px);
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.6; }
         }
       `}</style>
     </div>

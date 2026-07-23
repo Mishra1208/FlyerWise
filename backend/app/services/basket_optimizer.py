@@ -12,24 +12,33 @@ from datetime import date
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from app.models import Store, Product, Price
+from app.models import Store, Product, Price, Flyer
 
 logger = logging.getLogger("flyerwise.basket_optimizer")
 
 
-def search_item_prices(db: Session, item_query: str) -> List[Dict[str, Any]]:
-    """Find current prices across all stores for a single search item."""
+def search_item_prices(db: Session, item_query: str, postal_code: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Find current prices across all stores for a single search item, optionally filtered by location FSA."""
     clean_query = item_query.strip()
     if not clean_query:
         return []
 
-    results = (
+    query = (
         db.query(Price, Product, Store)
         .join(Product, Price.product_id == Product.id)
         .join(Store, Price.store_id == Store.id)
+        .outerjoin(Flyer, Price.flyer_id == Flyer.id)
         .filter(Product.raw_name.ilike(f"%{clean_query}%"))
-        .all()
     )
+
+    if postal_code:
+        clean_pcode = postal_code.strip().replace(" ", "").upper()
+        fsa = clean_pcode[:3]
+        query = query.filter(
+            (Flyer.postal_code_fsa == fsa) | (Flyer.postal_code_fsa.is_(None)) | (Store.postal_codes_served.ilike(f"%{fsa}%"))
+        )
+
+    results = query.all()
 
     item_offers = []
     for price_row, prod_row, store_row in results:
@@ -49,7 +58,7 @@ def search_item_prices(db: Session, item_query: str) -> List[Dict[str, Any]]:
     return item_offers
 
 
-def optimize_basket(db: Session, item_queries: List[str]) -> Dict[str, Any]:
+def optimize_basket(db: Session, item_queries: List[str], postal_code: Optional[str] = None) -> Dict[str, Any]:
     """
     Calculate best 1-store and 2-store shopping list baskets.
 
@@ -73,7 +82,7 @@ def optimize_basket(db: Session, item_queries: List[str]) -> Dict[str, Any]:
     all_stores: Dict[int, str] = {}
 
     for q in item_queries:
-        offers = search_item_prices(db, q)
+        offers = search_item_prices(db, q, postal_code=postal_code)
         query_offers[q] = offers
         for o in offers:
             all_stores[o["store_id"]] = o["store_name"]

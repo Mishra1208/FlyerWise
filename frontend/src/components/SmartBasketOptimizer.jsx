@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   IoCartOutline, 
   IoFlashOutline, 
@@ -8,45 +8,39 @@ import {
   IoTrashOutline,
   IoAlertCircleOutline
 } from "react-icons/io5";
-import { BasketService } from "../services/api";
+import { useBasket } from "../contexts/BasketContext";
+import { useLocation } from "../contexts/LocationContext";
 
 export default function SmartBasketOptimizer() {
-  const [items, setItems] = useState(["milk", "spinach", "butter"]);
+  const { 
+    basketItems, 
+    addItem, 
+    removeItem, 
+    clearBasket, 
+    optimizationResult: result, 
+    isOptimizing: loading, 
+    optimize 
+  } = useBasket();
+  
+  const { postalCode, cityName } = useLocation();
   const [inputVal, setInputVal] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
+
+  useEffect(() => {
+    if (basketItems.length > 0 && !result) {
+      optimize(basketItems, postalCode);
+    }
+  }, [basketItems, postalCode]);
 
   const handleAddItem = (itemToAdd) => {
-    const val = (itemToAdd || inputVal).trim().toLowerCase();
-    if (val && !items.includes(val)) {
-      const updated = [...items, val];
-      setItems(updated);
+    const val = (itemToAdd || inputVal).trim();
+    if (val) {
+      addItem(val);
       setInputVal("");
-      calculateOptimization(updated);
     }
   };
 
-  const handleRemoveItem = (index) => {
-    const updated = items.filter((_, i) => i !== index);
-    setItems(updated);
-    if (updated.length > 0) {
-      calculateOptimization(updated);
-    } else {
-      setResult(null);
-    }
-  };
-
-  const calculateOptimization = async (listToOptimize = items) => {
-    if (listToOptimize.length === 0) return;
-    setLoading(true);
-    try {
-      const data = await BasketService.optimize(listToOptimize);
-      setResult(data);
-    } catch (err) {
-      console.error("Basket optimization failed:", err);
-    } finally {
-      setLoading(false);
-    }
+  const handleRemoveItem = (item) => {
+    removeItem(item);
   };
 
   const popularChips = ["milk", "spinach", "eggs", "butter", "bread", "chicken", "cheese", "yogurt"];
@@ -71,21 +65,41 @@ export default function SmartBasketOptimizer() {
             fontWeight: 800,
             letterSpacing: "1px",
             textTransform: "uppercase"
-          }}>AI-POWERED SAVINGS</span>
+          }}>AI-POWERED SAVINGS ({cityName || "Canada"})</span>
           <h2 style={{ fontSize: "24px", color: "var(--primary)", fontWeight: 800, display: "flex", alignItems: "center", gap: "10px", marginTop: "4px" }}>
             <IoCartOutline style={{ color: "var(--accent)" }} />
             <span>Smart Basket Optimizer</span>
           </h2>
         </div>
 
-        <button
-          onClick={() => calculateOptimization()}
-          disabled={loading || items.length === 0}
-          className="btn btn-primary"
-          style={{ padding: "10px 20px", fontSize: "14px" }}
-        >
-          {loading ? "Calculating..." : "Optimize My Shopping List"}
-        </button>
+        <div style={{ display: "flex", gap: "10px" }}>
+          {basketItems.length > 0 && (
+            <button
+              onClick={clearBasket}
+              style={{
+                padding: "8px 14px",
+                fontSize: "13px",
+                borderRadius: "var(--radius-sm)",
+                backgroundColor: "#F1F5F9",
+                border: "1px solid #CBD5E1",
+                color: "#64748B",
+                cursor: "pointer",
+                fontWeight: 600,
+              }}
+            >
+              Clear Basket
+            </button>
+          )}
+
+          <button
+            onClick={() => optimize(basketItems, postalCode)}
+            disabled={loading || basketItems.length === 0}
+            className="btn btn-primary"
+            style={{ padding: "10px 20px", fontSize: "14px" }}
+          >
+            {loading ? "Calculating..." : "Optimize My Shopping List"}
+          </button>
+        </div>
       </div>
 
       {/* Input section */}
@@ -110,32 +124,35 @@ export default function SmartBasketOptimizer() {
         {/* Quick Suggestion Chips */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "12px", alignItems: "center" }}>
           <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 600 }}>Quick Add:</span>
-          {popularChips.map((chip) => (
-            <button
-              key={chip}
-              onClick={() => handleAddItem(chip)}
-              disabled={items.includes(chip)}
-              style={{
-                fontSize: "12px",
-                padding: "4px 12px",
-                borderRadius: "var(--radius-full)",
-                backgroundColor: items.includes(chip) ? "rgba(0,0,0,0.05)" : "var(--bg-card)",
-                border: "1px solid var(--border-color)",
-                color: items.includes(chip) ? "var(--text-muted)" : "var(--primary)",
-                cursor: items.includes(chip) ? "default" : "pointer",
-                transition: "all 0.2s ease"
-              }}
-            >
-              + {chip}
-            </button>
-          ))}
+          {popularChips.map((chip) => {
+            const isAdded = basketItems.some((i) => i.toLowerCase() === chip.toLowerCase());
+            return (
+              <button
+                key={chip}
+                onClick={() => handleAddItem(chip)}
+                disabled={isAdded}
+                style={{
+                  fontSize: "12px",
+                  padding: "4px 12px",
+                  borderRadius: "var(--radius-full)",
+                  backgroundColor: isAdded ? "rgba(0,0,0,0.05)" : "var(--bg-card)",
+                  border: "1px solid var(--border-color)",
+                  color: isAdded ? "var(--text-muted)" : "var(--primary)",
+                  cursor: isAdded ? "default" : "pointer",
+                  transition: "all 0.2s ease"
+                }}
+              >
+                {isAdded ? "✓ " : "+ "}{chip}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Active Items Chips List */}
-      {items.length > 0 && (
+      {basketItems.length > 0 && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
-          {items.map((item, idx) => (
+          {basketItems.map((item, idx) => (
             <div
               key={idx}
               style={{
@@ -153,7 +170,7 @@ export default function SmartBasketOptimizer() {
               <span>{item}</span>
               <IoTrashOutline
                 size={16}
-                onClick={() => handleRemoveItem(idx)}
+                onClick={() => handleRemoveItem(item)}
                 style={{ cursor: "pointer", color: "var(--accent-red)" }}
               />
             </div>
