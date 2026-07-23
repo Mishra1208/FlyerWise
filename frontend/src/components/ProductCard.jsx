@@ -15,7 +15,7 @@ function getCleanItemName(rawName, brand) {
   return name.replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.substring(1).toLowerCase()).trim();
 }
 
-export default function ProductCard({ result, onClick }) {
+export default function ProductCard({ result, onClick, onCompare }) {
   const { product, prices, lowest_price, savings_potential, intelligence } = result;
   const { basketItems, addItem, removeItem } = useBasket();
 
@@ -296,18 +296,31 @@ export default function ProductCard({ result, onClick }) {
           </button>
         </div>
         
-        <span style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "4px",
-          color: "var(--accent)",
-          fontWeight: 700,
-          transition: "var(--transition)",
-        }}
-        className="compare-link"
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onCompare) {
+              onCompare(product);
+            }
+          }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "4px",
+            color: "var(--accent)",
+            fontWeight: 700,
+            cursor: "pointer",
+            background: "none",
+            border: "none",
+            padding: "4px 8px",
+            borderRadius: "6px",
+            transition: "all 0.2s ease",
+          }}
+          className="compare-link"
         >
           Compare <IoChevronForwardOutline size={14} />
-        </span>
+        </button>
       </div>
 
       <style>{`

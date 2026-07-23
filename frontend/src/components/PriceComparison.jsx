@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { IoCloseOutline, IoCheckmarkCircleOutline } from "react-icons/io5";
 import { PriceService } from "../services/api";
 import PriceHistory from "./PriceHistory";
@@ -23,19 +24,19 @@ export default function PriceComparison({ product, onClose }) {
     }
   }, [product]);
 
-  return (
+  return createPortal(
     <div style={{
       position: "fixed",
       top: 0,
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: "rgba(27, 54, 93, 0.4)",
-      backdropFilter: "blur(8px)",
+      backgroundColor: "rgba(15, 23, 42, 0.6)",
+      backdropFilter: "blur(6px)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      zIndex: 1000,
+      zIndex: 9999,
       padding: "20px",
       animation: "fadeIn 0.2s ease-out",
     }}
@@ -290,6 +291,7 @@ export default function PriceComparison({ product, onClose }) {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

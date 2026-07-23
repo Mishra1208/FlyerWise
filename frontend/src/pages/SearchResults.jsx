@@ -281,6 +281,7 @@ export default function SearchResults() {
                     key={result.product.id}
                     result={result}
                     onClick={(res) => setSelectedDetailResult(res)}
+                    onCompare={(prod) => setSelectedProduct(prod)}
                   />
                 ))}
               </div>
