@@ -7,7 +7,7 @@ export default function ProductCard({ result, onClick }) {
   return (
     <div 
       className="card animate-fade" 
-      onClick={() => onClick(product)}
+      onClick={() => onClick(result)}
       style={{
         padding: "24px",
         cursor: "pointer",
@@ -205,7 +205,7 @@ export default function ProductCard({ result, onClick }) {
         })}
       </div>
 
-      {/* Card Footer Compare action */}
+      {/* Card Footer Actions */}
       <div style={{
         display: "flex",
         justifyContent: "space-between",
@@ -214,9 +214,28 @@ export default function ProductCard({ result, onClick }) {
         paddingTop: "14px",
         fontSize: "13px",
       }}>
-        <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>
-          Available in {prices.length} stores
-        </span>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onClick(result);
+          }}
+          style={{
+            backgroundColor: "rgba(91, 140, 81, 0.08)",
+            border: "1px solid rgba(91, 140, 81, 0.2)",
+            color: "var(--accent-hover)",
+            padding: "5px 12px",
+            borderRadius: "6px",
+            fontSize: "12px",
+            fontWeight: 700,
+            cursor: "pointer",
+            transition: "all 0.2s",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "var(--accent)"; e.currentTarget.style.color = "#FFF"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "rgba(91, 140, 81, 0.08)"; e.currentTarget.style.color = "var(--accent-hover)"; }}
+        >
+          📖 Product Details
+        </button>
         
         <span style={{
           display: "flex",

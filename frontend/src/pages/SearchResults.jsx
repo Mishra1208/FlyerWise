@@ -4,6 +4,7 @@ import { IoArrowBackOutline, IoFunnelOutline } from "react-icons/io5";
 import SearchBar from "../components/SearchBar";
 import ProductCard from "../components/ProductCard";
 import PriceComparison from "../components/PriceComparison";
+import ProductDetailModal from "../components/ProductDetailModal";
 import { ProductService } from "../services/api";
 
 export default function SearchResults() {
@@ -14,6 +15,7 @@ export default function SearchResults() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedDetailResult, setSelectedDetailResult] = useState(null);
 
   const [flyerFilter, setFlyerFilter] = useState("all");
 
@@ -275,7 +277,7 @@ export default function SearchResults() {
                   <ProductCard
                     key={result.product.id}
                     result={result}
-                    onClick={(product) => setSelectedProduct(product)}
+                    onClick={(res) => setSelectedDetailResult(res)}
                   />
                 ))}
               </div>
@@ -283,6 +285,14 @@ export default function SearchResults() {
           </main>
         </div>
       </div>
+
+      {/* Product Detail & Nutrition Facts Animated Modal */}
+      {selectedDetailResult && (
+        <ProductDetailModal
+          result={selectedDetailResult}
+          onClose={() => setSelectedDetailResult(null)}
+        />
+      )}
 
       {/* Comparison Detail Modal */}
       {selectedProduct && (

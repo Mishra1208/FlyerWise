@@ -39,6 +39,9 @@ class ProductBase(BaseModel):
     category: str | None = None
     brand: str | None = None
     image_url: str | None = None
+    description: str | None = None
+    ingredients: str | None = None
+    nutrition_facts: dict | None = None
 
 
 class ProductResponse(ProductBase):
