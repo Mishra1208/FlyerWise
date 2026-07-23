@@ -22,16 +22,34 @@ router = APIRouter(prefix="/prices", tags=["prices"])
 @router.get("/compare/{product_id}", response_model=list[PriceWithStore])
 def compare_prices(product_id: int, db: Session = Depends(get_db)):
     """
-    Get all current store prices for a specific product.
-    Returns prices sorted by current_price ascending, with the lowest flagged.
+    Get store price rankings across all stores for a specific product.
+    Matches products sharing title tokens, sorted ascending by price with #1 lowest flagged.
     """
+    from datetime import date
+    today = date.today()
+
+    target = db.query(Product).filter(Product.id == product_id).first()
+    if not target:
+        return []
+
+    # Extract key title search tokens (first 2 words)
+    raw_words = [w for w in target.raw_name.split() if len(w) > 2][:2]
+    token_pattern = "%".join(raw_words) if raw_words else target.raw_name[:10]
+
+    # Find matching product variations across stores
+    matching_prods = db.query(Product).filter(
+        (Product.normalized_name == target.normalized_name) | 
+        (Product.raw_name.ilike(f"%{token_pattern}%"))
+    ).all()
+
+    product_ids = [p.id for p in matching_prods]
+    if not product_ids:
+        product_ids = [product_id]
+
     prices = (
         db.query(Price)
         .join(Store, Price.store_id == Store.id)
-        .filter(
-            Price.product_id == product_id,
-            Price.valid_until >= func.current_date(),
-        )
+        .filter(Price.product_id.in_(product_ids))
         .order_by(Price.current_price.asc())
         .all()
     )
@@ -39,17 +57,39 @@ def compare_prices(product_id: int, db: Session = Depends(get_db)):
     if not prices:
         return []
 
-    lowest = prices[0].current_price
+    # Deduplicate: keep cheapest price per store
+    store_map = {}
+    for p in prices:
+        s_id = p.store_id
+        if s_id not in store_map:
+            store_map[s_id] = p
+        else:
+            existing = store_map[s_id]
+            if float(p.current_price) < float(existing.current_price):
+                store_map[s_id] = p
 
-    seen_keys = set()
+    sorted_prices = sorted(store_map.values(), key=lambda p: float(p.current_price))
+    lowest_val = float(sorted_prices[0].current_price) if sorted_prices else 0.0
+
     result = []
-    for price in prices:
-        dedup_key = (price.store_id, float(price.current_price), price.unit or "")
-        if dedup_key in seen_keys:
-            continue
-        seen_keys.add(dedup_key)
+    for price in sorted_prices:
+        v_until = price.valid_until
+        v_from = price.valid_from
 
-        store = db.query(Store).filter(Store.id == price.store_id).first()
+        if v_until and v_until < today:
+            status = "recent_sale"
+            is_hist = True
+        elif v_from and v_from > today:
+            status = "upcoming"
+            is_hist = False
+        elif v_until and v_until == today:
+            status = "expiring_today"
+            is_hist = False
+        else:
+            status = "active"
+            is_hist = False
+
+        store = price.store
         result.append(
             PriceWithStore(
                 id=price.id,
@@ -74,7 +114,9 @@ def compare_prices(product_id: int, db: Session = Depends(get_db)):
                     color=store.color,
                     created_at=store.created_at,
                 ),
-                is_lowest=(price.current_price == lowest),
+                is_lowest=(float(price.current_price) == lowest_val),
+                flyer_status=status,
+                is_historical=is_hist,
             )
         )
 

@@ -1,67 +1,79 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { IoCloseOutline, IoCheckmarkCircleOutline } from "react-icons/io5";
+import { IoCloseOutline, IoCheckmarkCircleOutline, IoFlashOutline, IoRibbonOutline, IoStorefrontOutline } from "react-icons/io5";
 import { PriceService } from "../services/api";
 import PriceHistory from "./PriceHistory";
 
-export default function PriceComparison({ product, onClose }) {
-  const [prices, setPrices] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function PriceComparison({ product, prices: initialPrices, onClose }) {
+  const [prices, setPrices] = useState(initialPrices || []);
+  const [loading, setLoading] = useState(!initialPrices || initialPrices.length === 0);
 
   useEffect(() => {
     async function loadPrices() {
       try {
         const data = await PriceService.compare(product.id);
-        setPrices(data);
+        if (data && data.length > 0) {
+          setPrices(data);
+        }
       } catch (err) {
         console.error("Failed to load compare prices:", err);
       } finally {
         setLoading(false);
       }
     }
+
     if (product) {
       loadPrices();
     }
   }, [product]);
 
+  // Sort prices ascending by current_price
+  const sortedPrices = [...prices].sort((a, b) => floatVal(a.current_price) - floatVal(b.current_price));
+  const lowestVal = sortedPrices.length > 0 ? floatVal(sortedPrices[0].current_price) : 0;
+
+  function floatVal(val) {
+    return typeof val === "number" ? val : parseFloat(val || 0);
+  }
+
   return createPortal(
-    <div style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: "rgba(15, 23, 42, 0.6)",
-      backdropFilter: "blur(6px)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: 9999,
-      padding: "20px",
-      animation: "fadeIn 0.2s ease-out",
-    }}
-    onClick={onClose}
+    <div 
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "rgba(15, 23, 42, 0.65)",
+        backdropFilter: "blur(8px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 9999,
+        padding: "20px",
+        animation: "fadeIn 0.2s ease-out",
+      }}
+      onClick={onClose}
     >
       <div 
         style={{
           width: "100%",
-          maxWidth: "760px",
+          maxWidth: "800px",
           backgroundColor: "#FFFFFF",
-          borderRadius: "var(--radius-lg)",
+          borderRadius: "24px",
           overflow: "hidden",
-          maxHeight: "90vh",
+          maxHeight: "92vh",
           display: "flex",
           flexDirection: "column",
-          animation: "scaleIn 0.3s var(--ease-elastic)",
-          border: "1px solid var(--border-color)",
-          boxShadow: "0 20px 50px rgba(27, 54, 93, 0.15)",
+          animation: "scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
+          border: "1px solid rgba(226, 232, 240, 0.8)",
+          boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.35)",
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header section */}
         <div style={{
-          padding: "24px 30px",
-          borderBottom: "1px solid var(--border-color)",
+          padding: "24px 32px",
+          borderBottom: "1px solid #E2E8F0",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
@@ -71,14 +83,14 @@ export default function PriceComparison({ product, onClose }) {
             <div style={{
               width: "74px",
               height: "74px",
-              borderRadius: "var(--radius-md)",
+              borderRadius: "16px",
               backgroundColor: "#FFFFFF",
               padding: "8px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              border: "1px solid var(--border-color)",
-              boxShadow: "var(--shadow-sm)",
+              border: "1px solid #E2E8F0",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.04)",
             }}>
               <img 
                 src={product.image_url || "https://images.unsplash.com/photo-1542838132-92c53300491e?w=200"} 
@@ -95,102 +107,100 @@ export default function PriceComparison({ product, onClose }) {
                   fontSize: "11px",
                   fontWeight: 800,
                   textTransform: "uppercase",
-                  color: "var(--accent-hover)",
+                  color: "#059669",
                   letterSpacing: "1px",
                   display: "block",
                 }}>{product.brand}</span>
               )}
-              <h2 style={{ fontSize: "20px", color: "var(--text-primary)", fontWeight: 700, margin: "2px 0 4px 0" }}>
+              <h2 style={{ fontSize: "20px", color: "#0F172A", fontWeight: 800, margin: "2px 0 4px 0", fontFamily: "var(--font-headings)" }}>
                 {product.raw_name}
               </h2>
               <span style={{
                 fontSize: "12px",
-                color: "var(--text-secondary)",
-                backgroundColor: "rgba(27, 54, 93, 0.05)",
-                padding: "3px 10px",
-                borderRadius: "var(--radius-full)",
-                fontWeight: 600,
-              }}>{product.category || "Grocery"}</span>
+                color: "#475569",
+                backgroundColor: "rgba(16, 185, 129, 0.08)",
+                border: "1px solid rgba(16, 185, 129, 0.2)",
+                padding: "3px 12px",
+                borderRadius: "20px",
+                fontWeight: 700,
+              }}>
+                Comparing {sortedPrices.length} Store {sortedPrices.length === 1 ? "Offer" : "Offers"}
+              </span>
             </div>
           </div>
 
-          <button onClick={onClose} style={{
-            backgroundColor: "#FFFFFF",
-            border: "1px solid var(--border-color)",
-            color: "var(--text-primary)",
-            padding: "8px",
-            borderRadius: "50%",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "var(--shadow-sm)",
-            transition: "var(--transition)",
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = "var(--accent)"; e.currentTarget.style.transform = "rotate(90deg)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-primary)"; e.currentTarget.style.transform = "rotate(0)"; }}
+          <button 
+            onClick={onClose} 
+            style={{
+              backgroundColor: "#FFFFFF",
+              border: "1px solid #E2E8F0",
+              color: "#64748B",
+              padding: "10px",
+              borderRadius: "50%",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = "#0F172A"; e.currentTarget.style.transform = "rotate(90deg)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = "#64748B"; e.currentTarget.style.transform = "rotate(0)"; }}
           >
-            <IoCloseOutline size={20} />
+            <IoCloseOutline size={22} />
           </button>
         </div>
 
         {/* Scrollable contents */}
         <div style={{
-          padding: "30px",
+          padding: "32px",
           overflowY: "auto",
           display: "flex",
           flexDirection: "column",
-          gap: "28px",
+          gap: "32px",
         }}>
-          {/* Price comparison list */}
+          {/* Store Price Rankings */}
           <div>
-            <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "16px", color: "var(--text-primary)" }}>Compare Store Prices</h3>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "18px" }}>
+              <h3 style={{ fontSize: "18px", fontWeight: 800, color: "#0F172A", fontFamily: "var(--font-headings)" }}>
+                Store Price Rankings ({sortedPrices.length} Stores)
+              </h3>
+              <span style={{ fontSize: "12px", color: "#059669", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
+                <IoFlashOutline /> Sorted Lowest to Highest
+              </span>
+            </div>
+
             {loading ? (
-              <div style={{ textAlign: "center", padding: "30px", color: "var(--text-muted)", fontSize: "15px" }}>Comparing store prices...</div>
+              <div style={{ textAlign: "center", padding: "36px", color: "#64748B", fontSize: "15px" }}>Comparing store prices...</div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                {prices.map((price) => {
+              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                {sortedPrices.map((price, idx) => {
+                  const pVal = floatVal(price.current_price);
+                  const isLowest = idx === 0 || pVal === lowestVal;
+
                   let statusBadge = null;
                   if (price.flyer_status === "expiring_today") {
                     statusBadge = (
-                      <span style={{
-                        fontSize: "11px",
-                        fontWeight: 700,
-                        color: "#D97706",
-                        backgroundColor: "#FEF3C7",
-                        padding: "2px 8px",
-                        borderRadius: "4px",
-                        marginLeft: "8px",
-                      }}>
+                      <span style={{ fontSize: "11px", fontWeight: 800, color: "#D97706", backgroundColor: "#FEF3C7", padding: "3px 10px", borderRadius: "12px" }}>
                         ⏳ Ends Today
                       </span>
                     );
                   } else if (price.flyer_status === "upcoming") {
                     statusBadge = (
-                      <span style={{
-                        fontSize: "11px",
-                        fontWeight: 700,
-                        color: "#2563EB",
-                        backgroundColor: "#EFF6FF",
-                        padding: "2px 8px",
-                        borderRadius: "4px",
-                        marginLeft: "8px",
-                      }}>
+                      <span style={{ fontSize: "11px", fontWeight: 800, color: "#2563EB", backgroundColor: "#EFF6FF", padding: "3px 10px", borderRadius: "12px" }}>
                         📅 Preview
                       </span>
                     );
                   } else if (price.flyer_status === "recent_sale" || price.is_historical) {
                     statusBadge = (
-                      <span style={{
-                        fontSize: "11px",
-                        fontWeight: 600,
-                        color: "#64748B",
-                        backgroundColor: "#F1F5F9",
-                        padding: "2px 8px",
-                        borderRadius: "4px",
-                        marginLeft: "8px",
-                      }}>
+                      <span style={{ fontSize: "11px", fontWeight: 700, color: "#64748B", backgroundColor: "#F1F5F9", padding: "3px 10px", borderRadius: "12px" }}>
                         📜 Last Sale
+                      </span>
+                    );
+                  } else {
+                    statusBadge = (
+                      <span style={{ fontSize: "11px", fontWeight: 800, color: "#047857", backgroundColor: "#D1FAE5", padding: "3px 10px", borderRadius: "12px" }}>
+                        ⚡ Active Flyer
                       </span>
                     );
                   }
@@ -202,89 +212,135 @@ export default function PriceComparison({ product, onClose }) {
                     : "Active Flyer";
 
                   return (
-                    <div key={price.id} style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      padding: "16px 20px",
-                      borderRadius: "var(--radius-md)",
-                      backgroundColor: price.is_lowest ? "rgba(91, 140, 81, 0.05)" : "#FFFFFF",
-                      border: price.is_lowest 
-                        ? "1px solid rgba(91, 140, 81, 0.25)" 
-                        : "1px solid var(--border-color)",
-                      boxShadow: price.is_lowest ? "var(--shadow-glow)" : "none",
-                      opacity: price.is_historical ? 0.75 : 1,
-                    }}>
-                      {/* Store details */}
-                      <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                    <div 
+                      key={price.id || idx} 
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        padding: isLowest ? "20px 24px" : "16px 20px",
+                        borderRadius: "18px",
+                        backgroundColor: isLowest ? "rgba(16, 185, 129, 0.04)" : "#FFFFFF",
+                        border: isLowest ? "2px solid #10B981" : "1px solid #E2E8F0",
+                        boxShadow: isLowest ? "0 10px 25px rgba(16, 185, 129, 0.2)" : "0 2px 6px rgba(0,0,0,0.02)",
+                        position: "relative",
+                        overflow: "hidden",
+                        transition: "all 0.25s ease",
+                      }}
+                    >
+                      {/* Glow Accent Stripe for Lowest Price */}
+                      {isLowest && (
+                        <div style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: "6px",
+                          height: "100%",
+                          background: "linear-gradient(180deg, #10B981 0%, #059669 100%)",
+                        }} />
+                      )}
+
+                      {/* Store Details & Badge */}
+                      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                         <span style={{
-                          width: "10px",
-                          height: "10px",
+                          fontSize: "13px",
+                          fontWeight: 800,
+                          color: isLowest ? "#047857" : "#64748B",
+                          backgroundColor: isLowest ? "#D1FAE5" : "#F1F5F9",
+                          width: "28px",
+                          height: "28px",
                           borderRadius: "50%",
-                          backgroundColor: price.store.color || "#ccc",
-                        }}></span>
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0
+                        }}>
+                          #{idx + 1}
+                        </span>
+
+                        <span style={{
+                          width: "12px",
+                          height: "12px",
+                          borderRadius: "50%",
+                          backgroundColor: price.store.color || "#059669",
+                          flexShrink: 0,
+                          boxShadow: "0 0 8px rgba(0,0,0,0.15)"
+                        }} />
+
                         <div>
-                          <strong style={{ fontSize: "16px", color: "var(--text-primary)", fontWeight: 700 }}>{price.store.name}</strong>
-                          {statusBadge}
-                          {price.savings && (
-                            <span style={{
-                              marginLeft: "8px",
-                              fontSize: "11px",
-                              backgroundColor: "rgba(229, 62, 62, 0.1)",
-                              color: "var(--accent-red)",
-                              padding: "2px 8px",
-                              borderRadius: "4px",
-                              fontWeight: 700,
-                            }}>{price.savings}</span>
-                          )}
-                          <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "3px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <strong style={{ fontSize: "16px", color: "#0F172A", fontWeight: 800 }}>
+                              {price.store.name}
+                            </strong>
+
+                            {isLowest && (
+                              <span style={{
+                                fontSize: "11px",
+                                fontWeight: 800,
+                                background: "linear-gradient(135deg, #059669 0%, #10B981 100%)",
+                                color: "#FFFFFF",
+                                padding: "3px 10px",
+                                borderRadius: "12px",
+                                boxShadow: "0 2px 8px rgba(16, 185, 129, 0.3)",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "4px"
+                              }}>
+                                <IoRibbonOutline size={13} /> CHEAPEST OFFER
+                              </span>
+                            )}
+
+                            {statusBadge}
+                          </div>
+
+                          <div style={{ fontSize: "12px", color: "#64748B", marginTop: "3px" }}>
                             {dateStr}
                           </div>
                         </div>
                       </div>
 
-                    {/* Price Tag */}
-                    <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-                      <div style={{ textAlign: "right" }}>
-                        <div style={{
-                          fontSize: "20px",
-                          fontWeight: 800,
-                          color: price.is_lowest ? "var(--accent-hover)" : "var(--text-primary)",
-                        }}>
-                          ${parseFloat(price.current_price).toFixed(2)}
+                      {/* Price Tag & Checkmark */}
+                      <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                        <div style={{ textAlign: "right" }}>
+                          <span style={{
+                            fontSize: isLowest ? "22px" : "18px",
+                            fontWeight: 800,
+                            color: isLowest ? "#047857" : "#0F172A",
+                            backgroundColor: isLowest ? "#D1FAE5" : "transparent",
+                            padding: isLowest ? "4px 14px" : "0",
+                            borderRadius: "12px",
+                            display: "inline-block"
+                          }}>
+                            ${pVal.toFixed(2)}
+                          </span>
+                          {price.unit && (
+                            <span style={{ fontSize: "11px", color: "#64748B", display: "block", marginTop: "2px" }}>
+                              {price.unit}
+                            </span>
+                          )}
                         </div>
-                        {price.unit && (
-                          <div style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 500 }}>
-                            {price.unit} {price.quantity ? `(${price.quantity})` : ""}
-                          </div>
+
+                        {isLowest && (
+                          <IoCheckmarkCircleOutline size={26} color="#10B981" />
                         )}
                       </div>
-
-                      {price.is_lowest && (
-                        <div style={{
-                          display: "flex",
-                          alignItems: "center",
-                          color: "var(--accent)",
-                        }} title="Lowest Price Guarantee">
-                          <IoCheckmarkCircleOutline size={26} />
-                        </div>
-                      )}
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
               </div>
             )}
           </div>
 
           {/* Historical price trends */}
           <div>
-            <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "16px", color: "var(--text-primary)" }}>Price Trend (Last Scrapes)</h3>
+            <h3 style={{ fontSize: "18px", fontWeight: 800, marginBottom: "16px", color: "#0F172A", fontFamily: "var(--font-headings)" }}>
+              Price History & 90-Day Trend
+            </h3>
             <div style={{
-              padding: "20px",
-              borderRadius: "var(--radius-md)",
+              padding: "24px",
+              borderRadius: "20px",
               backgroundColor: "#F8FAFC",
-              border: "1px solid var(--border-color)",
+              border: "1px solid #E2E8F0",
             }}>
               <PriceHistory productId={product.id} />
             </div>

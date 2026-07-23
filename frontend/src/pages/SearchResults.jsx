@@ -17,7 +17,7 @@ export default function SearchResults() {
 
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedCompareResult, setSelectedCompareResult] = useState(null);
   const [selectedDetailResult, setSelectedDetailResult] = useState(null);
 
   const [flyerFilter, setFlyerFilter] = useState("all");
@@ -281,7 +281,7 @@ export default function SearchResults() {
                     key={result.product.id}
                     result={result}
                     onClick={(res) => setSelectedDetailResult(res)}
-                    onCompare={(prod) => setSelectedProduct(prod)}
+                    onCompare={(res) => setSelectedCompareResult(res)}
                   />
                 ))}
               </div>
@@ -304,10 +304,11 @@ export default function SearchResults() {
       )}
 
       {/* Comparison Detail Modal */}
-      {selectedProduct && (
+      {selectedCompareResult && (
         <PriceComparison
-          product={selectedProduct}
-          onClose={() => setSelectedProduct(null)}
+          product={selectedCompareResult.product}
+          prices={selectedCompareResult.prices}
+          onClose={() => setSelectedCompareResult(null)}
         />
       )}
 
