@@ -16,15 +16,34 @@ function checkIsFood(product) {
   const brand = (product.brand || "").toLowerCase();
   const text = `${name} ${category} ${brand}`;
 
+  // 1. Food Whitelist Overrides (Food items containing words like 'cream' in 'creamed honey' or 'ice cream')
+  const foodWhitelist = [
+    "honey", "miel", "creamed honey", "raw honey", "organic honey",
+    "ice cream", "sour cream", "whipping cream", "cream cheese", "heavy cream", "coffee cream", "creamer", "creamed corn", "cream of mushroom", "cream of chicken",
+    "milk", "lait", "butter", "beurre", "margarine", "cheese", "fromage", "yogurt", "yoghurt", "yogourt", "bread", "pain", "chicken", "poulet", "beef", "boeuf", "pork", "porc", "turkey", "dindon",
+    "fish", "poisson", "salmon", "saumon", "tuna", "thon", "shrimp", "crevette", "egg", "oeuf", "apple", "pomme", "banana", "banane", "orange",
+    "berry", "fraise", "bleuet", "grape", "raisin", "tomato", "tomate", "potato", "patate", "onion", "oignon", "garlic", "ail", "carrot", "carotte",
+    "spinach", "épinard", "lettuce", "laitue", "rice", "riz", "pasta", "pâte", "spaghetti", "macaroni", "noodle", "nouille", "sauce", "oil", "huile",
+    "sugar", "sucre", "salt", "sel", "pepper", "poivre", "soup", "soupe", "cereal", "céréale", "oat", "avoine", "juice", "jus", "coffee", "café",
+    "tea", "thé", "water", "eau", "soda", "cola", "pop", "chip", "snack", "nut", "noix", "almond", "amande", "chocolate", "chocolat", "biscuit", "cookie"
+  ];
+
+  if (foodWhitelist.some((term) => text.includes(term))) {
+    return true;
+  }
+
+  // 2. Specific Non-Food Keywords
   const nonFoodKeywords = [
     "shampoo", "shampooing", "conditioner", "capillaire", "hair care", "soins capillaires",
-    "soap", "savon", "body wash", "douche", "lotion", "cream", "crème", "deodorant", "déodorant",
-    "toothpaste", "dentifrice", "toothbrush", "mouthwash",
-    "detergent", "lessive", "cleaner", "nettoyant", "dish soap", "liquid dish", "paper towel", "essuie-tout",
-    "toilet paper", "papier hygiénique", "tissue", "mouchoir", "diaper", "couche", "tampon", "pad",
-    "beauty", "cosmetics", "skincare", "pharmacy", "parfum", "cologne", "razor", "rasoir", "shaving",
-    "head & shoulders", "head and shoulders", "pantene", "dove", "l'oréal", "loreal", "garnier", "tresemmé", "colgate",
-    "crest", "tide", "cascade", "bounty", "charmin", "lysol", "clorox", "swiffer", "febreze", "palmolive", "dawn", "old spice", "nivea"
+    "body wash", "gel douche", "bar soap", "savon de beauté", "hand soap", "savon pour les mains",
+    "body lotion", "lotion corporelle", "face cream", "crème visage", "hand cream", "crème mains",
+    "deodorant", "déodorant", "antiperspirant", "toothpaste", "dentifrice", "toothbrush", "brosse à dents", "mouthwash", "bain de bouche",
+    "laundry detergent", "lessive", "fabric softener", "assouplissant", "dish soap", "liquid dish", "dishwasher", "cleaner", "nettoyant",
+    "paper towel", "essuie-tout", "toilet paper", "papier hygiénique", "facial tissue", "mouchoir",
+    "baby diaper", "couche", "tampon", "sanitary pad", "serviette hygiénique",
+    "cosmetics", "makeup", "mascara", "lipstick", "rouge à lèvres", "perfume", "parfum", "cologne",
+    "razor", "rasoir", "shaving cream", "crème à raser",
+    "head & shoulders", "head and shoulders", "pantene", "tresemmé", "colgate", "crest", "tide", "cascade", "bounty", "charmin", "lysol", "clorox", "swiffer", "febreze"
   ];
 
   return !nonFoodKeywords.some((kw) => text.includes(kw));
