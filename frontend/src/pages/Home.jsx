@@ -4,16 +4,12 @@ import {
   IoSearchOutline, 
   IoGitCompareOutline, 
   IoWalletOutline,
-  IoCheckmarkCircleOutline,
   IoChevronDownOutline,
   IoChevronUpOutline,
   IoFlameOutline,
   IoSparklesOutline,
-  IoCartOutline,
-  IoFlashOutline,
-  IoStorefrontOutline,
-  IoShieldCheckmarkOutline,
-  IoArrowForwardOutline
+  IoArrowForwardOutline,
+  IoShieldCheckmarkOutline
 } from "react-icons/io5";
 import SearchBar from "../components/SearchBar";
 import SmartBasketOptimizer from "../components/SmartBasketOptimizer";
@@ -62,13 +58,18 @@ export default function Home() {
     { name: "Adonis", color: "#16A34A", tag: "Fresh Mediterranean", logoUrl: "/logos/adonis.png", bg: "#F0FDF4" },
   ];
 
+  // 10 Fruits & Veggies Lottie Animations
   const quickCategories = [
-    { label: "🥩 Chicken & Meat", q: "chicken" },
-    { label: "🧈 Butter & Dairy", q: "butter" },
-    { label: "🥛 Milk 2L/4L", q: "milk" },
-    { label: "🥑 Fresh Produce", q: "avocado" },
-    { label: "🍞 Bread & Bakery", q: "bread" },
-    { label: "🧴 Shampoos & Care", q: "shampoo" },
+    { label: "Fresh Produce", q: "tomatoes", lottie: "https://lottie.host/509d2a12-45cc-465a-9d82-4b81de56c0be/ZDfdiZjsbN.lottie" },
+    { label: "Organic Fruits", q: "apple", lottie: "https://lottie.host/f6fa258a-bd79-45f3-8f14-8123528a082d/uzg1C6ki2P.lottie" },
+    { label: "Butter & Dairy", q: "butter", lottie: "https://lottie.host/736e3a5f-9eab-4b8b-866b-0301872e4c92/DjbQDgGUSm.lottie" },
+    { label: "Fresh Meat", q: "chicken", lottie: "https://lottie.host/92d696d2-b442-4531-af85-bc26da4105be/CZeRANbEKU.lottie" },
+    { label: "Milk 2L/4L", q: "milk", lottie: "https://lottie.host/b250f70e-9ec3-4b7b-83a9-22ee0c19952c/Q30ro18tYT.lottie" },
+    { label: "Bakery & Bread", q: "bread", lottie: "https://lottie.host/6cc4d42e-70fd-4a7b-914c-22b6227d680b/sRZPkK3QXg.lottie" },
+    { label: "Avocado Deals", q: "avocado", lottie: "https://lottie.host/7f4ee346-8e31-4369-9277-de3f2666b452/DKneUmOobC.lottie" },
+    { label: "Juices & Drinks", q: "juice", lottie: "https://lottie.host/fdc237a6-71ca-4308-a2eb-eae296ee7bf8/mtUg2aUeyR.lottie" },
+    { label: "Cheese & Eggs", q: "cheese", lottie: "https://lottie.host/3649145a-4c15-4e5c-b05b-1c9ae0d4ebe1/8H8WGwkACi.lottie" },
+    { label: "Hygiene & Care", q: "shampoo", lottie: "https://lottie.host/171de373-f7e4-43eb-8a58-6d5b0893e396/DRolnYC2cD.lottie" },
   ];
 
   const faqData = [
@@ -91,12 +92,12 @@ export default function Home() {
   ];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "45px", paddingBottom: "80px", backgroundColor: "#F8FAFC" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "50px", paddingBottom: "80px", backgroundColor: "#F8FAFC" }}>
       
-      {/* 1. ULTRA-PREMIUM HERO BANNER SECTION */}
+      {/* 1. ULTRA-PREMIUM HERO BANNER SECTION WITH FLOATING LOTTIE ANIMATIONS */}
       <section style={{
         position: "relative",
-        minHeight: "540px",
+        minHeight: "560px",
         background: "linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%)",
         display: "flex",
         flexDirection: "column",
@@ -104,15 +105,10 @@ export default function Home() {
         alignItems: "center",
         color: "#FFFFFF",
         textAlign: "center",
-        padding: "70px 24px 90px 24px",
+        padding: "80px 24px 110px 24px",
       }}>
-        {/* Animated background ambient glow spots */}
-        <div style={{
-          position: "absolute",
-          inset: 0,
-          overflow: "hidden",
-          pointerEvents: "none",
-        }}>
+        {/* Ambient Glows */}
+        <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
           <div style={{
             position: "absolute",
             top: "-150px",
@@ -133,9 +129,45 @@ export default function Home() {
           }} />
         </div>
 
-        <div style={{ maxWidth: "860px", width: "100%", display: "flex", flexDirection: "column", gap: "24px", zIndex: 2 }}>
+        {/* Floating Left Lottie Animation */}
+        <div style={{
+          position: "absolute",
+          top: "80px",
+          left: "40px",
+          width: "140px",
+          height: "140px",
+          pointerEvents: "none",
+          opacity: 0.85,
+          filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.3))"
+        }}>
+          <DotLottieReact
+            src="https://lottie.host/509d2a12-45cc-465a-9d82-4b81de56c0be/ZDfdiZjsbN.lottie"
+            loop
+            autoplay
+          />
+        </div>
+
+        {/* Floating Right Lottie Animation */}
+        <div style={{
+          position: "absolute",
+          top: "80px",
+          right: "40px",
+          width: "140px",
+          height: "140px",
+          pointerEvents: "none",
+          opacity: 0.85,
+          filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.3))"
+        }}>
+          <DotLottieReact
+            src="https://lottie.host/f6fa258a-bd79-45f3-8f14-8123528a082d/uzg1C6ki2P.lottie"
+            loop
+            autoplay
+          />
+        </div>
+
+        <div style={{ maxWidth: "880px", width: "100%", display: "flex", flexDirection: "column", gap: "24px", zIndex: 2 }}>
           
-          {/* Glowing Live Pulse Badge */}
+          {/* Live Pulse Badge */}
           <span style={{
             fontSize: "12px",
             fontWeight: 800,
@@ -161,11 +193,11 @@ export default function Home() {
               boxShadow: "0 0 10px #10B981",
               animation: "pulse 1.5s infinite"
             }} />
-            ⚡ 12,500+ Live Weekly Flyer Deals Indexed
+            ⚡ 12,500+ Live Weekly Flyer Deals Indexed Across Canada
           </span>
 
           <h1 style={{
-            fontSize: "52px",
+            fontSize: "54px",
             fontWeight: 900,
             color: "#FFFFFF",
             lineHeight: "1.12",
@@ -182,7 +214,7 @@ export default function Home() {
           <p style={{
             fontSize: "19px",
             color: "#94A3B8",
-            maxWidth: "680px",
+            maxWidth: "700px",
             margin: "0 auto",
             lineHeight: "1.6",
             fontWeight: 400,
@@ -190,41 +222,56 @@ export default function Home() {
             Never overpay at checkout. Search any product to compare flyer prices across Walmart, Maxi, Metro, IGA, Super C, Costco, and Provigo with AI basket optimization.
           </p>
 
-          {/* Search bar inside hero */}
-          <div style={{ maxWidth: "660px", width: "100%", margin: "10px auto 0 auto" }}>
+          {/* Search bar */}
+          <div style={{ maxWidth: "680px", width: "100%", margin: "10px auto 0 auto" }}>
             <SearchBar onSearch={handleSearch} />
           </div>
 
-          {/* Quick Category Chips */}
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "10px", marginTop: "10px" }}>
+          {/* 10 ANIMATED FRUITS & VEGGIES CATEGORY CHIPS */}
+          <div style={{
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "center",
+            gap: "10px",
+            marginTop: "16px"
+          }}>
             {quickCategories.map((cat) => (
               <button
                 key={cat.q}
                 onClick={() => handleSearch(cat.q)}
                 style={{
                   fontSize: "13px",
-                  fontWeight: 600,
-                  color: "#CBD5E1",
-                  backgroundColor: "rgba(255, 255, 255, 0.06)",
-                  border: "1px solid rgba(255, 255, 255, 0.12)",
+                  fontWeight: 700,
+                  color: "#E2E8F0",
+                  backgroundColor: "rgba(255, 255, 255, 0.08)",
+                  border: "1px solid rgba(255, 255, 255, 0.16)",
                   padding: "6px 14px",
-                  borderRadius: "20px",
+                  borderRadius: "24px",
                   cursor: "pointer",
-                  transition: "all 0.2s ease",
-                  backdropFilter: "blur(4px)"
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  transition: "all 0.25s ease",
+                  backdropFilter: "blur(6px)",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "rgba(16, 185, 129, 0.2)";
+                  e.currentTarget.style.backgroundColor = "rgba(16, 185, 129, 0.25)";
                   e.currentTarget.style.borderColor = "#10B981";
                   e.currentTarget.style.color = "#FFFFFF";
+                  e.currentTarget.style.transform = "translateY(-3px) scale(1.03)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.06)";
-                  e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.12)";
-                  e.currentTarget.style.color = "#CBD5E1";
+                  e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.08)";
+                  e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.16)";
+                  e.currentTarget.style.color = "#E2E8F0";
+                  e.currentTarget.style.transform = "translateY(0) scale(1)";
                 }}
               >
-                {cat.label}
+                <div style={{ width: "24px", height: "24px", flexShrink: 0 }}>
+                  <DotLottieReact src={cat.lottie} loop autoplay />
+                </div>
+                <span>{cat.label}</span>
               </button>
             ))}
           </div>
@@ -232,7 +279,7 @@ export default function Home() {
       </section>
 
       {/* 2. LIVE STATS STRIP CARD */}
-      <div className="container" style={{ position: "relative", zIndex: 10, marginTop: "-50px" }}>
+      <div className="container" style={{ position: "relative", zIndex: 10, marginTop: "-55px" }}>
         <div style={{
           backgroundColor: "#FFFFFF",
           border: "1px solid rgba(226, 232, 240, 0.9)",
@@ -242,12 +289,12 @@ export default function Home() {
           justifyContent: "space-around",
           alignItems: "center",
           width: "100%",
-          maxWidth: "960px",
+          maxWidth: "980px",
           margin: "0 auto",
           padding: "24px 20px",
         }}>
           <div style={{ textAlign: "center", flex: 1, borderRight: "1px solid #E2E8F0", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", padding: "0 10px" }}>
-            <div style={{ width: "76px", height: "76px", flexShrink: 0 }}>
+            <div style={{ width: "70px", height: "70px", flexShrink: 0 }}>
               <DotLottieReact
                 src="https://lottie.host/7906886d-3553-4489-a88c-b0b1ccfaaafe/bU2n0WjiRD.lottie"
                 loop
@@ -264,27 +311,45 @@ export default function Home() {
             </div>
           </div>
 
-          <div style={{ textAlign: "center", flex: 1, borderRight: "1px solid #E2E8F0" }}>
-            <h3 style={{ fontSize: "30px", color: "#0F172A", fontWeight: 900, margin: 0, fontFamily: "var(--font-headings)" }}>
-              12,500+
-            </h3>
-            <span style={{ fontSize: "12px", color: "#64748B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginTop: "4px", display: "block" }}>
-              Flyer Items Scraped
-            </span>
+          <div style={{ textAlign: "center", flex: 1, borderRight: "1px solid #E2E8F0", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", padding: "0 10px" }}>
+            <div style={{ width: "60px", height: "60px", flexShrink: 0 }}>
+              <DotLottieReact
+                src="https://lottie.host/161951b7-a350-418e-8406-1065b078174c/4g1Qifp1X3.lottie"
+                loop
+                autoplay
+              />
+            </div>
+            <div style={{ textAlign: "left" }}>
+              <h3 style={{ fontSize: "30px", color: "#0F172A", fontWeight: 900, margin: 0, fontFamily: "var(--font-headings)" }}>
+                12,500+
+              </h3>
+              <span style={{ fontSize: "12px", color: "#64748B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginTop: "4px", display: "block" }}>
+                Flyer Items Scraped
+              </span>
+            </div>
           </div>
 
-          <div style={{ textAlign: "center", flex: 1 }}>
-            <h3 style={{ fontSize: "30px", color: "#059669", fontWeight: 900, margin: 0, fontFamily: "var(--font-headings)" }}>
-              Up to $45/wk
-            </h3>
-            <span style={{ fontSize: "12px", color: "#047857", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginTop: "4px", display: "block" }}>
-              Weekly Savings Potential ($2,300/yr)
-            </span>
+          <div style={{ textAlign: "center", flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", padding: "0 10px" }}>
+            <div style={{ width: "65px", height: "65px", flexShrink: 0 }}>
+              <DotLottieReact
+                src="https://lottie.host/0219855b-c4b1-4784-a2ef-db2dbf026132/cSfJGDmo7C.lottie"
+                loop
+                autoplay
+              />
+            </div>
+            <div style={{ textAlign: "left" }}>
+              <h3 style={{ fontSize: "30px", color: "#059669", fontWeight: 900, margin: 0, fontFamily: "var(--font-headings)" }}>
+                Up to $45/wk
+              </h3>
+              <span style={{ fontSize: "12px", color: "#047857", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginTop: "4px", display: "block" }}>
+                Weekly Savings ($2,300/yr)
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 3. RETAILERS BRANDING STYLISH CARDS */}
+      {/* 3. RETAILERS BRANDING STYLISH CARDS WITH REAL STORE LOGOS */}
       <section className="container" style={{ marginTop: "10px" }}>
         <div style={{ textAlign: "center", marginBottom: "18px" }}>
           <span style={{ fontSize: "12px", fontWeight: 800, textTransform: "uppercase", color: "#64748B", letterSpacing: "1px" }}>
@@ -360,12 +425,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 3. SMART BASKET OPTIMIZER SECTION */}
+      {/* 4. SMART BASKET OPTIMIZER SECTION */}
       <section className="container">
         <SmartBasketOptimizer />
       </section>
 
-      {/* 4. 3D HOW IT WORKS SECTION */}
+      {/* 5. 3D HOW IT WORKS SECTION WITH MAIN ANIMATIONS (SALE, SHOPPING CART, SAVING) */}
       <section id="how-it-works" className="container" style={{ scrollMarginTop: "100px" }}>
         <div style={{ textAlign: "center", marginBottom: "50px" }}>
           <span style={{
@@ -378,138 +443,144 @@ export default function Home() {
             borderRadius: "20px",
             letterSpacing: "1px"
           }}>
-            EFFORTLESS 3-STEP PROCESS
+            EFFORTLESS 3-STEP AI PROCESS
           </span>
-          <h2 style={{ fontSize: "36px", color: "#0F172A", fontWeight: 900, marginTop: "10px", fontFamily: "var(--font-headings)" }}>
-            How FlyerWise Saves You Money
+          <h2 style={{ fontSize: "38px", color: "#0F172A", fontWeight: 900, marginTop: "10px", fontFamily: "var(--font-headings)" }}>
+            How FlyerWise Automates Your Savings
           </h2>
-          <p style={{ color: "#64748B", fontSize: "17px", marginTop: "8px", maxWidth: "600px", margin: "8px auto 0 auto" }}>
-            Stop browsing endless PDF flyers manually. Let AI find the exact lowest price for every grocery item in seconds.
+          <p style={{ color: "#64748B", fontSize: "17px", marginTop: "8px", maxWidth: "620px", margin: "8px auto 0 auto" }}>
+            Experience real-time flyer price intelligence built specifically for Canadian grocery shoppers.
           </p>
         </div>
 
         <div style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
           gap: "30px",
         }}>
-          {/* Step 1 */}
+          {/* STEP 1: SALE ANIMATION */}
           <div style={{
             backgroundColor: "#FFFFFF",
-            border: "1px solid #E2E8F0",
-            borderRadius: "24px",
+            border: "1px solid rgba(220, 38, 38, 0.2)",
+            borderRadius: "28px",
             padding: "36px 30px",
             display: "flex",
             flexDirection: "column",
+            alignItems: "center",
+            textAlign: "center",
             gap: "18px",
-            boxShadow: "0 10px 30px rgba(15, 23, 42, 0.04)",
+            boxShadow: "0 10px 30px rgba(220, 38, 38, 0.05)",
             position: "relative",
-            overflow: "hidden"
+            overflow: "hidden",
+            transition: "all 0.3s ease"
           }}>
             <span style={{
-              fontSize: "48px",
-              fontWeight: 900,
-              color: "rgba(16, 185, 129, 0.15)",
-              position: "absolute",
-              top: "20px",
-              right: "24px"
-            }}>01</span>
-            <div style={{
-              backgroundColor: "rgba(16, 185, 129, 0.1)",
-              color: "#059669",
-              padding: "16px",
-              borderRadius: "16px",
-              width: "fit-content",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}>
-              <IoSearchOutline size={28} />
+              fontSize: "11px",
+              fontWeight: 800,
+              color: "#DC2626",
+              backgroundColor: "#FEE2E2",
+              padding: "4px 12px",
+              borderRadius: "12px",
+              textTransform: "uppercase"
+            }}>STEP 01</span>
+            
+            {/* LOTTIE ANIMATION (SALE) */}
+            <div style={{ width: "160px", height: "160px" }}>
+              <DotLottieReact
+                src="https://lottie.host/b73f86a6-8461-4b09-a5e3-90ac2c64cc61/Th2SVDZUPv.lottie"
+                loop
+                autoplay
+              />
             </div>
-            <h3 style={{ fontSize: "20px", color: "#0F172A", fontWeight: 800, fontFamily: "var(--font-headings)" }}>
-              1. Search Any Grocery Item
+
+            <h3 style={{ fontSize: "22px", color: "#0F172A", fontWeight: 900, fontFamily: "var(--font-headings)" }}>
+              1. Search Live Flyer Sales
             </h3>
             <p style={{ color: "#64748B", fontSize: "15px", lineHeight: "1.65" }}>
-              Type any product (e.g. 'chicken', 'butter', 'shampoo') or scan a barcode. Our engine retrieves active flyer deals from 60+ stores instantly.
+              Type any product (e.g. 'chicken', 'butter', 'shampoo') or scan a barcode. Our scrapers index live flyer offers from 60+ stores instantly.
             </p>
           </div>
 
-          {/* Step 2 */}
+          {/* STEP 2: SHOPPING CART ANIMATION */}
           <div style={{
             backgroundColor: "#FFFFFF",
-            border: "1px solid #E2E8F0",
-            borderRadius: "24px",
+            border: "1px solid rgba(37, 99, 235, 0.2)",
+            borderRadius: "28px",
             padding: "36px 30px",
             display: "flex",
             flexDirection: "column",
+            alignItems: "center",
+            textAlign: "center",
             gap: "18px",
-            boxShadow: "0 10px 30px rgba(15, 23, 42, 0.04)",
+            boxShadow: "0 10px 30px rgba(37, 99, 235, 0.05)",
             position: "relative",
-            overflow: "hidden"
+            overflow: "hidden",
+            transition: "all 0.3s ease"
           }}>
             <span style={{
-              fontSize: "48px",
-              fontWeight: 900,
-              color: "rgba(16, 185, 129, 0.15)",
-              position: "absolute",
-              top: "20px",
-              right: "24px"
-            }}>02</span>
-            <div style={{
-              backgroundColor: "rgba(59, 130, 246, 0.1)",
+              fontSize: "11px",
+              fontWeight: 800,
               color: "#2563EB",
-              padding: "16px",
-              borderRadius: "16px",
-              width: "fit-content",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}>
-              <IoGitCompareOutline size={28} />
+              backgroundColor: "#DBEAFE",
+              padding: "4px 12px",
+              borderRadius: "12px",
+              textTransform: "uppercase"
+            }}>STEP 02</span>
+
+            {/* LOTTIE ANIMATION (SHOPPING CART) */}
+            <div style={{ width: "160px", height: "160px" }}>
+              <DotLottieReact
+                src="https://lottie.host/161951b7-a350-418e-8406-1065b078174c/4g1Qifp1X3.lottie"
+                loop
+                autoplay
+              />
             </div>
-            <h3 style={{ fontSize: "20px", color: "#0F172A", fontWeight: 800, fontFamily: "var(--font-headings)" }}>
+
+            <h3 style={{ fontSize: "22px", color: "#0F172A", fontWeight: 900, fontFamily: "var(--font-headings)" }}>
               2. Compare Store Prices
             </h3>
             <p style={{ color: "#64748B", fontSize: "15px", lineHeight: "1.65" }}>
-              View side-by-side store price rankings for Walmart, Maxi, Metro, IGA, Super C, and Costco with glowing #1 cheapest price badges.
+              View side-by-side store price rankings for Walmart, Maxi, Metro, IGA, Super C, and Costco with glowing #1 cheapest price highlights.
             </p>
           </div>
 
-          {/* Step 3 */}
+          {/* STEP 3: SAVING ANIMATION */}
           <div style={{
             backgroundColor: "#FFFFFF",
-            border: "1px solid #E2E8F0",
-            borderRadius: "24px",
+            border: "1px solid rgba(16, 185, 129, 0.2)",
+            borderRadius: "28px",
             padding: "36px 30px",
             display: "flex",
             flexDirection: "column",
+            alignItems: "center",
+            textAlign: "center",
             gap: "18px",
-            boxShadow: "0 10px 30px rgba(15, 23, 42, 0.04)",
+            boxShadow: "0 10px 30px rgba(16, 185, 129, 0.05)",
             position: "relative",
-            overflow: "hidden"
+            overflow: "hidden",
+            transition: "all 0.3s ease"
           }}>
             <span style={{
-              fontSize: "48px",
-              fontWeight: 900,
-              color: "rgba(16, 185, 129, 0.15)",
-              position: "absolute",
-              top: "20px",
-              right: "24px"
-            }}>03</span>
-            <div style={{
-              backgroundColor: "rgba(245, 158, 11, 0.1)",
-              color: "#D97706",
-              padding: "16px",
-              borderRadius: "16px",
-              width: "fit-content",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}>
-              <IoWalletOutline size={28} />
+              fontSize: "11px",
+              fontWeight: 800,
+              color: "#059669",
+              backgroundColor: "#D1FAE5",
+              padding: "4px 12px",
+              borderRadius: "12px",
+              textTransform: "uppercase"
+            }}>STEP 03</span>
+
+            {/* LOTTIE ANIMATION (SAVING) */}
+            <div style={{ width: "160px", height: "160px" }}>
+              <DotLottieReact
+                src="https://lottie.host/0219855b-c4b1-4784-a2ef-db2dbf026132/cSfJGDmo7C.lottie"
+                loop
+                autoplay
+              />
             </div>
-            <h3 style={{ fontSize: "20px", color: "#0F172A", fontWeight: 800, fontFamily: "var(--font-headings)" }}>
-              3. Smart Basket Optimization
+
+            <h3 style={{ fontSize: "22px", color: "#0F172A", fontWeight: 900, fontFamily: "var(--font-headings)" }}>
+              3. Maximize Annual Savings
             </h3>
             <p style={{ color: "#64748B", fontSize: "15px", lineHeight: "1.65" }}>
               Our AI calculates single-store vs 2-store split trip combinations and Canadian sales taxes so you keep up to $2,300/year in your pocket.
@@ -518,7 +589,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 5. FEATURED DEALS SECTION */}
+      {/* 6. FEATURED DEALS SECTION */}
       <section id="featured-deals" className="container" style={{ scrollMarginTop: "100px" }}>
         <div style={{
           display: "flex",
@@ -699,7 +770,7 @@ export default function Home() {
         )}
       </section>
 
-      {/* 6. FAQ ACCORDION SECTION */}
+      {/* 7. FAQ ACCORDION SECTION */}
       <section id="faq" className="container" style={{ scrollMarginTop: "100px" }}>
         <div style={{ textAlign: "center", marginBottom: "40px" }}>
           <h2 style={{ fontSize: "32px", color: "#0F172A", fontWeight: 900, fontFamily: "var(--font-headings)" }}>Frequently Asked Questions</h2>
