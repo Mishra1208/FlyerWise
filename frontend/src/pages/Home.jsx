@@ -52,14 +52,14 @@ export default function Home() {
   }, []);
 
   const majorRetailers = [
-    { name: "Walmart", color: "#0071CE", tag: "Everyday Low Prices", logo: "🛒", bg: "#EFF6FF" },
-    { name: "Maxi", color: "#ED1C24", tag: "Quebec Discount Leader", logo: "🍎", bg: "#FEF2F2" },
-    { name: "Metro", color: "#003DA5", tag: "Fresh Grocery Specials", logo: "🥩", bg: "#EFF6FF" },
-    { name: "IGA", color: "#E31837", tag: "Weekly Flyer Deals", logo: "🥖", bg: "#FEF2F2" },
-    { name: "Super C", color: "#E30613", tag: "Low Price Guarantee", logo: "⚡", bg: "#FEF2F2" },
-    { name: "Provigo", color: "#D32F2F", tag: "Quality Fresh Produce", logo: "🍊", bg: "#FEF2F2" },
-    { name: "Costco Canada", color: "#0060A9", tag: "Bulk Warehouse Deals", logo: "📦", bg: "#EFF6FF" },
-    { name: "Adonis", color: "#16A34A", tag: "Fresh Mediterranean", logo: "🫒", bg: "#F0FDF4" },
+    { name: "Walmart", color: "#0071CE", tag: "Everyday Low Prices", logoUrl: "/logos/walmart.jpg", bg: "#EFF6FF" },
+    { name: "Maxi", color: "#ED1C24", tag: "Quebec Discount Leader", logoUrl: "/logos/maxi.webp", bg: "#FEF2F2" },
+    { name: "Metro", color: "#003DA5", tag: "Fresh Grocery Specials", logoUrl: "/logos/Metro.png", bg: "#EFF6FF" },
+    { name: "IGA", color: "#E31837", tag: "Weekly Flyer Deals", logoUrl: "/logos/iga.png", bg: "#FEF2F2" },
+    { name: "Super C", color: "#E30613", tag: "Low Price Guarantee", logoUrl: "/logos/super c.jpg", bg: "#FEF2F2" },
+    { name: "Provigo", color: "#D32F2F", tag: "Quality Fresh Produce", logoUrl: "/logos/provigo.svg", bg: "#FEF2F2" },
+    { name: "Costco Canada", color: "#0060A9", tag: "Bulk Warehouse Deals", logoUrl: "/logos/costco.png", bg: "#EFF6FF" },
+    { name: "Adonis", color: "#16A34A", tag: "Fresh Mediterranean", logoUrl: "/logos/adonis.png", bg: "#F0FDF4" },
   ];
 
   const quickCategories = [
@@ -326,18 +326,24 @@ export default function Home() {
               }}
             >
               <div style={{
-                width: "40px",
-                height: "40px",
+                width: "48px",
+                height: "48px",
                 borderRadius: "14px",
-                backgroundColor: r.bg,
+                backgroundColor: "#FFFFFF",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: "20px",
-                border: `1px solid ${r.color}40`,
-                boxShadow: `0 2px 8px ${r.color}20`
+                padding: "6px",
+                border: `1px solid ${r.color}30`,
+                boxShadow: `0 2px 8px ${r.color}15`,
+                overflow: "hidden",
+                flexShrink: 0
               }}>
-                {r.logo}
+                <img 
+                  src={r.logoUrl} 
+                  alt={r.name} 
+                  style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
+                />
               </div>
 
               <div>
