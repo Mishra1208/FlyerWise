@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { IoCloseOutline, IoCheckmarkCircleOutline, IoFlashOutline, IoRibbonOutline, IoStorefrontOutline } from "react-icons/io5";
+import { IoCloseOutline, IoCheckmarkCircleOutline, IoFlashOutline, IoRibbonOutline } from "react-icons/io5";
 import { PriceService } from "../services/api";
 import PriceHistory from "./PriceHistory";
 
 export default function PriceComparison({ product, prices: initialPrices, onClose }) {
-  const [prices, setPrices] = useState(initialPrices || []);
-  const [loading, setLoading] = useState(!initialPrices || initialPrices.length === 0);
+  const [prices, setPrices] = useState(Array.isArray(initialPrices) ? initialPrices : []);
+  const [loading, setLoading] = useState(!initialPrices || !Array.isArray(initialPrices) || initialPrices.length === 0);
 
   useEffect(() => {
     async function loadPrices() {
+      if (!product || !product.id) return;
       try {
         const data = await PriceService.compare(product.id);
-        if (data && data.length > 0) {
+        if (Array.isArray(data) && data.length > 0) {
           setPrices(data);
         }
       } catch (err) {
@@ -22,18 +23,21 @@ export default function PriceComparison({ product, prices: initialPrices, onClos
       }
     }
 
-    if (product) {
-      loadPrices();
-    }
+    loadPrices();
   }, [product]);
 
-  // Sort prices ascending by current_price
-  const sortedPrices = [...prices].sort((a, b) => floatVal(a.current_price) - floatVal(b.current_price));
-  const lowestVal = sortedPrices.length > 0 ? floatVal(sortedPrices[0].current_price) : 0;
+  if (!product) return null;
 
   function floatVal(val) {
-    return typeof val === "number" ? val : parseFloat(val || 0);
+    if (val === null || val === undefined) return 0;
+    const parsed = typeof val === "number" ? val : parseFloat(val);
+    return isNaN(parsed) ? 0 : parsed;
   }
+
+  // Safely sort prices ascending by current_price
+  const safePricesList = Array.isArray(prices) ? prices : [];
+  const sortedPrices = [...safePricesList].sort((a, b) => floatVal(a.current_price) - floatVal(b.current_price));
+  const lowestVal = sortedPrices.length > 0 ? floatVal(sortedPrices[0].current_price) : 0;
 
   return createPortal(
     <div 
@@ -94,7 +98,7 @@ export default function PriceComparison({ product, prices: initialPrices, onClos
             }}>
               <img 
                 src={product.image_url || "https://images.unsplash.com/photo-1542838132-92c53300491e?w=200"} 
-                alt={product.raw_name}
+                alt={product.raw_name || "Product"}
                 style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
                 onError={(e) => {
                   e.target.src = "https://images.unsplash.com/photo-1542838132-92c53300491e?w=200";
@@ -113,7 +117,7 @@ export default function PriceComparison({ product, prices: initialPrices, onClos
                 }}>{product.brand}</span>
               )}
               <h2 style={{ fontSize: "20px", color: "#0F172A", fontWeight: 800, margin: "2px 0 4px 0", fontFamily: "var(--font-headings)" }}>
-                {product.raw_name}
+                {product.raw_name || "Product Details"}
               </h2>
               <span style={{
                 fontSize: "12px",
@@ -172,11 +176,16 @@ export default function PriceComparison({ product, prices: initialPrices, onClos
 
             {loading ? (
               <div style={{ textAlign: "center", padding: "36px", color: "#64748B", fontSize: "15px" }}>Comparing store prices...</div>
+            ) : sortedPrices.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "36px", color: "#64748B", fontSize: "15px" }}>No store price comparisons found.</div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                 {sortedPrices.map((price, idx) => {
+                  if (!price) return null;
                   const pVal = floatVal(price.current_price);
                   const isLowest = idx === 0 || pVal === lowestVal;
+                  const storeName = price.store?.name || price.store_name || "Grocery Store";
+                  const storeColor = price.store?.color || price.store_color || "#10B981";
 
                   let statusBadge = null;
                   if (price.flyer_status === "expiring_today") {
@@ -262,7 +271,7 @@ export default function PriceComparison({ product, prices: initialPrices, onClos
                           width: "12px",
                           height: "12px",
                           borderRadius: "50%",
-                          backgroundColor: price.store.color || "#059669",
+                          backgroundColor: storeColor,
                           flexShrink: 0,
                           boxShadow: "0 0 8px rgba(0,0,0,0.15)"
                         }} />
@@ -270,7 +279,7 @@ export default function PriceComparison({ product, prices: initialPrices, onClos
                         <div>
                           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                             <strong style={{ fontSize: "16px", color: "#0F172A", fontWeight: 800 }}>
-                              {price.store.name}
+                              {storeName}
                             </strong>
 
                             {isLowest && (
@@ -332,19 +341,21 @@ export default function PriceComparison({ product, prices: initialPrices, onClos
           </div>
 
           {/* Historical price trends */}
-          <div>
-            <h3 style={{ fontSize: "18px", fontWeight: 800, marginBottom: "16px", color: "#0F172A", fontFamily: "var(--font-headings)" }}>
-              Price History & 90-Day Trend
-            </h3>
-            <div style={{
-              padding: "24px",
-              borderRadius: "20px",
-              backgroundColor: "#F8FAFC",
-              border: "1px solid #E2E8F0",
-            }}>
-              <PriceHistory productId={product.id} />
+          {product.id && (
+            <div>
+              <h3 style={{ fontSize: "18px", fontWeight: 800, marginBottom: "16px", color: "#0F172A", fontFamily: "var(--font-headings)" }}>
+                Price History & 90-Day Trend
+              </h3>
+              <div style={{
+                padding: "24px",
+                borderRadius: "20px",
+                backgroundColor: "#F8FAFC",
+                border: "1px solid #E2E8F0",
+              }}>
+                <PriceHistory productId={product.id} />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>,
