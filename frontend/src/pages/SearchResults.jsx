@@ -6,11 +6,13 @@ import ProductCard from "../components/ProductCard";
 import PriceComparison from "../components/PriceComparison";
 import ProductDetailModal from "../components/ProductDetailModal";
 import { ProductService } from "../services/api";
+import { useLocation } from "../contexts/LocationContext";
 
 export default function SearchResults() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
+  const { postalCode } = useLocation();
 
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +40,7 @@ export default function SearchResults() {
       if (!query) return;
       setLoading(true);
       try {
-        const data = await ProductService.search(query, flyerFilter);
+        const data = await ProductService.search(query, flyerFilter, postalCode);
         setResults(data.results || []);
       } catch (err) {
         console.error("Search failed:", err);
@@ -47,7 +49,7 @@ export default function SearchResults() {
       }
     }
     performSearch();
-  }, [query, flyerFilter]);
+  }, [query, flyerFilter, postalCode]);
 
   // Filter results based on selected stores checkbox status
   const filteredResults = results.map((result) => {

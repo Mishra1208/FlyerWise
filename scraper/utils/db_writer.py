@@ -80,6 +80,7 @@ class DatabaseWriter:
         start_date: date,
         end_date: date,
         flyer_url: Optional[str] = None,
+        postal_code_fsa: Optional[str] = None,
     ) -> Flyer:
         """Create a new flyer record, or return existing one if dates match."""
         existing = (
@@ -93,6 +94,8 @@ class DatabaseWriter:
         )
 
         if existing:
+            if postal_code_fsa and not existing.postal_code_fsa:
+                existing.postal_code_fsa = postal_code_fsa
             logger.info(f"Flyer already exists for {store.name}: {start_date} - {end_date}")
             return existing
 
@@ -102,10 +105,11 @@ class DatabaseWriter:
             end_date=end_date,
             flyer_url=flyer_url,
             status="active",
+            postal_code_fsa=postal_code_fsa,
         )
         session.add(flyer)
         session.flush()  # Get the ID without committing
-        logger.info(f"Created flyer for {store.name}: {start_date} - {end_date}")
+        logger.info(f"Created flyer for {store.name}: {start_date} - {end_date} (FSA: {postal_code_fsa})")
         return flyer
 
     def find_or_create_product(
@@ -213,6 +217,7 @@ class DatabaseWriter:
         flyer_url: Optional[str] = None,
         store_name: Optional[str] = None,
         logo_url: Optional[str] = None,
+        postal_code_fsa: Optional[str] = None,
     ) -> int:
         """
         Save a batch of scraped products to the database.
@@ -229,7 +234,23 @@ class DatabaseWriter:
             store = self.get_or_create_store(
                 session, store_slug=store_slug, store_name=store_name, logo_url=logo_url
             )
-            flyer = self.create_flyer(session, store, flyer_start, flyer_end, flyer_url)
+
+            # Update postal_codes_served on store if needed
+            if postal_code_fsa:
+                served = (store.postal_codes_served or "").split(",")
+                served = [s.strip() for s in served if s.strip()]
+                if postal_code_fsa not in served:
+                    served.append(postal_code_fsa)
+                    store.postal_codes_served = ",".join(served)
+
+            flyer = self.create_flyer(
+                session,
+                store=store,
+                start_date=flyer_start,
+                end_date=flyer_end,
+                flyer_url=flyer_url,
+                postal_code_fsa=postal_code_fsa,
+            )
 
             # Start scrape log
             scrape_log = ScrapeLog(store_id=store.id, status="running")

@@ -17,10 +17,12 @@ export const StoreService = {
 };
 
 export const ProductService = {
-  search: async (query, flyerFilter = "all") => {
-    const response = await API.get("/products/search", {
-      params: { q: query, flyer_filter: flyerFilter },
-    });
+  search: async (query, flyerFilter = "all", postalCode = null) => {
+    const params = { q: query, flyer_filter: flyerFilter };
+    if (postalCode) {
+      params.postal_code = postalCode.replace(/\s/g, "");
+    }
+    const response = await API.get("/products/search", { params });
     return response.data;
   },
   getByBarcode: async (barcode, flyerFilter = "all") => {

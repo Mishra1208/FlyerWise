@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation as useRouterLocation } from "react-router-dom";
 import { IoLocationOutline, IoMenuOutline, IoCloseOutline } from "react-icons/io5";
+import { useLocation } from "../contexts/LocationContext";
+import PostalCodeModal from "./PostalCodeModal";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const location = useLocation();
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const location = useRouterLocation();
+  const { postalCode, cityName } = useLocation();
 
   // Scroll listener for border shadow effect
   useEffect(() => {
@@ -101,22 +105,35 @@ export default function Navbar() {
           alignItems: "center",
           gap: "16px",
         }}>
-          {/* Location details */}
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-            backgroundColor: "rgba(91, 140, 81, 0.06)",
-            border: "1px solid rgba(91, 140, 81, 0.15)",
-            padding: "6px 14px",
-            borderRadius: "var(--radius-full)",
-            fontSize: "13px",
-            color: "var(--accent)",
-            fontWeight: 600,
-          }}>
+          {/* Location details — NOW CLICKABLE */}
+          <button
+            onClick={() => setShowLocationModal(true)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              backgroundColor: "rgba(91, 140, 81, 0.06)",
+              border: "1px solid rgba(91, 140, 81, 0.15)",
+              padding: "6px 14px",
+              borderRadius: "var(--radius-full)",
+              fontSize: "13px",
+              color: "var(--accent)",
+              fontWeight: 600,
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "rgba(91, 140, 81, 0.12)";
+              e.currentTarget.style.borderColor = "rgba(91, 140, 81, 0.3)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "rgba(91, 140, 81, 0.06)";
+              e.currentTarget.style.borderColor = "rgba(91, 140, 81, 0.15)";
+            }}
+          >
             <IoLocationOutline size={16} />
-            <span>Montreal, <strong>H4G 2Y5</strong></span>
-          </div>
+            <span>{cityName}, <strong>{postalCode}</strong></span>
+          </button>
 
           {/* Hamburger Icon */}
           <button 
@@ -179,6 +196,12 @@ export default function Navbar() {
           </a>
         </div>
       )}
+
+      {/* Postal Code Modal */}
+      <PostalCodeModal
+        isOpen={showLocationModal}
+        onClose={() => setShowLocationModal(false)}
+      />
 
       {/* Quick injection of responsive styles for navbar & mobile toggle */}
       <style>{`

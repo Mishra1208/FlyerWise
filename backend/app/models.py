@@ -26,6 +26,7 @@ class Store(Base):
     website_url: Mapped[str | None] = mapped_column(String(500))
     flyer_url: Mapped[str | None] = mapped_column(String(500))
     color: Mapped[str | None] = mapped_column(String(7))
+    postal_codes_served: Mapped[str | None] = mapped_column(Text)  # Comma-separated FSA codes
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -56,6 +57,7 @@ class Flyer(Base):
     )
     status: Mapped[str] = mapped_column(String(20), default="active")
     items_count: Mapped[int] = mapped_column(Integer, default=0)
+    postal_code_fsa: Mapped[str | None] = mapped_column(String(3))  # FSA region (e.g. H4G, M5V)
 
     # Relationships
     store: Mapped["Store"] = relationship(back_populates="flyers")

@@ -87,6 +87,7 @@ router = APIRouter(prefix="/products", tags=["products"])
 def search_products(
     q: str = Query(..., min_length=1, max_length=200, description="Search query"),
     flyer_filter: str = Query("all", description="Flyer status filter: all, active, upcoming, recent"),
+    postal_code: str = Query("H4G2Y5", description="Canadian postal code for location-aware results"),
     db: Session = Depends(get_db),
 ):
     """

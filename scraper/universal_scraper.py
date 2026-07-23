@@ -145,6 +145,7 @@ class UniversalGroceryScraper(BaseScraper):
                     if not products:
                         continue
 
+                    fsa = pcode[:3].upper()
                     saved = self.db_writer.save_scraped_data(
                         store_slug=slug,
                         store_name=merchant,
@@ -152,6 +153,7 @@ class UniversalGroceryScraper(BaseScraper):
                         products=products,
                         flyer_start=valid_from,
                         flyer_end=valid_to,
+                        postal_code_fsa=fsa,
                     )
                     
                     stores_scraped += 1

@@ -58,7 +58,7 @@ export default function Home() {
     },
     {
       q: "Can I use FlyerWise in other locations?",
-      a: "Currently, FlyerWise is optimized for Quebec (specifically postcode H4G 2Y5 in Montreal) listing Walmart, Maxi, and Metro. We are expanding to support customizable locations and more grocery retailers very soon."
+      a: "Yes! FlyerWise now supports any Canadian postal code. Simply click the location badge in the navigation bar, enter your postal code, and we'll find the best grocery deals near you — from Montreal to Toronto, Ottawa, Vancouver, Calgary, and beyond."
     },
     {
       q: "Is FlyerWise free to use?",
