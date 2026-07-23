@@ -42,6 +42,7 @@ class ProductBase(BaseModel):
     description: str | None = None
     ingredients: str | None = None
     nutrition_facts: dict | None = None
+    source_info: dict | None = None
 
 
 class ProductResponse(ProductBase):

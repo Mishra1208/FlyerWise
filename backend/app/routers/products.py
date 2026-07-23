@@ -272,6 +272,7 @@ def search_products(
                     description=details.get("description"),
                     ingredients=details.get("ingredients"),
                     nutrition_facts=details.get("nutrition_facts"),
+                    source_info=details.get("source_info"),
                     created_at=product.created_at,
                 ),
                 prices=price_entries,

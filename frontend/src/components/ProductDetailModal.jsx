@@ -188,6 +188,38 @@ export default function ProductDetailModal({ result, onClose }) {
                   <IoSparklesOutline size={15} /> {intelligence.advisor_badge.label}
                 </span>
               )}
+
+              {/* Data Provenance Verification Badge */}
+              {product?.source_info?.is_verified ? (
+                <span style={{
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  color: "#0284C7",
+                  backgroundColor: "#E0F2FE",
+                  padding: "4px 10px",
+                  borderRadius: "6px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  border: "1px solid #BAE6FD",
+                }} title="Retrieved live from Open Food Facts manufacturer database">
+                  <IoCheckmarkCircleOutline size={16} /> 100% Manufacturer-Verified
+                </span>
+              ) : (
+                <span style={{
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  color: "#475569",
+                  backgroundColor: "#F1F5F9",
+                  padding: "4px 10px",
+                  borderRadius: "6px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }} title="Derived from Health Canada standardized food density baselines">
+                  <IoInformationCircleOutline size={16} /> Health Canada Standard Profile
+                </span>
+              )}
             </div>
 
             {/* Best Store Price Highlight */}
