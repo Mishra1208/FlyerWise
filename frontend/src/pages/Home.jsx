@@ -94,7 +94,7 @@ export default function Home() {
       {/* 1. ULTRA-PREMIUM HERO BANNER SECTION */}
       <section style={{
         position: "relative",
-        minHeight: "600px",
+        minHeight: "560px",
         background: "linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%)",
         display: "flex",
         flexDirection: "column",
@@ -103,29 +103,33 @@ export default function Home() {
         color: "#FFFFFF",
         textAlign: "center",
         padding: "80px 24px 100px 24px",
-        overflow: "hidden",
       }}>
         {/* Animated background ambient glow spots */}
         <div style={{
           position: "absolute",
-          top: "-150px",
-          left: "20%",
-          width: "500px",
-          height: "500px",
-          background: "radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 42, 0) 70%)",
-          borderRadius: "50%",
+          inset: 0,
+          overflow: "hidden",
           pointerEvents: "none",
-        }} />
-        <div style={{
-          position: "absolute",
-          bottom: "-100px",
-          right: "15%",
-          width: "450px",
-          height: "450px",
-          background: "radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, rgba(15, 23, 42, 0) 70%)",
-          borderRadius: "50%",
-          pointerEvents: "none",
-        }} />
+        }}>
+          <div style={{
+            position: "absolute",
+            top: "-150px",
+            left: "20%",
+            width: "500px",
+            height: "500px",
+            background: "radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 42, 0) 70%)",
+            borderRadius: "50%",
+          }} />
+          <div style={{
+            position: "absolute",
+            bottom: "-100px",
+            right: "15%",
+            width: "450px",
+            height: "450px",
+            background: "radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, rgba(15, 23, 42, 0) 70%)",
+            borderRadius: "50%",
+          }} />
+        </div>
 
         <div style={{ maxWidth: "860px", width: "100%", display: "flex", flexDirection: "column", gap: "24px", zIndex: 2 }}>
           
@@ -223,30 +227,28 @@ export default function Home() {
             ))}
           </div>
         </div>
+      </section>
 
-        {/* UPDATED STATS STRIP CARD */}
+      {/* 2. LIVE STATS STRIP CARD */}
+      <div className="container" style={{ position: "relative", zIndex: 10, marginTop: "-60px" }}>
         <div style={{
-          position: "absolute",
-          bottom: "-50px",
-          left: "50%",
-          transform: "translateX(-50%)",
           backgroundColor: "#FFFFFF",
-          border: "1px solid rgba(226, 232, 240, 0.8)",
+          border: "1px solid rgba(226, 232, 240, 0.9)",
           borderRadius: "24px",
           boxShadow: "0 20px 45px -10px rgba(15, 23, 42, 0.12)",
           display: "flex",
           justifyContent: "space-around",
           alignItems: "center",
-          width: "calc(100% - 48px)",
+          width: "100%",
           maxWidth: "960px",
-          padding: "28px 16px",
-          zIndex: 10,
+          margin: "0 auto",
+          padding: "28px 20px",
         }}>
           <div style={{ textAlign: "center", flex: 1, borderRight: "1px solid #E2E8F0" }}>
             <h3 style={{ fontSize: "32px", color: "#0F172A", fontWeight: 900, margin: 0, fontFamily: "var(--font-headings)" }}>
               60+
             </h3>
-            <span style={{ fontSize: "13px", color: "#64748B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginTop: "4px", display: "block" }}>
+            <span style={{ fontSize: "13px", color: "#64748B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginTop: "6px", display: "block" }}>
               Major Grocery Stores
             </span>
           </div>
@@ -255,7 +257,7 @@ export default function Home() {
             <h3 style={{ fontSize: "32px", color: "#0F172A", fontWeight: 900, margin: 0, fontFamily: "var(--font-headings)" }}>
               12,500+
             </h3>
-            <span style={{ fontSize: "13px", color: "#64748B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginTop: "4px", display: "block" }}>
+            <span style={{ fontSize: "13px", color: "#64748B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginTop: "6px", display: "block" }}>
               Flyer Items Scraped
             </span>
           </div>
@@ -264,12 +266,12 @@ export default function Home() {
             <h3 style={{ fontSize: "32px", color: "#059669", fontWeight: 900, margin: 0, fontFamily: "var(--font-headings)" }}>
               Up to $45/wk
             </h3>
-            <span style={{ fontSize: "13px", color: "#047857", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginTop: "4px", display: "block" }}>
+            <span style={{ fontSize: "13px", color: "#047857", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginTop: "6px", display: "block" }}>
               Weekly Savings Potential ($2,300/yr)
             </span>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* Spacer for overlapping stats strip */}
       <div style={{ height: "40px" }}></div>
