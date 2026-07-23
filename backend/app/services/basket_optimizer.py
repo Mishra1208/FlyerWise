@@ -23,22 +23,38 @@ def search_item_prices(db: Session, item_query: str, postal_code: Optional[str] 
     if not clean_query:
         return []
 
-    query = (
+    # Primary search: exact substring match
+    base_query = (
         db.query(Price, Product, Store)
         .join(Product, Price.product_id == Product.id)
         .join(Store, Price.store_id == Store.id)
         .outerjoin(Flyer, Price.flyer_id == Flyer.id)
-        .filter(Product.raw_name.ilike(f"%{clean_query}%"))
     )
 
     if postal_code:
         clean_pcode = postal_code.strip().replace(" ", "").upper()
         fsa = clean_pcode[:3]
-        query = query.filter(
+        base_query = base_query.filter(
             (Flyer.postal_code_fsa == fsa) | (Flyer.postal_code_fsa.is_(None)) | (Store.postal_codes_served.ilike(f"%{fsa}%"))
         )
 
-    results = query.all()
+    exact_query = base_query.filter(Product.raw_name.ilike(f"%{clean_query}%"))
+    results = exact_query.all()
+
+    # Fallback search if exact string returned no results and query is multi-word
+    if not results and " " in clean_query:
+        words = [w for w in clean_query.split() if len(w) >= 3]
+        if len(words) >= 2:
+            from sqlalchemy import and_
+            # Match first (brand) and last (category) words
+            token_conditions = [Product.raw_name.ilike(f"%{words[0]}%"), Product.raw_name.ilike(f"%{words[-1]}%")]
+            token_query = base_query.filter(and_(*token_conditions))
+            results = token_query.all()
+
+        if not results and words:
+            # Fallback to matching just the last word (category)
+            cat_query = base_query.filter(Product.raw_name.ilike(f"%{words[-1]}%"))
+            results = cat_query.all()
 
     item_offers = []
     for price_row, prod_row, store_row in results:

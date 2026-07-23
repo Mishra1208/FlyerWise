@@ -167,7 +167,9 @@ export default function SmartBasketOptimizer() {
                 fontWeight: 600
               }}
             >
-              <span>{item}</span>
+              <span style={{ textTransform: "capitalize" }}>
+                {item.replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.substring(1).toLowerCase())}
+              </span>
               <IoTrashOutline
                 size={16}
                 onClick={() => handleRemoveItem(item)}
