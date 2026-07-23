@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { IoCloseOutline, IoLocationOutline, IoCheckmarkCircleOutline } from "react-icons/io5";
 import { useLocation } from "../contexts/LocationContext";
 
@@ -104,7 +105,7 @@ export default function PostalCodeModal({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
@@ -117,7 +118,7 @@ export default function PostalCodeModal({ isOpen, onClose }) {
           bottom: 0,
           backgroundColor: "rgba(15, 23, 42, 0.6)",
           backdropFilter: "blur(4px)",
-          zIndex: 1000,
+          zIndex: 9998,
           animation: "fadeIn 0.2s ease",
         }}
       />
@@ -130,12 +131,13 @@ export default function PostalCodeModal({ isOpen, onClose }) {
           left: "50%",
           transform: "translate(-50%, -50%)",
           width: "min(480px, 92vw)",
+          maxHeight: "90vh",
+          overflowY: "auto",
           backgroundColor: "#FFFFFF",
           borderRadius: "20px",
-          boxShadow: "0 25px 50px rgba(0, 0, 0, 0.2)",
-          zIndex: 1001,
+          boxShadow: "0 25px 50px rgba(0, 0, 0, 0.25)",
+          zIndex: 9999,
           animation: "slideUp 0.3s ease",
-          overflow: "hidden",
         }}
       >
         {/* Header */}
@@ -392,6 +394,7 @@ export default function PostalCodeModal({ isOpen, onClose }) {
           to { opacity: 1; transform: translate(-50%, -50%); }
         }
       `}</style>
-    </>
+    </>,
+    document.body
   );
 }
