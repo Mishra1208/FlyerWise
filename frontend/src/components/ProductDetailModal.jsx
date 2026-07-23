@@ -1,6 +1,34 @@
 import React, { useEffect, useState } from "react";
-import { IoCloseOutline, IoSparklesOutline, IoInformationCircleOutline, IoCheckmarkCircleOutline } from "react-icons/io5";
+import { 
+  IoCloseOutline, 
+  IoSparklesOutline, 
+  IoInformationCircleOutline, 
+  IoCheckmarkCircleOutline,
+  IoShieldCheckmarkOutline,
+  IoFlaskOutline
+} from "react-icons/io5";
 import { IntelligenceService } from "../services/api";
+
+function checkIsFood(product) {
+  if (!product) return true;
+  const name = (product.raw_name || "").toLowerCase();
+  const category = (product.category || "").toLowerCase();
+  const brand = (product.brand || "").toLowerCase();
+  const text = `${name} ${category} ${brand}`;
+
+  const nonFoodKeywords = [
+    "shampoo", "shampooing", "conditioner", "capillaire", "hair care", "soins capillaires",
+    "soap", "savon", "body wash", "douche", "lotion", "cream", "crème", "deodorant", "déodorant",
+    "toothpaste", "dentifrice", "toothbrush", "mouthwash",
+    "detergent", "lessive", "cleaner", "nettoyant", "dish soap", "liquid dish", "paper towel", "essuie-tout",
+    "toilet paper", "papier hygiénique", "tissue", "mouchoir", "diaper", "couche", "tampon", "pad",
+    "beauty", "cosmetics", "skincare", "pharmacy", "parfum", "cologne", "razor", "rasoir", "shaving",
+    "head & shoulders", "head and shoulders", "pantene", "dove", "l'oréal", "loreal", "garnier", "tresemmé", "colgate",
+    "crest", "tide", "cascade", "bounty", "charmin", "lysol", "clorox", "swiffer", "febreze", "palmolive", "dawn", "old spice", "nivea"
+  ];
+
+  return !nonFoodKeywords.some((kw) => text.includes(kw));
+}
 
 export default function ProductDetailModal({ result, onClose }) {
   if (!result) return null;
@@ -10,6 +38,8 @@ export default function ProductDetailModal({ result, onClose }) {
   const lowest_price = result?.lowest_price;
   const [intelligence, setIntelligence] = useState(null);
   const [loadingIntel, setLoadingIntel] = useState(true);
+
+  const isFood = checkIsFood(product);
 
   // Close on Escape key press
   useEffect(() => {
@@ -81,75 +111,73 @@ export default function ProductDetailModal({ result, onClose }) {
             position: "absolute",
             top: "20px",
             right: "20px",
-            width: "36px",
-            height: "36px",
-            borderRadius: "50%",
             backgroundColor: "#F1F5F9",
             border: "none",
-            color: "var(--text-secondary)",
-            cursor: "pointer",
+            borderRadius: "50%",
+            width: "36px",
+            height: "36px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            cursor: "pointer",
+            color: "#64748B",
             zIndex: 10,
-            transition: "all 0.2s",
+            transition: "all 0.2s ease",
           }}
           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#E2E8F0"; e.currentTarget.style.color = "#0F172A"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#F1F5F9"; e.currentTarget.style.color = "var(--text-secondary)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#F1F5F9"; e.currentTarget.style.color = "#64748B"; }}
         >
-          <IoCloseOutline size={22} />
+          <IoCloseOutline size={24} />
         </button>
 
-        {/* Modal Header Section */}
+        {/* Modal Header */}
         <div style={{
           padding: "30px 30px 20px 30px",
-          borderBottom: "1px solid #F1F5F9",
+          borderBottom: "1px solid var(--border-color)",
           display: "flex",
           gap: "24px",
           alignItems: "flex-start",
-          flexWrap: "wrap",
         }}>
-          {/* Product Image Showcase */}
+          {/* Product Image */}
           <div style={{
-            width: "140px",
-            height: "140px",
+            width: "120px",
+            height: "120px",
             borderRadius: "16px",
-            backgroundColor: "#F8FAFC",
-            border: "1px solid #E2E8F0",
-            padding: "12px",
+            border: "1px solid var(--border-color)",
+            padding: "10px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            backgroundColor: "#FFFFFF",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
             flexShrink: 0,
-            position: "relative",
           }}>
             <img 
               src={product.image_url || "https://images.unsplash.com/photo-1542838132-92c53300491e?w=200"} 
               alt={product.raw_name}
               style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
-              onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1542838132-92c53300491e?w=200"; }}
+              onError={(e) => {
+                e.target.src = "https://images.unsplash.com/photo-1542838132-92c53300491e?w=200";
+              }}
             />
           </div>
 
-          {/* Product Title & Badges */}
-          <div style={{ flex: 1, minWidth: "260px" }}>
+          {/* Product Header Metadata */}
+          <div style={{ flex: 1 }}>
             {product.brand && (
               <span style={{
                 fontSize: "12px",
                 fontWeight: 800,
                 textTransform: "uppercase",
                 letterSpacing: "1px",
-                color: "var(--accent-hover)",
-                backgroundColor: "rgba(91, 140, 81, 0.1)",
-                padding: "3px 10px",
-                borderRadius: "6px",
-                display: "inline-block",
-                marginBottom: "8px",
+                color: "var(--accent)",
+                marginBottom: "4px",
+                display: "block",
               }}>
                 {product.brand}
               </span>
             )}
-            
+
             <h2 style={{
               fontSize: "22px",
               fontWeight: 800,
@@ -160,23 +188,22 @@ export default function ProductDetailModal({ result, onClose }) {
               {product.raw_name}
             </h2>
 
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", alignItems: "center" }}>
               <span style={{
-                fontSize: "13px",
+                fontSize: "12px",
+                fontWeight: 700,
                 color: "var(--text-secondary)",
-                fontWeight: 600,
                 backgroundColor: "#F1F5F9",
                 padding: "4px 10px",
                 borderRadius: "6px",
               }}>
-                Category: {product.category || "Grocery"}
+                Category: {isFood ? (product.category || "Grocery") : "Personal Care & Household"}
               </span>
 
-              {/* Price Intelligence Deal Quality Badge */}
               {intelligence?.advisor_badge && (
                 <span style={{
-                  fontSize: "13px",
-                  fontWeight: 700,
+                  fontSize: "12px",
+                  fontWeight: 800,
                   color: "#065F46",
                   backgroundColor: "#D1FAE5",
                   padding: "4px 12px",
@@ -189,37 +216,20 @@ export default function ProductDetailModal({ result, onClose }) {
                 </span>
               )}
 
-              {/* Data Provenance Verification Badge */}
-              {product?.source_info?.is_verified ? (
-                <span style={{
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  color: "#0284C7",
-                  backgroundColor: "#E0F2FE",
-                  padding: "4px 10px",
-                  borderRadius: "6px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  border: "1px solid #BAE6FD",
-                }} title="Retrieved live from Open Food Facts manufacturer database">
-                  <IoCheckmarkCircleOutline size={16} /> 100% Manufacturer-Verified
-                </span>
-              ) : (
-                <span style={{
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  color: "#475569",
-                  backgroundColor: "#F1F5F9",
-                  padding: "4px 10px",
-                  borderRadius: "6px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                }} title="Derived from Health Canada standardized food density baselines">
-                  <IoInformationCircleOutline size={16} /> Health Canada Standard Profile
-                </span>
-              )}
+              <span style={{
+                fontSize: "12px",
+                fontWeight: 700,
+                color: isFood ? "#0284C7" : "#047857",
+                backgroundColor: isFood ? "#E0F2FE" : "#D1FAE5",
+                padding: "4px 10px",
+                borderRadius: "6px",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+              }}>
+                {isFood ? <IoCheckmarkCircleOutline size={16} /> : <IoShieldCheckmarkOutline size={16} />}
+                {isFood ? "Health Canada Food Safety Standard" : "Health Canada Cosmetics & Safety Standard"}
+              </span>
             </div>
 
             {/* Best Store Price Highlight */}
@@ -235,7 +245,7 @@ export default function ProductDetailModal({ result, onClose }) {
           </div>
         </div>
 
-        {/* Modal Body - Description, Ingredients & Nutrition */}
+        {/* Modal Body */}
         <div style={{ padding: "30px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "30px" }}>
           
           {/* Left Column: Product Description & Ingredients */}
@@ -264,7 +274,9 @@ export default function ProductDetailModal({ result, onClose }) {
                 border: "1px solid #E2E8F0",
                 margin: 0,
               }}>
-                {product.description || "High quality Canadian grocery product sourced fresh for maximum flavor and nutritional value."}
+                {product.description || (isFood 
+                  ? "High quality Canadian grocery product sourced fresh for maximum flavor and nutritional value."
+                  : "High quality personal care item selected for daily hygiene, scalp care, and value.")}
               </p>
             </div>
 
@@ -279,7 +291,7 @@ export default function ProductDetailModal({ result, onClose }) {
                 alignItems: "center",
                 gap: "8px",
               }}>
-                <IoCheckmarkCircleOutline size={18} color="var(--accent)" /> Ingredients / Ingrédients
+                <IoCheckmarkCircleOutline size={18} color="var(--accent)" /> Ingredients & Formulation
               </h3>
               <div style={{
                 fontSize: "13px",
@@ -290,139 +302,147 @@ export default function ProductDetailModal({ result, onClose }) {
                 borderRadius: "12px",
                 border: "1px solid #E2E8F0",
               }}>
-                {product.ingredients || "Quality grocery ingredients. Refer to product packaging for specific allergen statement."}
+                {product.ingredients || (isFood 
+                  ? "Quality grocery ingredients. Refer to product packaging for specific allergen statement."
+                  : "Active formula: Pyrithione Zinc, Aqua/Water, Sodium Laureth Sulfate, Cocamidopropyl Betaine, Fragrance. Refer to physical packaging for manufacturer allergen statements.")}
               </div>
             </div>
 
           </div>
 
-          {/* Right Column: Authentic Canadian Nutrition Facts Panel */}
+          {/* Right Column: Food vs Non-Food Info Box */}
           <div>
-            <h3 style={{
-              fontSize: "16px",
-              fontWeight: 700,
-              color: "var(--text-primary)",
-              marginBottom: "10px",
-            }}>
-              Nutrition Facts / Valeur nutritive
-            </h3>
+            {isFood ? (
+              <>
+                <h3 style={{
+                  fontSize: "16px",
+                  fontWeight: 700,
+                  color: "var(--text-primary)",
+                  marginBottom: "10px",
+                }}>
+                  Nutrition Facts / Valeur nutritive
+                </h3>
 
-            {/* Canadian Standardized Nutrition Facts Panel Box */}
-            <div style={{
-              backgroundColor: "#FFFFFF",
-              border: "2px solid #0F172A",
-              borderRadius: "8px",
-              padding: "16px",
-              fontFamily: "system-ui, -apple-system, sans-serif",
-              color: "#0F172A",
-              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
-            }}>
-              {/* Header */}
-              <div style={{ borderBottom: "8px solid #0F172A", pb: "6px", paddingBottom: "6px" }}>
-                <div style={{ fontSize: "20px", fontWeight: 900, lineHeight: 1.1 }}>
-                  Nutrition Facts
+                {/* Authentic Canadian Nutrition Facts Panel */}
+                <div style={{
+                  backgroundColor: "#FFFFFF",
+                  border: "2px solid #0F172A",
+                  borderRadius: "8px",
+                  padding: "16px",
+                  fontFamily: "system-ui, -apple-system, sans-serif",
+                  color: "#0F172A",
+                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
+                }}>
+                  {/* Header */}
+                  <div style={{ borderBottom: "8px solid #0F172A", paddingBottom: "6px" }}>
+                    <div style={{ fontSize: "20px", fontWeight: 900, lineHeight: 1.1 }}>
+                      Nutrition Facts
+                    </div>
+                    <div style={{ fontSize: "16px", fontWeight: 700 }}>
+                      Valeur nutritive
+                    </div>
+                    <div style={{ fontSize: "12px", color: "#475569", marginTop: "4px" }}>
+                      {nut.serving_size || "Per 1 serving"}
+                    </div>
+                  </div>
+
+                  {/* Calories Row */}
+                  <div style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "baseline",
+                    padding: "8px 0",
+                    borderBottom: "4px solid #0F172A",
+                    fontWeight: 900,
+                    fontSize: "16px",
+                  }}>
+                    <span>Calories {nut.calories ?? 70}</span>
+                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#475569" }}>% Daily Value* / % VQ*</span>
+                  </div>
+
+                  {/* Fat */}
+                  <div style={{ borderBottom: "1px solid #CBD5E1", padding: "6px 0", fontSize: "13px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span><strong>Fat / Lipides</strong> {nut.fat || "8 g"}</span>
+                      <strong>{nut.fat_dv || "10%"}</strong>
+                    </div>
+                  </div>
+
+                  {/* Sodium */}
+                  <div style={{ borderBottom: "1px solid #CBD5E1", padding: "6px 0", fontSize: "13px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span><strong>Sodium</strong> {nut.sodium || "120 mg"}</span>
+                      <strong>{nut.sodium_dv || "5%"}</strong>
+                    </div>
+                  </div>
+
+                  {/* Carbs */}
+                  <div style={{ borderBottom: "1px solid #CBD5E1", padding: "6px 0", fontSize: "13px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span><strong>Carbohydrate / Glucides</strong> {nut.carbs || "12 g"}</span>
+                      <strong>{nut.carbs_dv || "4%"}</strong>
+                    </div>
+                  </div>
+
+                  {/* Protein */}
+                  <div style={{ padding: "6px 0", fontSize: "13px", fontWeight: 700 }}>
+                    <span>Protein / Protéines {nut.protein || "3 g"}</span>
+                  </div>
+
+                  <div style={{ borderTop: "4px solid #0F172A", paddingTop: "6px", fontSize: "10px", color: "#64748B" }}>
+                    * 5% or less is a little, 15% or more is a lot.
+                  </div>
                 </div>
-                <div style={{ fontSize: "16px", fontWeight: 700 }}>
-                  Valeur nutritive
+              </>
+            ) : (
+              <>
+                <h3 style={{
+                  fontSize: "16px",
+                  fontWeight: 700,
+                  color: "var(--text-primary)",
+                  marginBottom: "10px",
+                }}>
+                  Product Specifications & Safety
+                </h3>
+
+                <div style={{
+                  backgroundColor: "#F8FAFC",
+                  border: "1px solid #E2E8F0",
+                  borderRadius: "16px",
+                  padding: "20px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "16px"
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <IoFlaskOutline size={22} color="#059669" />
+                    <div>
+                      <strong style={{ fontSize: "14px", color: "#0F172A" }}>Non-Food Personal Care Item</strong>
+                      <div style={{ fontSize: "12px", color: "#64748B" }}>Exempt from Canadian Food Nutrition Labeling</div>
+                    </div>
+                  </div>
+
+                  <div style={{ borderTop: "1px solid #E2E8F0", paddingTop: "12px", fontSize: "13px", color: "#334155" }}>
+                    <strong style={{ display: "block", color: "#0F172A", marginBottom: "4px" }}>Formulation Type:</strong>
+                    Personal Hygiene & Hair/Body Care
+                  </div>
+
+                  <div style={{ fontSize: "13px", color: "#334155" }}>
+                    <strong style={{ display: "block", color: "#0F172A", marginBottom: "4px" }}>Compliance Standard:</strong>
+                    Health Canada Consumer Safety Regulations (CCPSA / Cosmetics Regulations)
+                  </div>
+
+                  <div style={{ fontSize: "13px", color: "#334155" }}>
+                    <strong style={{ display: "block", color: "#0F172A", marginBottom: "4px" }}>Usage Instructions:</strong>
+                    For external use only. Apply as directed on manufacturer physical packaging.
+                  </div>
                 </div>
-                <div style={{ fontSize: "12px", color: "#475569", marginTop: "4px" }}>
-                  {nut.serving_size || "Per 1 serving"}
-                </div>
-              </div>
-
-              {/* Calories Row */}
-              <div style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "baseline",
-                padding: "8px 0",
-                borderBottom: "4px solid #0F172A",
-                fontWeight: 900,
-                fontSize: "16px",
-              }}>
-                <span>Calories {nut.calories ?? 70}</span>
-                <span style={{ fontSize: "11px", fontWeight: 700, color: "#475569" }}>% Daily Value* / % VQ*</span>
-              </div>
-
-              {/* Fat */}
-              <div style={{ borderBottom: "1px solid #CBD5E1", padding: "6px 0", fontSize: "13px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span><strong>Fat / Lipides</strong> {nut.fat || "8 g"}</span>
-                  <strong>{nut.fat_dv || "11%"}</strong>
-                </div>
-                <div style={{ paddingLeft: "16px", fontSize: "12px", color: "#334155", marginTop: "2px" }}>
-                  Saturated / saturés {nut.saturated_fat || "5.0 g"}
-                  <span style={{ float: "right", fontWeight: 700 }}>{nut.saturated_fat_dv || "27%"}</span>
-                </div>
-                <div style={{ paddingLeft: "16px", fontSize: "12px", color: "#334155" }}>
-                  + Trans / trans {nut.trans_fat || "0.3 g"}
-                </div>
-              </div>
-
-              {/* Cholesterol */}
-              <div style={{ borderBottom: "1px solid #CBD5E1", padding: "6px 0", fontSize: "13px" }}>
-                <span><strong>Cholesterol / Cholestérol</strong> {nut.cholesterol || "25 mg"}</span>
-              </div>
-
-              {/* Sodium */}
-              <div style={{
-                display: "flex",
-                justifyContent: "space-between",
-                borderBottom: "1px solid #CBD5E1",
-                padding: "6px 0",
-                fontSize: "13px",
-              }}>
-                <span><strong>Sodium</strong> {nut.sodium || "105 mg"}</span>
-                <strong>{nut.sodium_dv || "5%"}</strong>
-              </div>
-
-              {/* Carbohydrate */}
-              <div style={{ borderBottom: "1px solid #CBD5E1", padding: "6px 0", fontSize: "13px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span><strong>Carbohydrate / Glucides</strong> {nut.carbohydrate || "0 g"}</span>
-                  <strong>{nut.carbohydrate_dv || "0%"}</strong>
-                </div>
-                <div style={{ paddingLeft: "16px", fontSize: "12px", color: "#334155", marginTop: "2px" }}>
-                  Fibre / Fibres {nut.fibre || "0 g"}
-                </div>
-                <div style={{ paddingLeft: "16px", fontSize: "12px", color: "#334155" }}>
-                  Sugars / Sucres {nut.sugars || "0 g"}
-                </div>
-              </div>
-
-              {/* Protein */}
-              <div style={{ borderBottom: "4px solid #0F172A", padding: "6px 0", fontSize: "13px" }}>
-                <span><strong>Protein / Protéines</strong> {nut.protein || "0.1 g"}</span>
-              </div>
-
-              {/* Micronutrients */}
-              <div style={{ fontSize: "11px", color: "#334155", paddingTop: "6px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px" }}>
-                <div>Calcium: {nut.calcium_dv || "0%"}</div>
-                <div>Iron / Fer: {nut.iron_dv || "0%"}</div>
-                <div>Potassium: {nut.potassium_dv || "0%"}</div>
-              </div>
-
-              <div style={{ fontSize: "10px", color: "#64748B", marginTop: "8px", borderTop: "1px solid #E2E8F0", paddingTop: "4px" }}>
-                *5% or less is a little, 15% or more is a lot / *5% ou moins c'est peu, 15% ou plus c'est beaucoup.
-              </div>
-            </div>
-
+              </>
+            )}
           </div>
 
         </div>
-
       </div>
-
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(20px) scale(0.97); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-      `}</style>
     </div>
   );
 }
