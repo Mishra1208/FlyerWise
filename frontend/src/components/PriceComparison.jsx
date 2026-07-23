@@ -17,7 +17,23 @@ export default function PriceComparison({ product: rawProduct, prices: rawPrices
       try {
         const data = await PriceService.compare(product.id);
         if (Array.isArray(data) && data.length > 0) {
-          setPrices(data);
+          // Merge initialPrices (from search card) with API data to ensure ALL stores are preserved
+          setPrices((prevPrices) => {
+            const mergedMap = new Map();
+            // First add prev/initial prices from card
+            (prevPrices || []).forEach((p) => {
+              const sId = p.store?.id || p.store_id || p.store?.name;
+              if (sId) mergedMap.set(sId, p);
+            });
+            // Merge API prices
+            data.forEach((p) => {
+              const sId = p.store?.id || p.store_id || p.store?.name;
+              if (sId && !mergedMap.has(sId)) {
+                mergedMap.set(sId, p);
+              }
+            });
+            return Array.from(mergedMap.values());
+          });
         }
       } catch (err) {
         console.error("Failed to load compare prices:", err);
