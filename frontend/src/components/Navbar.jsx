@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation as useRouterLocation } from "react-router-dom";
-import { IoLocationOutline, IoMenuOutline, IoCloseOutline } from "react-icons/io5";
+import { IoLocationOutline, IoMenuOutline, IoCloseOutline, IoCartOutline } from "react-icons/io5";
 import { useLocation } from "../contexts/LocationContext";
+import { useBasket } from "../contexts/BasketContext";
 import PostalCodeModal from "./PostalCodeModal";
+import BasketModal from "./BasketModal";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const [showBasketModal, setShowBasketModal] = useState(false);
   const location = useRouterLocation();
   const { postalCode, cityName } = useLocation();
+  const { basketItems } = useBasket();
 
   // Scroll listener for border shadow effect
   useEffect(() => {
@@ -105,6 +109,28 @@ export default function Navbar() {
           alignItems: "center",
           gap: "16px",
         }}>
+          {/* Basket Button */}
+          <button
+            onClick={() => setShowBasketModal(true)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              backgroundColor: basketItems.length > 0 ? "rgba(27, 54, 93, 0.08)" : "transparent",
+              border: basketItems.length > 0 ? "1px solid rgba(27, 54, 93, 0.2)" : "1px solid #E2E8F0",
+              padding: "6px 14px",
+              borderRadius: "var(--radius-full)",
+              fontSize: "13px",
+              color: "var(--primary)",
+              fontWeight: 700,
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+            }}
+          >
+            <IoCartOutline size={16} color="var(--accent)" />
+            <span>Basket <strong>({basketItems.length})</strong></span>
+          </button>
+
           {/* Location details — NOW CLICKABLE */}
           <button
             onClick={() => setShowLocationModal(true)}
@@ -201,6 +227,12 @@ export default function Navbar() {
       <PostalCodeModal
         isOpen={showLocationModal}
         onClose={() => setShowLocationModal(false)}
+      />
+
+      {/* Basket Modal */}
+      <BasketModal
+        isOpen={showBasketModal}
+        onClose={() => setShowBasketModal(false)}
       />
 
       {/* Quick injection of responsive styles for navbar & mobile toggle */}

@@ -7,6 +7,8 @@ import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import SearchResults from "./pages/SearchResults";
 
+import FloatingBasketButton from "./components/FloatingBasketButton";
+
 export default function App() {
   return (
     <LocationProvider>
@@ -27,6 +29,9 @@ export default function App() {
               <Route path="/search" element={<SearchResults />} />
             </Routes>
           </main>
+
+          {/* Floating Basket Action Button */}
+          <FloatingBasketButton />
 
           {/* Unified Footer */}
           <Footer />

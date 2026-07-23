@@ -5,6 +5,7 @@ import SearchBar from "../components/SearchBar";
 import ProductCard from "../components/ProductCard";
 import PriceComparison from "../components/PriceComparison";
 import ProductDetailModal from "../components/ProductDetailModal";
+import SmartBasketOptimizer from "../components/SmartBasketOptimizer";
 import { ProductService } from "../services/api";
 import { useLocation } from "../contexts/LocationContext";
 
@@ -284,6 +285,11 @@ export default function SearchResults() {
                 ))}
               </div>
             )}
+
+            {/* Smart Basket Optimizer Section */}
+            <div style={{ marginTop: "40px" }}>
+              <SmartBasketOptimizer />
+            </div>
           </main>
         </div>
       </div>
