@@ -165,7 +165,6 @@ export default function ProductCard({ result, onClick, onCompare }) {
         )}
       </div>
 
-      {/* Stores and Prices list with Live Countdowns */}
       <div style={{
         display: "flex",
         flexDirection: "column",
@@ -174,6 +173,7 @@ export default function ProductCard({ result, onClick, onCompare }) {
         padding: "14px",
         borderRadius: "var(--radius-md)",
         border: "1px solid var(--border-color)",
+      }}>
         {/* Active flyer deals first, then past sales */}
         {[...prices].sort((a, b) => {
           const aIsPast = a.flyer_status === "recent_sale" || a.is_historical ? 1 : 0;
