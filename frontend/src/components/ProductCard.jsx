@@ -169,8 +169,13 @@ export default function ProductCard({ result, onClick, onCompare }) {
         padding: "14px",
         borderRadius: "var(--radius-md)",
         border: "1px solid var(--border-color)",
-      }}>
-        {prices.map((price) => {
+        {/* Active flyer deals first, then past sales */}
+        {[...prices].sort((a, b) => {
+          const aIsPast = a.flyer_status === "recent_sale" || a.is_historical ? 1 : 0;
+          const bIsPast = b.flyer_status === "recent_sale" || b.is_historical ? 1 : 0;
+          if (aIsPast !== bIsPast) return aIsPast - bIsPast;
+          return parseFloat(a.current_price || 0) - parseFloat(b.current_price || 0);
+        }).map((price) => {
           const countdown = getFlyerCountdown(price.valid_until, price.valid_from, price.flyer_status);
 
           return (

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { IoCloseOutline, IoCheckmarkCircleOutline, IoFlashOutline, IoRibbonOutline } from "react-icons/io5";
+import { IoCloseOutline, IoCheckmarkCircleOutline, IoFlashOutline, IoRibbonOutline, IoTimeOutline } from "react-icons/io5";
 import { PriceService } from "../services/api";
 import PriceHistory from "./PriceHistory";
 
@@ -20,12 +20,10 @@ export default function PriceComparison({ product: rawProduct, prices: rawPrices
           // Merge initialPrices (from search card) with API data to ensure ALL stores are preserved
           setPrices((prevPrices) => {
             const mergedMap = new Map();
-            // First add prev/initial prices from card
             (prevPrices || []).forEach((p) => {
               const sId = p.store?.id || p.store_id || p.store?.name;
               if (sId) mergedMap.set(sId, p);
             });
-            // Merge API prices
             data.forEach((p) => {
               const sId = p.store?.id || p.store_id || p.store?.name;
               if (sId && !mergedMap.has(sId)) {
@@ -53,10 +51,25 @@ export default function PriceComparison({ product: rawProduct, prices: rawPrices
     return isNaN(parsed) ? 0 : parsed;
   }
 
-  // Safely sort prices ascending by current_price
   const safePricesList = Array.isArray(prices) ? prices : [];
-  const sortedPrices = [...safePricesList].sort((a, b) => floatVal(a.current_price) - floatVal(b.current_price));
-  const lowestVal = sortedPrices.length > 0 ? floatVal(sortedPrices[0].current_price) : 0;
+  
+  // Partition into Active Deals vs Past Sales
+  const activePrices = [];
+  const pastPrices = [];
+
+  safePricesList.forEach((p) => {
+    if (p.flyer_status === "recent_sale" || p.is_historical) {
+      pastPrices.push(p);
+    } else {
+      activePrices.push(p);
+    }
+  });
+
+  // Sort both active and past prices ascending by current_price
+  activePrices.sort((a, b) => floatVal(a.current_price) - floatVal(b.current_price));
+  pastPrices.sort((a, b) => floatVal(a.current_price) - floatVal(b.current_price));
+
+  const lowestActiveVal = activePrices.length > 0 ? floatVal(activePrices[0].current_price) : null;
 
   return createPortal(
     <div 
@@ -80,7 +93,7 @@ export default function PriceComparison({ product: rawProduct, prices: rawPrices
       <div 
         style={{
           width: "100%",
-          maxWidth: "800px",
+          maxWidth: "820px",
           backgroundColor: "#FFFFFF",
           borderRadius: "24px",
           overflow: "hidden",
@@ -140,14 +153,14 @@ export default function PriceComparison({ product: rawProduct, prices: rawPrices
               </h2>
               <span style={{
                 fontSize: "12px",
-                color: "#475569",
-                backgroundColor: "rgba(16, 185, 129, 0.08)",
-                border: "1px solid rgba(16, 185, 129, 0.2)",
+                color: "#047857",
+                backgroundColor: "#D1FAE5",
+                border: "1px solid rgba(16, 185, 129, 0.3)",
                 padding: "3px 12px",
                 borderRadius: "20px",
                 fontWeight: 700,
               }}>
-                Comparing {sortedPrices.length} Store {sortedPrices.length === 1 ? "Offer" : "Offers"}
+                {activePrices.length} Active {activePrices.length === 1 ? "Deal" : "Deals"} Available Now
               </span>
             </div>
           </div>
@@ -182,31 +195,50 @@ export default function PriceComparison({ product: rawProduct, prices: rawPrices
           flexDirection: "column",
           gap: "32px",
         }}>
-          {/* Store Price Rankings */}
+
+          {/* SECTION 1: Active Store Price Rankings */}
           <div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "18px" }}>
               <h3 style={{ fontSize: "18px", fontWeight: 800, color: "#0F172A", fontFamily: "var(--font-headings)" }}>
-                Store Price Rankings ({sortedPrices.length} Stores)
+                ⚡ Current Active Flyer Deals ({activePrices.length})
               </h3>
               <span style={{ fontSize: "12px", color: "#059669", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
-                <IoFlashOutline /> Sorted Lowest to Highest
+                <IoFlashOutline /> Sorted Cheapest to Highest
               </span>
             </div>
 
             {loading ? (
-              <div style={{ textAlign: "center", padding: "36px", color: "#64748B", fontSize: "15px" }}>Comparing store prices...</div>
-            ) : sortedPrices.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "36px", color: "#64748B", fontSize: "15px" }}>No store price comparisons found.</div>
+              <div style={{ textAlign: "center", padding: "28px", color: "#64748B", fontSize: "15px" }}>Comparing store prices...</div>
+            ) : activePrices.length === 0 ? (
+              <div style={{ 
+                backgroundColor: "#FFFBEB", 
+                border: "1px solid #FCD34D", 
+                borderRadius: "16px", 
+                padding: "20px", 
+                color: "#92400E",
+                fontSize: "14px",
+                fontWeight: 600,
+                display: "flex",
+                alignItems: "center",
+                gap: "10px"
+              }}>
+                <IoTimeOutline size={22} color="#D97706" />
+                <span>No active flyer deals found this week. Check recent flyer sales below for benchmark pricing!</span>
+              </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                {sortedPrices.map((price, idx) => {
-                  if (!price) return null;
+                {activePrices.map((price, idx) => {
                   const pVal = floatVal(price.current_price);
-                  const isLowest = idx === 0 || pVal === lowestVal;
+                  const isLowest = idx === 0 || pVal === lowestActiveVal;
                   const storeName = price.store?.name || price.store_name || "Grocery Store";
                   const storeColor = price.store?.color || price.store_color || "#10B981";
 
-                  let statusBadge = null;
+                  let statusBadge = (
+                    <span style={{ fontSize: "11px", fontWeight: 800, color: "#047857", backgroundColor: "#D1FAE5", padding: "3px 10px", borderRadius: "12px" }}>
+                      ⚡ Active Flyer
+                    </span>
+                  );
+
                   if (price.flyer_status === "expiring_today") {
                     statusBadge = (
                       <span style={{ fontSize: "11px", fontWeight: 800, color: "#D97706", backgroundColor: "#FEF3C7", padding: "3px 10px", borderRadius: "12px" }}>
@@ -217,18 +249,6 @@ export default function PriceComparison({ product: rawProduct, prices: rawPrices
                     statusBadge = (
                       <span style={{ fontSize: "11px", fontWeight: 800, color: "#2563EB", backgroundColor: "#EFF6FF", padding: "3px 10px", borderRadius: "12px" }}>
                         📅 Preview
-                      </span>
-                    );
-                  } else if (price.flyer_status === "recent_sale" || price.is_historical) {
-                    statusBadge = (
-                      <span style={{ fontSize: "11px", fontWeight: 700, color: "#64748B", backgroundColor: "#F1F5F9", padding: "3px 10px", borderRadius: "12px" }}>
-                        📜 Last Sale
-                      </span>
-                    );
-                  } else {
-                    statusBadge = (
-                      <span style={{ fontSize: "11px", fontWeight: 800, color: "#047857", backgroundColor: "#D1FAE5", padding: "3px 10px", borderRadius: "12px" }}>
-                        ⚡ Active Flyer
                       </span>
                     );
                   }
@@ -256,7 +276,7 @@ export default function PriceComparison({ product: rawProduct, prices: rawPrices
                         transition: "all 0.25s ease",
                       }}
                     >
-                      {/* Glow Accent Stripe for Lowest Price */}
+                      {/* Glow Accent Stripe for Lowest Active Price */}
                       {isLowest && (
                         <div style={{
                           position: "absolute",
@@ -314,7 +334,7 @@ export default function PriceComparison({ product: rawProduct, prices: rawPrices
                                 alignItems: "center",
                                 gap: "4px"
                               }}>
-                                <IoRibbonOutline size={13} /> CHEAPEST OFFER
+                                <IoRibbonOutline size={13} /> CHEAPEST ACTIVE DEAL
                               </span>
                             )}
 
@@ -359,11 +379,83 @@ export default function PriceComparison({ product: rawProduct, prices: rawPrices
             )}
           </div>
 
+          {/* SECTION 2: Past Flyer Sales & Benchmark History */}
+          {pastPrices.length > 0 && (
+            <div style={{
+              backgroundColor: "#F8FAFC",
+              borderRadius: "20px",
+              border: "1px dashed #CBD5E1",
+              padding: "24px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "16px"
+            }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <h4 style={{ fontSize: "15px", fontWeight: 800, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                  📜 Recent Flyer History & Past Sales ({pastPrices.length})
+                </h4>
+                <span style={{ fontSize: "12px", color: "#94A3B8", fontWeight: 600 }}>
+                  Historical Reference Only (Not Current)
+                </span>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {pastPrices.map((price, idx) => {
+                  const pVal = floatVal(price.current_price);
+                  const storeName = price.store?.name || price.store_name || "Grocery Store";
+                  const dateStr = price.valid_from && price.valid_until
+                    ? `${new Date(price.valid_from).toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${new Date(price.valid_until).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
+                    : "Past Flyer Sale";
+
+                  return (
+                    <div 
+                      key={price.id || idx}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        padding: "12px 18px",
+                        borderRadius: "14px",
+                        backgroundColor: "#FFFFFF",
+                        border: "1px solid #E2E8F0",
+                        opacity: 0.75,
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <span style={{
+                          fontSize: "11px",
+                          fontWeight: 700,
+                          color: "#64748B",
+                          backgroundColor: "#F1F5F9",
+                          padding: "2px 8px",
+                          borderRadius: "10px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px"
+                        }}>
+                          📜 EXPIRED SALE
+                        </span>
+                        <div>
+                          <strong style={{ fontSize: "14px", color: "#475569" }}>{storeName}</strong>
+                          <div style={{ fontSize: "11px", color: "#94A3B8" }}>{dateStr}</div>
+                        </div>
+                      </div>
+
+                      <div style={{ fontSize: "16px", fontWeight: 700, color: "#64748B" }}>
+                        ${pVal.toFixed(2)}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Historical price trends */}
           {product.id && (
             <div>
               <h3 style={{ fontSize: "18px", fontWeight: 800, marginBottom: "16px", color: "#0F172A", fontFamily: "var(--font-headings)" }}>
-                Price History & 90-Day Trend
+                Price History & 90-Day Trend Graph
               </h3>
               <div style={{
                 padding: "24px",
