@@ -21,24 +21,29 @@ export default function ProductCard({ result, onClick, onCompare }) {
 
   const cleanTitle = getCleanItemName(product.raw_name, product.brand);
 
-  const isItemInBasket = basketItems.some(
-    (i) => i.toLowerCase() === cleanTitle.toLowerCase() || 
-           product.raw_name.toLowerCase().includes(i.toLowerCase()) || 
-           i.toLowerCase().includes(product.raw_name.toLowerCase())
-  );
+  const isItemInBasket = basketItems.some((i) => {
+    const itemTitle = typeof i === "object" ? i.title : i;
+    return itemTitle.toLowerCase() === cleanTitle.toLowerCase() ||
+           product.raw_name.toLowerCase().includes(itemTitle.toLowerCase()) || 
+           itemTitle.toLowerCase().includes(product.raw_name.toLowerCase());
+  });
 
   const handleToggleBasket = (e) => {
     e.stopPropagation();
     if (isItemInBasket) {
-      const match = basketItems.find(
-        (i) => i.toLowerCase() === cleanTitle.toLowerCase() || 
-               product.raw_name.toLowerCase().includes(i.toLowerCase()) || 
-               i.toLowerCase().includes(product.raw_name.toLowerCase())
-      );
-      if (match) removeItem(match);
-      else removeItem(cleanTitle);
+      removeItem(cleanTitle);
     } else {
-      addItem(cleanTitle);
+      const topStore = prices && prices.length > 0 ? (prices[0].store?.name || prices[0].store_name) : "Grocery Store";
+      const itemPrice = lowest_price || (prices && prices.length > 0 ? prices[0].current_price : 3.49);
+
+      addItem({
+        id: product.id,
+        title: cleanTitle,
+        price: itemPrice,
+        store_name: topStore,
+        image_url: product.image_url,
+        quantity: 1,
+      });
     }
   };
 

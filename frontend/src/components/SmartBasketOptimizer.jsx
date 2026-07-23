@@ -2,31 +2,24 @@ import React, { useState, useEffect } from "react";
 import { 
   IoCartOutline, 
   IoFlashOutline, 
-  IoStorefrontOutline, 
-  IoTrendingDownOutline, 
   IoAddCircleOutline, 
   IoTrashOutline,
   IoSparklesOutline,
-  IoCheckmarkCircleOutline,
-  IoShieldCheckmarkOutline,
-  IoStatsChartOutline
+  IoReceiptOutline,
+  IoInformationCircleOutline,
+  IoAddOutline,
+  IoRemoveOutline,
+  IoCalculatorOutline,
+  IoStorefrontOutline
 } from "react-icons/io5";
 import { useBasket } from "../contexts/BasketContext";
 import { useLocation } from "../contexts/LocationContext";
-
-const STORE_COLORS = {
-  walmart: "#0071CE",
-  maxi: "#ED1C24",
-  metro: "#003DA5",
-  iga: "#C8102E",
-  superc: "#E31837",
-  provigo: "#000000",
-};
 
 export default function SmartBasketOptimizer() {
   const { 
     basketItems, 
     addItem, 
+    updateQuantity,
     removeItem, 
     clearBasket, 
     optimizationResult: result, 
@@ -36,11 +29,15 @@ export default function SmartBasketOptimizer() {
   
   const { postalCode, cityName } = useLocation();
   const [inputVal, setInputVal] = useState("");
-  const [activeTab, setActiveTab] = useState("overview"); // "overview" | "comparison"
+  const [activeTab, setActiveTab] = useState("items"); // "items" | "optimizer" | "comparison"
+
+  // Tax settings
+  const [includeTax, setIncludeTax] = useState(false);
+  const [taxMode, setTaxMode] = useState("groceries"); // "groceries" (0%) | "quebec" (14.975%) | "ontario" (13%)
 
   useEffect(() => {
     if (basketItems.length > 0 && !result) {
-      optimize(basketItems, postalCode);
+      optimize(basketItems.map((i) => (typeof i === "object" ? i.title : i)), postalCode);
     }
   }, [basketItems, postalCode]);
 
@@ -52,18 +49,29 @@ export default function SmartBasketOptimizer() {
     }
   };
 
-  const handleRemoveItem = (item) => {
-    removeItem(item);
+  const handleRemoveItem = (itemId) => {
+    removeItem(itemId);
   };
 
   const popularChips = ["milk", "spinach", "eggs", "butter", "bread", "chicken", "cheese", "yogurt"];
+
+  // Calculate Subtotal and Tax
+  const taxRate = taxMode === "quebec" ? 0.14975 : taxMode === "ontario" ? 0.13 : 0.0;
+  
+  const rawSubtotal = basketItems.reduce((acc, item) => {
+    const p = typeof item === "object" ? (item.price || 3.49) : 3.49;
+    const q = typeof item === "object" ? (item.quantity || 1) : 1;
+    return acc + p * q;
+  }, 0);
+
+  const taxAmount = rawSubtotal * taxRate;
+  const grandTotal = rawSubtotal + taxAmount;
 
   const bestSingleCost = result?.best_single_store?.total_cost || 0;
   const bestTwoCost = result?.best_two_store_combination?.total_cost || bestSingleCost;
   const extraSavings = result?.potential_extra_savings || 0;
   const savingsPct = bestSingleCost > 0 ? ((extraSavings / bestSingleCost) * 100).toFixed(0) : 0;
 
-  // Max store price for relative progress bars
   const allSingleStores = result?.all_single_stores || [];
   const maxStoreCost = allSingleStores.length > 0 
     ? Math.max(...allSingleStores.map((s) => s.total_cost)) 
@@ -82,7 +90,7 @@ export default function SmartBasketOptimizer() {
       position: "relative",
       overflow: "hidden",
     }}>
-      {/* Subtle background glow */}
+      {/* Background radial ambient glow */}
       <div style={{
         position: "absolute",
         top: "-100px",
@@ -111,7 +119,7 @@ export default function SmartBasketOptimizer() {
               alignItems: "center",
               gap: "4px"
             }}>
-              <IoSparklesOutline size={13} /> AI Price Intelligence • {cityName || "Canada"}
+              <IoSparklesOutline size={13} /> AI Price Intelligence • {cityName || "Montreal"}
             </span>
           </div>
 
@@ -127,7 +135,7 @@ export default function SmartBasketOptimizer() {
             letterSpacing: "-0.5px"
           }}>
             <IoCartOutline style={{ color: "#10B981" }} />
-            <span>Smart Basket Optimizer</span>
+            <span>My Smart Grocery Basket ({basketItems.length} {basketItems.length === 1 ? "Item" : "Items"})</span>
           </h2>
         </div>
 
@@ -152,7 +160,10 @@ export default function SmartBasketOptimizer() {
           )}
 
           <button
-            onClick={() => optimize(basketItems, postalCode)}
+            onClick={() => {
+              setActiveTab("optimizer");
+              optimize(basketItems.map((i) => (typeof i === "object" ? i.title : i)), postalCode);
+            }}
             disabled={loading || basketItems.length === 0}
             style={{
               padding: "12px 24px",
@@ -172,12 +183,12 @@ export default function SmartBasketOptimizer() {
             }}
           >
             <IoFlashOutline size={18} />
-            {loading ? "Calculating..." : "Optimize Shopping List"}
+            {loading ? "Calculating..." : "Run AI Trip Split Optimizer"}
           </button>
         </div>
       </div>
 
-      {/* Item Input & Chips Row */}
+      {/* Item Quick Add Bar */}
       <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
         <form 
           onSubmit={(e) => { e.preventDefault(); handleAddItem(); }}
@@ -235,7 +246,10 @@ export default function SmartBasketOptimizer() {
         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
           <span style={{ fontSize: "12px", color: "#64748B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>Quick Add:</span>
           {popularChips.map((chip) => {
-            const isAdded = basketItems.some((i) => i.toLowerCase() === chip.toLowerCase());
+            const isAdded = basketItems.some((i) => {
+              const title = typeof i === "object" ? i.title : i;
+              return title.toLowerCase() === chip.toLowerCase();
+            });
             return (
               <button
                 key={chip}
@@ -261,62 +275,299 @@ export default function SmartBasketOptimizer() {
         </div>
       </div>
 
-      {/* Active Items Chips List */}
-      {basketItems.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
-          {basketItems.map((item, idx) => (
-            <div
-              key={idx}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                backgroundColor: "rgba(16, 185, 129, 0.08)",
-                border: "1px solid rgba(16, 185, 129, 0.25)",
-                padding: "7px 16px",
-                borderRadius: "24px",
-                fontSize: "13px",
-                color: "#065F46",
-                fontWeight: 700,
-                boxShadow: "0 2px 6px rgba(16, 185, 129, 0.06)",
-              }}
-            >
-              <span style={{ textTransform: "capitalize" }}>
-                {item.replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.substring(1).toLowerCase())}
-              </span>
-              <IoTrashOutline
-                size={16}
-                onClick={() => handleRemoveItem(item)}
-                style={{ cursor: "pointer", color: "#EF4444", transition: "transform 0.2s" }}
-                onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.2)"}
-                onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
-              />
+      {/* Main Feature Navigation Tabs */}
+      <div style={{ display: "flex", gap: "16px", borderBottom: "1px solid #E2E8F0", paddingBottom: "12px" }}>
+        <button
+          onClick={() => setActiveTab("items")}
+          style={{
+            fontSize: "15px",
+            fontWeight: 800,
+            color: activeTab === "items" ? "#059669" : "#64748B",
+            borderBottom: activeTab === "items" ? "3px solid #059669" : "3px solid transparent",
+            paddingBottom: "10px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            transition: "all 0.2s",
+            fontFamily: "var(--font-headings)"
+          }}
+        >
+          <IoReceiptOutline size={18} />
+          Itemized Basket & Tax Calculator ({basketItems.length})
+        </button>
+
+        <button
+          onClick={() => setActiveTab("optimizer")}
+          style={{
+            fontSize: "15px",
+            fontWeight: 800,
+            color: activeTab === "optimizer" ? "#059669" : "#64748B",
+            borderBottom: activeTab === "optimizer" ? "3px solid #059669" : "3px solid transparent",
+            paddingBottom: "10px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            transition: "all 0.2s",
+            fontFamily: "var(--font-headings)"
+          }}
+        >
+          <IoFlashOutline size={18} />
+          AI Multi-Store Split Optimizer
+        </button>
+
+        <button
+          onClick={() => setActiveTab("comparison")}
+          style={{
+            fontSize: "15px",
+            fontWeight: 800,
+            color: activeTab === "comparison" ? "#059669" : "#64748B",
+            borderBottom: activeTab === "comparison" ? "3px solid #059669" : "3px solid transparent",
+            paddingBottom: "10px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            transition: "all 0.2s",
+            fontFamily: "var(--font-headings)"
+          }}
+        >
+          <IoStorefrontOutline size={18} />
+          Retailer Price Chart
+        </button>
+      </div>
+
+      {/* TAB 1: Itemized Basket & Sales Tax Calculator */}
+      {activeTab === "items" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          {basketItems.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "40px", color: "#64748B" }}>
+              Your basket is empty. Click "+ Basket" on any product card or type items above to calculate totals!
             </div>
-          ))}
+          ) : (
+            <>
+              {/* Itemized Table */}
+              <div style={{
+                borderRadius: "18px",
+                border: "1px solid #E2E8F0",
+                overflow: "hidden",
+                boxShadow: "0 4px 15px rgba(0,0,0,0.02)"
+              }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", textAlignment: "left", fontSize: "14px" }}>
+                  <thead>
+                    <tr style={{ backgroundColor: "#F8FAFC", borderBottom: "1px solid #E2E8F0", color: "#64748B", fontWeight: 700, fontSize: "12px", textTransform: "uppercase" }}>
+                      <th style={{ padding: "14px 20px", textAlign: "left" }}>Item Name</th>
+                      <th style={{ padding: "14px 20px", textAlign: "left" }}>Selected Store</th>
+                      <th style={{ padding: "14px 20px", textAlign: "right" }}>Unit Price</th>
+                      <th style={{ padding: "14px 20px", textAlign: "center" }}>Qty</th>
+                      <th style={{ padding: "14px 20px", textAlign: "right" }}>Subtotal</th>
+                      <th style={{ padding: "14px 20px", textAlign: "center" }}>Remove</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {basketItems.map((item, idx) => {
+                      const id = typeof item === "object" ? item.id : String(idx);
+                      const title = typeof item === "object" ? item.title : item;
+                      const price = typeof item === "object" ? (item.price || 3.49) : 3.49;
+                      const store = typeof item === "object" ? (item.store_name || "Local Store") : "Local Store";
+                      const qty = typeof item === "object" ? (item.quantity || 1) : 1;
+                      const itemTotal = price * qty;
+                      const displayPrice = includeTax ? itemTotal * (1 + taxRate) : itemTotal;
+
+                      return (
+                        <tr key={id} style={{ borderBottom: "1px solid #F1F5F9", transition: "all 0.2s ease" }}>
+                          <td style={{ padding: "16px 20px", fontWeight: 700, color: "#0F172A" }}>
+                            {title}
+                          </td>
+                          <td style={{ padding: "16px 20px", color: "#475569", fontWeight: 600 }}>
+                            <span style={{
+                              backgroundColor: "rgba(27, 54, 93, 0.06)",
+                              padding: "4px 10px",
+                              borderRadius: "12px",
+                              fontSize: "12px",
+                              fontWeight: 700,
+                              color: "#1B365D"
+                            }}>
+                              {store}
+                            </span>
+                          </td>
+                          <td style={{ padding: "16px 20px", textAlign: "right", color: "#64748B" }}>
+                            ${price.toFixed(2)}
+                          </td>
+                          <td style={{ padding: "16px 20px", textAlign: "center" }}>
+                            <div style={{ display: "inline-flex", alignItems: "center", border: "1px solid #CBD5E1", borderRadius: "10px", backgroundColor: "#FFFFFF" }}>
+                              <button
+                                onClick={() => updateQuantity(id, -1)}
+                                style={{ padding: "4px 8px", cursor: "pointer", border: "none", color: "#475569" }}
+                              >
+                                <IoRemoveOutline size={14} />
+                              </button>
+                              <span style={{ padding: "0 10px", fontWeight: 700, fontSize: "13px", color: "#0F172A" }}>
+                                {qty}
+                              </span>
+                              <button
+                                onClick={() => updateQuantity(id, 1)}
+                                style={{ padding: "4px 8px", cursor: "pointer", border: "none", color: "#475569" }}
+                              >
+                                <IoAddOutline size={14} />
+                              </button>
+                            </div>
+                          </td>
+                          <td style={{ padding: "16px 20px", textAlign: "right", fontWeight: 800, color: "#0F172A" }}>
+                            ${displayPrice.toFixed(2)}
+                          </td>
+                          <td style={{ padding: "16px 20px", textAlign: "center" }}>
+                            <button
+                              onClick={() => handleRemoveItem(id)}
+                              style={{ padding: "6px", borderRadius: "8px", border: "none", backgroundColor: "#FEE2E2", color: "#EF4444", cursor: "pointer" }}
+                            >
+                              <IoTrashOutline size={16} />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Subtotal & Sales Tax Calculation Panel */}
+              <div style={{
+                backgroundColor: "#F8FAFC",
+                border: "1px solid #E2E8F0",
+                borderRadius: "20px",
+                padding: "24px",
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                gap: "24px",
+                alignItems: "center"
+              }}>
+                {/* Left: Tax Rate & Price Display Toggle Controls */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <IoCalculatorOutline size={20} color="#059669" />
+                    <strong style={{ fontSize: "15px", color: "#0F172A", fontFamily: "var(--font-headings)" }}>
+                      Canadian Sales Tax Options
+                    </strong>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                    <button
+                      onClick={() => setTaxMode("groceries")}
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: "10px",
+                        fontSize: "12px",
+                        fontWeight: 700,
+                        backgroundColor: taxMode === "groceries" ? "#D1FAE5" : "#FFFFFF",
+                        border: taxMode === "groceries" ? "1px solid #10B981" : "1px solid #E2E8F0",
+                        color: taxMode === "groceries" ? "#047857" : "#64748B",
+                        cursor: "pointer"
+                      }}
+                    >
+                      🇨🇦 Basic Groceries (0% Zero-Rated)
+                    </button>
+                    <button
+                      onClick={() => setTaxMode("quebec")}
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: "10px",
+                        fontSize: "12px",
+                        fontWeight: 700,
+                        backgroundColor: taxMode === "quebec" ? "#D1FAE5" : "#FFFFFF",
+                        border: taxMode === "quebec" ? "1px solid #10B981" : "1px solid #E2E8F0",
+                        color: taxMode === "quebec" ? "#047857" : "#64748B",
+                        cursor: "pointer"
+                      }}
+                    >
+                      ⚜️ Quebec Sales Tax (14.975%)
+                    </button>
+                    <button
+                      onClick={() => setTaxMode("ontario")}
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: "10px",
+                        fontSize: "12px",
+                        fontWeight: 700,
+                        backgroundColor: taxMode === "ontario" ? "#D1FAE5" : "#FFFFFF",
+                        border: taxMode === "ontario" ? "1px solid #10B981" : "1px solid #E2E8F0",
+                        color: taxMode === "ontario" ? "#047857" : "#64748B",
+                        cursor: "pointer"
+                      }}
+                    >
+                      🍁 Ontario HST (13%)
+                    </button>
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "4px" }}>
+                    <label style={{ fontSize: "13px", fontWeight: 700, color: "#334155", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
+                      <input
+                        type="checkbox"
+                        checked={includeTax}
+                        onChange={(e) => setIncludeTax(e.target.checked)}
+                        style={{ width: "16px", height: "16px", accentColor: "#10B981" }}
+                      />
+                      <span>Calculate & display total with estimated sales tax</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Right: Price Breakdown Card */}
+                <div style={{
+                  backgroundColor: "#FFFFFF",
+                  border: "1px solid #E2E8F0",
+                  borderRadius: "16px",
+                  padding: "20px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.03)"
+                }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px", color: "#64748B" }}>
+                    <span>Subtotal ({basketItems.length} items):</span>
+                    <strong>${rawSubtotal.toFixed(2)}</strong>
+                  </div>
+
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px", color: "#64748B" }}>
+                    <span>Estimated Tax ({taxMode === "quebec" ? "14.975%" : taxMode === "ontario" ? "13%" : "0%"}):</span>
+                    <strong>${taxAmount.toFixed(2)}</strong>
+                  </div>
+
+                  <div style={{ borderTop: "1px solid #E2E8F0", paddingTop: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: "16px", fontWeight: 800, color: "#0F172A" }}>
+                      {includeTax ? "Grand Total (incl. tax):" : "Subtotal (pre-tax):"}
+                    </span>
+                    <span style={{ fontSize: "24px", fontWeight: 800, color: "#059669" }}>
+                      ${(includeTax ? grandTotal : rawSubtotal).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       )}
 
-      {/* Results Dashboard & Metrics Widgets */}
-      {result && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "24px", marginTop: "8px" }}>
+      {/* TAB 2: AI Multi-Store Split Optimizer */}
+      {activeTab === "optimizer" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           {/* Key Metrics Widgets */}
           <div style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
             gap: "16px",
           }}>
-            {/* Widget 1: Single Store Total */}
             <div className="metric-widget">
               <span style={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.5px" }}>BEST 1-STORE TOTAL</span>
               <div style={{ fontSize: "24px", fontWeight: 800, color: "#0F172A" }}>
                 ${bestSingleCost.toFixed(2)}
               </div>
               <span style={{ fontSize: "12px", color: "#64748B" }}>
-                {result.best_single_store?.store_name || "N/A"}
+                {result?.best_single_store?.store_name || "N/A"}
               </span>
             </div>
 
-            {/* Widget 2: 2-Store Split Total */}
             <div className="metric-widget" style={{ borderColor: "rgba(16, 185, 129, 0.4)", backgroundColor: "rgba(16, 185, 129, 0.03)" }}>
               <span style={{ fontSize: "11px", fontWeight: 800, color: "#059669", textTransform: "uppercase", letterSpacing: "0.5px" }}>OPTIMAL 2-STORE TOTAL</span>
               <div style={{ fontSize: "24px", fontWeight: 800, color: "#059669" }}>
@@ -327,7 +578,6 @@ export default function SmartBasketOptimizer() {
               </span>
             </div>
 
-            {/* Widget 3: Total Dollar & % Savings */}
             <div className="metric-widget" style={{ borderColor: extraSavings > 0 ? "rgba(16, 185, 129, 0.4)" : "#E2E8F0" }}>
               <span style={{ fontSize: "11px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.5px" }}>MAX EXTRA SAVINGS</span>
               <div style={{ fontSize: "24px", fontWeight: 800, color: extraSavings > 0 ? "#10B981" : "#64748B", display: "flex", alignItems: "center", gap: "6px" }}>
@@ -344,68 +594,36 @@ export default function SmartBasketOptimizer() {
             </div>
           </div>
 
-          {/* Sticky Advice Banner */}
-          {result.advice_banner && (
-            <div style={{
-              background: extraSavings > 1.0 
-                ? "linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.15) 100%)" 
-                : "linear-gradient(135deg, rgba(15, 23, 42, 0.05) 0%, rgba(51, 65, 85, 0.08) 100%)",
-              border: `1px solid ${extraSavings > 1.0 ? "rgba(16, 185, 129, 0.3)" : "rgba(15, 23, 42, 0.15)"}`,
-              padding: "18px 24px",
-              borderRadius: "16px",
-              display: "flex",
-              alignItems: "center",
-              gap: "14px",
-              boxShadow: "0 4px 15px rgba(0,0,0,0.02)"
-            }}>
-              <IoFlashOutline size={26} style={{ color: extraSavings > 1.0 ? "#10B981" : "#0F172A", flexShrink: 0 }} />
-              <div>
-                <h4 style={{ fontSize: "15px", fontWeight: 800, color: "#0F172A", fontFamily: "var(--font-headings)" }}>Smart Recommendation</h4>
-                <p style={{ fontSize: "14px", color: "#475569", marginTop: "2px" }}>{result.advice_banner}</p>
-              </div>
+          {/* Store Match Explanation Callout Box (Answering User Question) */}
+          <div style={{
+            backgroundColor: "#EFF6FF",
+            border: "1px solid #93C5FD",
+            borderRadius: "16px",
+            padding: "18px 22px",
+            color: "#1E40AF",
+            fontSize: "14px",
+            display: "flex",
+            gap: "12px",
+            alignItems: "flex-start"
+          }}>
+            <IoInformationCircleOutline size={24} style={{ flexShrink: 0, marginTop: "2px" }} />
+            <div>
+              <strong style={{ display: "block", fontSize: "15px", marginBottom: "4px" }}>
+                Why do some single stores match 1 or 2 of your 3 items?
+              </strong>
+              <span>
+                Grocery stores run weekly flyer discounts on specific products. If Super C has chicken legs on flyer deal ($1.95) but doesn't have Becel Margarine on flyer deal this week, the AI Optimizer splits your basket across 2 stores (e.g. buying Chicken at Super C and Margarine at Metro) to maximize your total savings!
+              </span>
             </div>
-          )}
-
-          {/* View Toggle Tabs */}
-          <div style={{ display: "flex", gap: "12px", borderBottom: "1px solid #E2E8F0", paddingBottom: "12px" }}>
-            <button
-              onClick={() => setActiveTab("overview")}
-              style={{
-                fontSize: "14px",
-                fontWeight: 700,
-                color: activeTab === "overview" ? "#059669" : "#64748B",
-                borderBottom: activeTab === "overview" ? "2px solid #059669" : "2px solid transparent",
-                paddingBottom: "8px",
-                cursor: "pointer",
-                transition: "all 0.2s"
-              }}
-            >
-              Option Breakdown
-            </button>
-            <button
-              onClick={() => setActiveTab("comparison")}
-              style={{
-                fontSize: "14px",
-                fontWeight: 700,
-                color: activeTab === "comparison" ? "#059669" : "#64748B",
-                borderBottom: activeTab === "comparison" ? "2px solid #059669" : "2px solid transparent",
-                paddingBottom: "8px",
-                cursor: "pointer",
-                transition: "all 0.2s"
-              }}
-            >
-              Store Price Comparison Bar Chart
-            </button>
           </div>
 
-          {/* TAB 1: Option Breakdown */}
-          {activeTab === "overview" && (
+          {/* Option Breakdown Cards */}
+          {result && (
             <div style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
               gap: "24px"
             }}>
-              {/* Card 1: Best Single Store */}
               {result.best_single_store && (
                 <div style={{
                   border: "1px solid #E2E8F0",
@@ -446,7 +664,6 @@ export default function SmartBasketOptimizer() {
                 </div>
               )}
 
-              {/* Card 2: Best 2-Store Split Combination */}
               {result.best_two_store_combination && (
                 <div style={{
                   border: "1.5px solid rgba(16, 185, 129, 0.4)",
@@ -457,8 +674,6 @@ export default function SmartBasketOptimizer() {
                   flexDirection: "column",
                   justifyContent: "space-between",
                   boxShadow: "0 12px 30px rgba(16, 185, 129, 0.08)",
-                  position: "relative",
-                  overflow: "hidden"
                 }}>
                   <div>
                     <span style={{ fontSize: "11px", fontWeight: 800, textTransform: "uppercase", color: "#059669", letterSpacing: "1px" }}>MAXIMUM SAVINGS (2 STORES)</span>
@@ -518,58 +733,58 @@ export default function SmartBasketOptimizer() {
               )}
             </div>
           )}
+        </div>
+      )}
 
-          {/* TAB 2: Store Price Comparison Bar Chart */}
-          {activeTab === "comparison" && (
-            <div style={{
-              backgroundColor: "#F8FAFC",
-              border: "1px solid #E2E8F0",
-              borderRadius: "20px",
-              padding: "24px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "16px"
-            }}>
-              <h4 style={{ fontSize: "16px", fontWeight: 800, color: "#0F172A" }}>
-                Total Basket Cost by Retailer
-              </h4>
+      {/* TAB 3: Store Price Comparison Bar Chart */}
+      {activeTab === "comparison" && (
+        <div style={{
+          backgroundColor: "#F8FAFC",
+          border: "1px solid #E2E8F0",
+          borderRadius: "20px",
+          padding: "24px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "16px"
+        }}>
+          <h4 style={{ fontSize: "16px", fontWeight: 800, color: "#0F172A" }}>
+            Total Basket Cost by Retailer
+          </h4>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                {allSingleStores.map((store) => {
-                  const pct = maxStoreCost > 0 ? (store.total_cost / maxStoreCost) * 100 : 0;
-                  const isCheapest = store.store_id === result.best_single_store?.store_id;
+          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            {allSingleStores.map((store) => {
+              const pct = maxStoreCost > 0 ? (store.total_cost / maxStoreCost) * 100 : 0;
+              const isCheapest = store.store_id === result?.best_single_store?.store_id;
 
-                  return (
-                    <div key={store.store_id} style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", fontWeight: 700, color: "#0F172A" }}>
-                        <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                          {store.store_name}
-                          {isCheapest && (
-                            <span style={{ fontSize: "10px", backgroundColor: "#D1FAE5", color: "#047857", padding: "1px 6px", borderRadius: "4px" }}>
-                              Cheapest 1-Store
-                            </span>
-                          )}
+              return (
+                <div key={store.store_id} style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", fontWeight: 700, color: "#0F172A" }}>
+                    <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      {store.store_name}
+                      {isCheapest && (
+                        <span style={{ fontSize: "10px", backgroundColor: "#D1FAE5", color: "#047857", padding: "1px 6px", borderRadius: "4px" }}>
+                          Cheapest 1-Store
                         </span>
-                        <span>${store.total_cost.toFixed(2)} ({store.matched_count}/{store.total_items} items)</span>
-                      </div>
+                      )}
+                    </span>
+                    <span>${store.total_cost.toFixed(2)} ({store.matched_count}/{store.total_items} items)</span>
+                  </div>
 
-                      <div style={{ width: "100%", height: "12px", backgroundColor: "#E2E8F0", borderRadius: "9999px", overflow: "hidden" }}>
-                        <div
-                          style={{
-                            width: `${pct}%`,
-                            height: "100%",
-                            backgroundColor: isCheapest ? "#10B981" : "#64748B",
-                            borderRadius: "9999px",
-                            transition: "width 0.8s ease"
-                          }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+                  <div style={{ width: "100%", height: "12px", backgroundColor: "#E2E8F0", borderRadius: "9999px", overflow: "hidden" }}>
+                    <div
+                      style={{
+                        width: `${pct}%`,
+                        height: "100%",
+                        backgroundColor: isCheapest ? "#10B981" : "#64748B",
+                        borderRadius: "9999px",
+                        transition: "width 0.8s ease"
+                      }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
