@@ -30,6 +30,7 @@ export default function SearchResults() {
     iga: true,
     superc: true,
     provigo: true,
+    costco: true,
   });
 
   const handleSearch = (newQuery) => {
@@ -204,7 +205,7 @@ export default function SearchResults() {
                 letterSpacing: "0.8px",
                 display: "block",
                 marginBottom: "14px",
-              }}>Stores (6 Quebec Chains)</span>
+              }}>Stores (Major Retailers)</span>
 
               {/* Stores toggles */}
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
@@ -215,6 +216,7 @@ export default function SearchResults() {
                   { slug: "iga", name: "IGA" },
                   { slug: "superc", name: "Super C" },
                   { slug: "provigo", name: "Provigo" },
+                  { slug: "costco", name: "Costco Canada" },
                 ].map((st) => (
                   <label key={st.slug} style={{
                     display: "flex",
