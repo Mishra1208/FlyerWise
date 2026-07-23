@@ -4,7 +4,10 @@ import { IoCloseOutline, IoCheckmarkCircleOutline, IoFlashOutline, IoRibbonOutli
 import { PriceService } from "../services/api";
 import PriceHistory from "./PriceHistory";
 
-export default function PriceComparison({ product, prices: initialPrices, onClose }) {
+export default function PriceComparison({ product: rawProduct, prices: rawPrices, onClose }) {
+  const product = rawProduct?.product ? rawProduct.product : rawProduct;
+  const initialPrices = rawPrices || rawProduct?.prices || [];
+
   const [prices, setPrices] = useState(Array.isArray(initialPrices) ? initialPrices : []);
   const [loading, setLoading] = useState(!initialPrices || !Array.isArray(initialPrices) || initialPrices.length === 0);
 
@@ -26,7 +29,7 @@ export default function PriceComparison({ product, prices: initialPrices, onClos
     loadPrices();
   }, [product]);
 
-  if (!product) return null;
+  if (!product || !product.id) return null;
 
   function floatVal(val) {
     if (val === null || val === undefined) return 0;

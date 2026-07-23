@@ -301,7 +301,7 @@ export default function ProductCard({ result, onClick, onCompare }) {
           onClick={(e) => {
             e.stopPropagation();
             if (onCompare) {
-              onCompare(product);
+              onCompare(result);
             }
           }}
           style={{
