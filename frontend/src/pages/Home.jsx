@@ -164,7 +164,7 @@ export default function Home() {
           />
         </div>
 
-        <div style={{ maxWidth: "880px", width: "100%", display: "flex", flexDirection: "column", gap: "20px", zIndex: 2 }}>
+        <div style={{ maxWidth: "1180px", width: "100%", display: "flex", flexDirection: "column", gap: "20px", zIndex: 2 }}>
 
           <h1 style={{
             fontSize: "54px",
@@ -195,13 +195,14 @@ export default function Home() {
             <SearchBar onSearch={handleSearch} />
           </div>
 
-          {/* 10 ANIMATED FRUITS & VEGGIES CATEGORY CHIPS IN CLEAN STYLISH CARDS */}
+          {/* 10 ANIMATED FRUITS & VEGGIES CATEGORY CHIPS IN FULL WIDE 5x2 SYMMETRIC GRID */}
           <div style={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            gap: "10px",
-            marginTop: "16px"
+            display: "grid",
+            gridTemplateColumns: "repeat(5, 1fr)",
+            gap: "14px",
+            maxWidth: "1160px",
+            width: "100%",
+            margin: "24px auto 0 auto"
           }}>
             {quickCategories.map((cat) => (
               <button
@@ -209,38 +210,40 @@ export default function Home() {
                 onClick={() => handleSearch(cat.q)}
                 style={{
                   fontSize: "13px",
-                  fontWeight: 700,
+                  fontWeight: 800,
                   color: "#0F172A",
                   backgroundColor: "#FFFFFF",
                   border: "1px solid #E2E8F0",
-                  padding: "7px 16px",
+                  padding: "10px 14px",
                   borderRadius: "24px",
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
+                  justifyContent: "center",
                   gap: "8px",
+                  width: "100%",
                   transition: "all 0.25s ease",
-                  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)"
+                  boxShadow: "0 2px 10px rgba(0, 0, 0, 0.04)"
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = "#ECFDF5";
                   e.currentTarget.style.borderColor = "#10B981";
                   e.currentTarget.style.color = "#047857";
                   e.currentTarget.style.transform = "translateY(-3px) scale(1.03)";
-                  e.currentTarget.style.boxShadow = "0 8px 20px rgba(16, 185, 129, 0.15)";
+                  e.currentTarget.style.boxShadow = "0 8px 22px rgba(16, 185, 129, 0.18)";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = "#FFFFFF";
                   e.currentTarget.style.borderColor = "#E2E8F0";
                   e.currentTarget.style.color = "#0F172A";
                   e.currentTarget.style.transform = "translateY(0) scale(1)";
-                  e.currentTarget.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.04)";
+                  e.currentTarget.style.boxShadow = "0 2px 10px rgba(0, 0, 0, 0.04)";
                 }}
               >
-                <div style={{ width: "24px", height: "24px", flexShrink: 0 }}>
+                <div style={{ width: "32px", height: "32px", flexShrink: 0 }}>
                   <DotLottieReact src={cat.lottie} loop autoplay />
                 </div>
-                <span>{cat.label}</span>
+                <span style={{ whiteSpace: "nowrap" }}>{cat.label}</span>
               </button>
             ))}
           </div>
