@@ -165,8 +165,8 @@ export default function Navbar() {
             <span>{cityName}, <strong>{postalCode}</strong></span>
           </button>
 
-          {/* Always Visible Sign In / Account Button */}
-          {user ? (
+          {/* Always Visible Sign In / Account / Log Out Button */}
+          {user || (() => { try { return JSON.parse(localStorage.getItem("flyerwise_user_session")); } catch { return null; } })() ? (
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <span style={{
                 fontSize: "11px",
@@ -174,13 +174,38 @@ export default function Navbar() {
                 color: "#047857",
                 backgroundColor: "#D1FAE5",
                 border: "1px solid #A7F3D0",
-                padding: "3px 10px",
+                padding: "4px 10px",
                 borderRadius: "20px",
                 letterSpacing: "0.5px"
               }}>
-                ☁️ Synced
+                ☁️ {user?.firstName || (() => { try { return JSON.parse(localStorage.getItem("flyerwise_user_session"))?.name; } catch { return "Synced"; } })() || "Synced"}
               </span>
-              <UserButton afterSignOutUrl="/" />
+
+              {user ? (
+                <UserButton afterSignOutUrl="/" />
+              ) : (
+                <button
+                  onClick={() => {
+                    localStorage.removeItem("flyerwise_user_session");
+                    window.location.reload();
+                  }}
+                  style={{
+                    backgroundColor: "#F1F5F9",
+                    color: "#475569",
+                    border: "1px solid #CBD5E1",
+                    padding: "5px 12px",
+                    borderRadius: "var(--radius-full)",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    transition: "all 0.2s ease"
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#E2E8F0"}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#F1F5F9"}
+                >
+                  Log Out
+                </button>
+              )}
             </div>
           ) : (
             <button
