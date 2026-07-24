@@ -94,37 +94,38 @@ export default function Home() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "50px", paddingBottom: "80px", backgroundColor: "#F8FAFC" }}>
       
-      {/* 1. ULTRA-PREMIUM HERO BANNER SECTION WITH FLOATING LOTTIE ANIMATIONS */}
+      {/* 1. CLEAN & AESTHETIC WHITE HERO BANNER SECTION */}
       <section style={{
         position: "relative",
-        minHeight: "560px",
-        background: "linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%)",
+        minHeight: "520px",
+        background: "linear-gradient(180deg, #FFFFFF 0%, #F0FDF4 60%, #F8FAFC 100%)",
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        color: "#FFFFFF",
+        color: "#0F172A",
         textAlign: "center",
-        padding: "80px 24px 110px 24px",
+        padding: "70px 24px 100px 24px",
+        borderBottom: "1px solid #E2E8F0"
       }}>
-        {/* Ambient Glows */}
+        {/* Subtle Ambient Radial Glows */}
         <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
           <div style={{
             position: "absolute",
-            top: "-150px",
-            left: "20%",
+            top: "-100px",
+            left: "25%",
             width: "500px",
             height: "500px",
-            background: "radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 42, 0) 70%)",
+            background: "radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, rgba(255, 255, 255, 0) 70%)",
             borderRadius: "50%",
           }} />
           <div style={{
             position: "absolute",
-            bottom: "-100px",
-            right: "15%",
+            top: "-50px",
+            right: "20%",
             width: "450px",
             height: "450px",
-            background: "radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, rgba(15, 23, 42, 0) 70%)",
+            background: "radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, rgba(255, 255, 255, 0) 70%)",
             borderRadius: "50%",
           }} />
         </div>
@@ -132,13 +133,12 @@ export default function Home() {
         {/* Floating Left Lottie Animation */}
         <div style={{
           position: "absolute",
-          top: "80px",
-          left: "40px",
-          width: "140px",
-          height: "140px",
+          top: "60px",
+          left: "50px",
+          width: "130px",
+          height: "130px",
           pointerEvents: "none",
-          opacity: 0.85,
-          filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.3))"
+          filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.06))"
         }}>
           <DotLottieReact
             src="https://lottie.host/509d2a12-45cc-465a-9d82-4b81de56c0be/ZDfdiZjsbN.lottie"
@@ -150,13 +150,12 @@ export default function Home() {
         {/* Floating Right Lottie Animation */}
         <div style={{
           position: "absolute",
-          top: "80px",
-          right: "40px",
-          width: "140px",
-          height: "140px",
+          top: "60px",
+          right: "50px",
+          width: "130px",
+          height: "130px",
           pointerEvents: "none",
-          opacity: 0.85,
-          filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.3))"
+          filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.06))"
         }}>
           <DotLottieReact
             src="https://lottie.host/f6fa258a-bd79-45f3-8f14-8123528a082d/uzg1C6ki2P.lottie"
@@ -165,15 +164,15 @@ export default function Home() {
           />
         </div>
 
-        <div style={{ maxWidth: "880px", width: "100%", display: "flex", flexDirection: "column", gap: "24px", zIndex: 2 }}>
+        <div style={{ maxWidth: "880px", width: "100%", display: "flex", flexDirection: "column", gap: "22px", zIndex: 2 }}>
           
           {/* Live Pulse Badge */}
           <span style={{
             fontSize: "12px",
             fontWeight: 800,
-            color: "#10B981",
-            backgroundColor: "rgba(16, 185, 129, 0.12)",
-            border: "1px solid rgba(16, 185, 129, 0.3)",
+            color: "#047857",
+            backgroundColor: "#D1FAE5",
+            border: "1px solid #A7F3D0",
             padding: "6px 18px",
             borderRadius: "30px",
             width: "fit-content",
@@ -181,7 +180,7 @@ export default function Home() {
             display: "inline-flex",
             alignItems: "center",
             gap: "8px",
-            boxShadow: "0 0 20px rgba(16, 185, 129, 0.2)",
+            boxShadow: "0 2px 10px rgba(16, 185, 129, 0.15)",
             letterSpacing: "0.5px",
             textTransform: "uppercase"
           }}>
@@ -199,35 +198,33 @@ export default function Home() {
           <h1 style={{
             fontSize: "54px",
             fontWeight: 900,
-            color: "#FFFFFF",
+            color: "#0F172A",
             lineHeight: "1.12",
             letterSpacing: "-1.5px",
             fontFamily: "var(--font-headings)",
           }}>
             Compare Grocery Prices Instantly Across <span style={{
-              background: "linear-gradient(135deg, #10B981 0%, #34D399 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent"
+              color: "#059669"
             }}>60+ Canadian Retailers</span>
           </h1>
 
           <p style={{
             fontSize: "19px",
-            color: "#94A3B8",
+            color: "#475569",
             maxWidth: "700px",
             margin: "0 auto",
             lineHeight: "1.6",
-            fontWeight: 400,
+            fontWeight: 500,
           }}>
             Never overpay at checkout. Search any product to compare flyer prices across Walmart, Maxi, Metro, IGA, Super C, Costco, and Provigo with AI basket optimization.
           </p>
 
           {/* Search bar */}
-          <div style={{ maxWidth: "680px", width: "100%", margin: "10px auto 0 auto" }}>
+          <div style={{ maxWidth: "680px", width: "100%", margin: "8px auto 0 auto" }}>
             <SearchBar onSearch={handleSearch} />
           </div>
 
-          {/* 10 ANIMATED FRUITS & VEGGIES CATEGORY CHIPS */}
+          {/* 10 ANIMATED FRUITS & VEGGIES CATEGORY CHIPS IN CLEAN STYLISH CARDS */}
           <div style={{
             display: "flex",
             flexWrap: "wrap",
@@ -242,30 +239,31 @@ export default function Home() {
                 style={{
                   fontSize: "13px",
                   fontWeight: 700,
-                  color: "#E2E8F0",
-                  backgroundColor: "rgba(255, 255, 255, 0.08)",
-                  border: "1px solid rgba(255, 255, 255, 0.16)",
-                  padding: "6px 14px",
+                  color: "#0F172A",
+                  backgroundColor: "#FFFFFF",
+                  border: "1px solid #E2E8F0",
+                  padding: "7px 16px",
                   borderRadius: "24px",
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
                   gap: "8px",
                   transition: "all 0.25s ease",
-                  backdropFilter: "blur(6px)",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
+                  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)"
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "rgba(16, 185, 129, 0.25)";
+                  e.currentTarget.style.backgroundColor = "#ECFDF5";
                   e.currentTarget.style.borderColor = "#10B981";
-                  e.currentTarget.style.color = "#FFFFFF";
+                  e.currentTarget.style.color = "#047857";
                   e.currentTarget.style.transform = "translateY(-3px) scale(1.03)";
+                  e.currentTarget.style.boxShadow = "0 8px 20px rgba(16, 185, 129, 0.15)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.08)";
-                  e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.16)";
-                  e.currentTarget.style.color = "#E2E8F0";
+                  e.currentTarget.style.backgroundColor = "#FFFFFF";
+                  e.currentTarget.style.borderColor = "#E2E8F0";
+                  e.currentTarget.style.color = "#0F172A";
                   e.currentTarget.style.transform = "translateY(0) scale(1)";
+                  e.currentTarget.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.04)";
                 }}
               >
                 <div style={{ width: "24px", height: "24px", flexShrink: 0 }}>
