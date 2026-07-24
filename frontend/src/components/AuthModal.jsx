@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useSignIn, useSignUp } from '@clerk/clerk-react';
+import { SignIn, SignUp, useUser } from '@clerk/clerk-react';
 import { IoCloseOutline, IoSparklesOutline, IoLockClosedOutline, IoLogoGoogle, IoMailOutline, IoPersonOutline, IoKeyOutline, IoCheckmarkCircle } from 'react-icons/io5';
 
 export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }) {
@@ -11,63 +11,32 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [useFallback, setUseFallback] = useState(false);
 
-  const { signIn, isLoaded: isSignInLoaded } = useSignIn();
-  const { signUp, isLoaded: isSignUpLoaded } = useSignUp();
+  const { isSignedIn } = useUser();
 
   if (!isOpen) return null;
 
-  const handleSubmit = async (e) => {
+  const handleFallbackSubmit = (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setErrorMsg('');
 
-    try {
-      // 1. Try Clerk Sign In / Sign Up if Clerk is active
-      if (mode === 'signup' && isSignUpLoaded && signUp) {
-        try {
-          await signUp.create({
-            emailAddress: email,
-            password: password,
-            firstName: name.split(' ')[0] || name,
-            lastName: name.split(' ').slice(1).join(' ') || ''
-          });
-        } catch (clerkErr) {
-          console.log("Clerk fallback active:", clerkErr?.message);
-        }
-      } else if (mode === 'signin' && isSignInLoaded && signIn) {
-        try {
-          await signIn.create({
-            identifier: email,
-            password: password
-          });
-        } catch (clerkErr) {
-          console.log("Clerk fallback active:", clerkErr?.message);
-        }
-      }
+    const userPayload = {
+      id: "user_" + Math.random().toString(36).substring(2, 9),
+      email: email,
+      name: name || email.split('@')[0],
+      signedInAt: new Date().toISOString()
+    };
 
-      // 2. Perform FlyerWise Cloud Account Creation & Session Storage
-      const userPayload = {
-        id: "user_" + Math.random().toString(36).substring(2, 9),
-        email: email,
-        name: name || email.split('@')[0],
-        signedInAt: new Date().toISOString()
-      };
+    localStorage.setItem("flyerwise_user_session", JSON.stringify(userPayload));
+    setSuccessMsg(mode === 'signin' ? 'Welcome back! Syncing basket...' : 'Account created! Syncing basket...');
 
-      localStorage.setItem("flyerwise_user_session", JSON.stringify(userPayload));
-      setSuccessMsg(mode === 'signin' ? 'Welcome back! Syncing basket...' : 'Account created! Syncing basket...');
-
-      setTimeout(() => {
-        setIsSubmitting(false);
-        onClose();
-        window.location.reload();
-      }, 1000);
-
-    } catch (err) {
-      console.error("Auth error:", err);
-      setErrorMsg("Sign in encountered an issue. Please try again.");
+    setTimeout(() => {
       setIsSubmitting(false);
-    }
+      onClose();
+      window.location.reload();
+    }, 1000);
   };
 
   const modalContent = (
@@ -92,9 +61,9 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }) {
       <div style={{
         backgroundColor: '#FFFFFF',
         borderRadius: '24px',
-        maxWidth: '440px',
+        maxWidth: '460px',
         width: '100%',
-        maxHeight: '85vh',
+        maxHeight: '90vh',
         overflowY: 'auto',
         boxShadow: '0 25px 60px -10px rgba(0, 0, 0, 0.4)',
         border: '1px solid rgba(16, 185, 129, 0.25)',
@@ -203,163 +172,187 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }) {
           </button>
         </div>
 
-        {/* Custom Auth Form Body */}
-        <div style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {successMsg ? (
-            <div style={{
-              backgroundColor: '#ECFDF5',
-              border: '1.5px solid #10B981',
-              borderRadius: '16px',
-              padding: '20px',
-              textAlign: 'center',
-              color: '#047857'
-            }}>
-              <IoCheckmarkCircle size={36} color="#10B981" style={{ marginBottom: '8px' }} />
-              <h4 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: 900 }}>{successMsg}</h4>
-              <p style={{ margin: 0, fontSize: '13px' }}>Your saved basket is synced to PostgreSQL cloud storage.</p>
+        {/* Auth Body */}
+        <div style={{ padding: '16px 20px 20px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          {!useFallback ? (
+            <div style={{ width: '100%', minHeight: '340px' }}>
+              {mode === 'signin' ? (
+                <SignIn
+                  routing="hash"
+                  appearance={{
+                    elements: {
+                      card: { boxShadow: 'none', border: 'none', padding: 0, width: '100%' },
+                      formButtonPrimary: { backgroundColor: '#059669', fontSize: '14px', borderRadius: '12px' },
+                      footer: { display: 'none' }
+                    }
+                  }}
+                />
+              ) : (
+                <SignUp
+                  routing="hash"
+                  appearance={{
+                    elements: {
+                      card: { boxShadow: 'none', border: 'none', padding: 0, width: '100%' },
+                      formButtonPrimary: { backgroundColor: '#059669', fontSize: '14px', borderRadius: '12px' },
+                      footer: { display: 'none' }
+                    }
+                  }}
+                />
+              )}
+
+              <div style={{ marginTop: '12px', textAlign: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => setUseFallback(true)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#64748B',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    textDecoration: 'underline'
+                  }}
+                >
+                  Having trouble? Switch to Quick Demo Login
+                </button>
+              </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              
-              {mode === 'signup' && (
-                <div>
-                  <label style={{ fontSize: '12px', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '4px' }}>
-                    Full Name
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <IoPersonOutline style={{ position: 'absolute', left: '14px', top: '14px', color: '#94A3B8', fontSize: '16px' }} />
-                    <input
-                      type="text"
-                      required
-                      placeholder="Narendra Mishra"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '11px 14px 11px 40px',
-                        borderRadius: '12px',
-                        border: '1px solid #CBD5E1',
-                        fontSize: '14px',
-                        outline: 'none',
-                        boxSizing: 'border-box'
-                      }}
-                    />
+            <div style={{ width: '100%' }}>
+              {successMsg ? (
+                <div style={{
+                  backgroundColor: '#ECFDF5',
+                  border: '1.5px solid #10B981',
+                  borderRadius: '16px',
+                  padding: '20px',
+                  textAlign: 'center',
+                  color: '#047857'
+                }}>
+                  <IoCheckmarkCircle size={36} color="#10B981" style={{ marginBottom: '8px' }} />
+                  <h4 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: 900 }}>{successMsg}</h4>
+                  <p style={{ margin: 0, fontSize: '13px' }}>Your saved basket is synced to PostgreSQL cloud storage.</p>
+                </div>
+              ) : (
+                <form onSubmit={handleFallbackSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {mode === 'signup' && (
+                    <div>
+                      <label style={{ fontSize: '12px', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '4px' }}>
+                        Full Name
+                      </label>
+                      <div style={{ position: 'relative' }}>
+                        <IoPersonOutline style={{ position: 'absolute', left: '14px', top: '14px', color: '#94A3B8', fontSize: '16px' }} />
+                        <input
+                          type="text"
+                          required
+                          placeholder="Narendra Mishra"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          style={{
+                            width: '100%',
+                            padding: '11px 14px 11px 40px',
+                            borderRadius: '12px',
+                            border: '1px solid #CBD5E1',
+                            fontSize: '14px',
+                            outline: 'none',
+                            boxSizing: 'border-box'
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '4px' }}>
+                      Email Address
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <IoMailOutline style={{ position: 'absolute', left: '14px', top: '14px', color: '#94A3B8', fontSize: '16px' }} />
+                      <input
+                        type="email"
+                        required
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '11px 14px 11px 40px',
+                          borderRadius: '12px',
+                          border: '1px solid #CBD5E1',
+                          fontSize: '14px',
+                          outline: 'none',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+                    </div>
                   </div>
-                </div>
-              )}
 
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '4px' }}>
-                  Email Address
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <IoMailOutline style={{ position: 'absolute', left: '14px', top: '14px', color: '#94A3B8', fontSize: '16px' }} />
-                  <input
-                    type="email"
-                    required
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '4px' }}>
+                      Password
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <IoKeyOutline style={{ position: 'absolute', left: '14px', top: '14px', color: '#94A3B8', fontSize: '16px' }} />
+                      <input
+                        type="password"
+                        required
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '11px 14px 11px 40px',
+                          borderRadius: '12px',
+                          border: '1px solid #CBD5E1',
+                          fontSize: '14px',
+                          outline: 'none',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
                     style={{
                       width: '100%',
-                      padding: '11px 14px 11px 40px',
-                      borderRadius: '12px',
-                      border: '1px solid #CBD5E1',
-                      fontSize: '14px',
-                      outline: 'none',
-                      boxSizing: 'border-box'
+                      padding: '13px',
+                      borderRadius: '14px',
+                      backgroundColor: '#059669',
+                      color: '#FFFFFF',
+                      fontWeight: 800,
+                      fontSize: '15px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 14px rgba(5, 150, 105, 0.25)',
+                      marginTop: '6px',
+                      transition: 'all 0.2s ease'
                     }}
-                  />
-                </div>
-              </div>
+                  >
+                    {isSubmitting ? 'Processing...' : mode === 'signin' ? 'Sign In to Account' : 'Create Free Account'}
+                  </button>
 
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '4px' }}>
-                  Password
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <IoKeyOutline style={{ position: 'absolute', left: '14px', top: '14px', color: '#94A3B8', fontSize: '16px' }} />
-                  <input
-                    type="password"
-                    required
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '11px 14px 11px 40px',
-                      borderRadius: '12px',
-                      border: '1px solid #CBD5E1',
-                      fontSize: '14px',
-                      outline: 'none',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-              </div>
-
-              {errorMsg && (
-                <span style={{ fontSize: '12px', color: '#EF4444', fontWeight: 700, textAlign: 'center' }}>
-                  {errorMsg}
-                </span>
+                  <div style={{ textAlign: 'center', marginTop: '4px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setUseFallback(false)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#059669',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        textDecoration: 'underline'
+                      }}
+                    >
+                      ← Back to Official Clerk Sign Up
+                    </button>
+                  </div>
+                </form>
               )}
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                style={{
-                  width: '100%',
-                  padding: '13px',
-                  borderRadius: '14px',
-                  backgroundColor: '#059669',
-                  color: '#FFFFFF',
-                  fontWeight: 800,
-                  fontSize: '15px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 14px rgba(5, 150, 105, 0.25)',
-                  marginTop: '6px',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#047857'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#059669'}
-              >
-                {isSubmitting ? 'Processing...' : mode === 'signin' ? 'Sign In to Account' : 'Create Free Account'}
-              </button>
-            </form>
-          )}
-
-          {/* Social Divider */}
-          {!successMsg && (
-            <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '2px 0' }}>
-                <div style={{ flex: 1, height: '1px', backgroundColor: '#E2E8F0' }} />
-                <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 700 }}>OR</span>
-                <div style={{ flex: 1, height: '1px', backgroundColor: '#E2E8F0' }} />
-              </div>
-
-              <button
-                onClick={handleSubmit}
-                style={{
-                  width: '100%',
-                  padding: '11px',
-                  borderRadius: '14px',
-                  backgroundColor: '#FFFFFF',
-                  border: '1px solid #E2E8F0',
-                  color: '#0F172A',
-                  fontWeight: 800,
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '10px',
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
-                }}
-              >
-                <IoLogoGoogle style={{ color: '#EA4335', fontSize: '18px' }} /> Continue with Google
-              </button>
-            </>
+            </div>
           )}
         </div>
 
