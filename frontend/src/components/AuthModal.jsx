@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { SignIn, SignUp } from '@clerk/clerk-react';
 import { IoCloseOutline, IoSparklesOutline, IoLockClosedOutline, IoLogoGoogle, IoMailOutline } from 'react-icons/io5';
 
@@ -25,33 +26,41 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }) {
     }, 600);
   };
 
-  return (
+  const modalContent = (
     <div style={{
       position: 'fixed',
-      inset: 0,
-      zIndex: 9999,
-      backgroundColor: 'rgba(15, 23, 42, 0.65)',
-      backdropFilter: 'blur(10px)',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      width: '100vw',
+      height: '100vh',
+      zIndex: 99999,
+      backgroundColor: 'rgba(15, 23, 42, 0.75)',
+      backdropFilter: 'blur(12px)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '20px',
-      animation: 'fadeIn 0.2s ease-out'
+      padding: '24px 16px',
+      overflowY: 'auto',
+      boxSizing: 'border-box'
     }}>
       <div style={{
         backgroundColor: '#FFFFFF',
-        borderRadius: '28px',
-        maxWidth: '460px',
+        borderRadius: '24px',
+        maxWidth: '440px',
         width: '100%',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-        border: '1px solid rgba(16, 185, 129, 0.2)',
-        overflow: 'hidden',
-        position: 'relative'
+        maxHeight: '85vh',
+        overflowY: 'auto',
+        boxShadow: '0 25px 60px -10px rgba(0, 0, 0, 0.4)',
+        border: '1px solid rgba(16, 185, 129, 0.25)',
+        position: 'relative',
+        margin: 'auto'
       }}>
         {/* Top Header Banner */}
         <div style={{
           background: 'linear-gradient(135deg, #059669 0%, #10B981 100%)',
-          padding: '24px 28px',
+          padding: '18px 22px',
           color: '#FFFFFF',
           position: 'relative',
           display: 'flex',
@@ -73,10 +82,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }) {
             }}>
               <IoSparklesOutline /> FLYERWISE CLOUD SYNC
             </span>
-            <h3 style={{ fontSize: '22px', fontWeight: 900, margin: '6px 0 0 0', fontFamily: 'var(--font-headings)' }}>
+            <h3 style={{ fontSize: '20px', fontWeight: 900, margin: '6px 0 0 0', fontFamily: 'var(--font-headings)' }}>
               {mode === 'signin' ? 'Welcome Back!' : 'Create Free Account'}
             </h3>
-            <p style={{ fontSize: '13px', margin: '4px 0 0 0', opacity: 0.9 }}>
+            <p style={{ fontSize: '12px', margin: '4px 0 0 0', opacity: 0.9 }}>
               Sync your saved grocery basket across phone, desktop & tablet.
             </p>
           </div>
@@ -87,8 +96,8 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }) {
               backgroundColor: 'rgba(255, 255, 255, 0.2)',
               border: 'none',
               borderRadius: '50%',
-              width: '36px',
-              height: '36px',
+              width: '34px',
+              height: '34px',
               color: '#FFFFFF',
               display: 'flex',
               alignItems: 'center',
@@ -109,14 +118,14 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }) {
           display: 'flex',
           backgroundColor: '#F1F5F9',
           padding: '4px',
-          margin: '20px 24px 0 24px',
+          margin: '14px 20px 0 20px',
           borderRadius: '16px'
         }}>
           <button
             onClick={() => setMode('signin')}
             style={{
               flex: 1,
-              padding: '10px',
+              padding: '8px',
               borderRadius: '12px',
               border: 'none',
               fontSize: '13px',
@@ -134,7 +143,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }) {
             onClick={() => setMode('signup')}
             style={{
               flex: 1,
-              padding: '10px',
+              padding: '8px',
               borderRadius: '12px',
               border: 'none',
               fontSize: '13px',
@@ -151,7 +160,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }) {
         </div>
 
         {/* Form Body */}
-        <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {demoLoggedIn ? (
             <div style={{
               backgroundColor: '#ECFDF5',
@@ -286,4 +295,6 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }) {
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }
