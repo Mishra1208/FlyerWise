@@ -58,18 +58,18 @@ export default function Home() {
     { name: "Adonis", color: "#16A34A", tag: "Fresh Mediterranean", logoUrl: "/logos/adonis.png", bg: "#F0FDF4" },
   ];
 
-  // 10 Fruits & Veggies Lottie Animations
+  // 10 Fruits & Veggies Lottie Animations (Updated User Mappings)
   const quickCategories = [
-    { label: "Fresh Produce", q: "tomatoes", lottie: "https://lottie.host/509d2a12-45cc-465a-9d82-4b81de56c0be/ZDfdiZjsbN.lottie" },
+    { label: "Fresh Produce", q: "tomatoes", lottie: "https://lottie.host/fcb0783a-4602-4168-b267-fadc9487a1ce/cyrOFVNEsG.lottie" },
     { label: "Organic Fruits", q: "apple", lottie: "https://lottie.host/f6fa258a-bd79-45f3-8f14-8123528a082d/uzg1C6ki2P.lottie" },
-    { label: "Butter & Dairy", q: "butter", lottie: "https://lottie.host/736e3a5f-9eab-4b8b-866b-0301872e4c92/DjbQDgGUSm.lottie" },
-    { label: "Fresh Meat", q: "chicken", lottie: "https://lottie.host/92d696d2-b442-4531-af85-bc26da4105be/CZeRANbEKU.lottie" },
-    { label: "Milk 2L/4L", q: "milk", lottie: "https://lottie.host/b250f70e-9ec3-4b7b-83a9-22ee0c19952c/Q30ro18tYT.lottie" },
-    { label: "Bakery & Bread", q: "bread", lottie: "https://lottie.host/6cc4d42e-70fd-4a7b-914c-22b6227d680b/sRZPkK3QXg.lottie" },
-    { label: "Avocado Deals", q: "avocado", lottie: "https://lottie.host/7f4ee346-8e31-4369-9277-de3f2666b452/DKneUmOobC.lottie" },
-    { label: "Juices & Drinks", q: "juice", lottie: "https://lottie.host/fdc237a6-71ca-4308-a2eb-eae296ee7bf8/mtUg2aUeyR.lottie" },
-    { label: "Cheese & Eggs", q: "cheese", lottie: "https://lottie.host/3649145a-4c15-4e5c-b05b-1c9ae0d4ebe1/8H8WGwkACi.lottie" },
-    { label: "Hygiene & Care", q: "shampoo", lottie: "https://lottie.host/171de373-f7e4-43eb-8a58-6d5b0893e396/DRolnYC2cD.lottie" },
+    { label: "Butter & Dairy", q: "butter", lottie: "https://lottie.host/3aea91ee-eb81-497d-9028-03c15af91763/fHeyC0xooB.lottie" },
+    { label: "Fresh Meat", q: "chicken", lottie: "https://lottie.host/171de373-f7e4-43eb-8a58-6d5b0893e396/DRolnYC2cD.lottie" },
+    { label: "Milk 2L/4L", q: "milk", lottie: "https://lottie.host/fdc237a6-71ca-4308-a2eb-eae296ee7bf8/mtUg2aUeyR.lottie" },
+    { label: "Bakery & Bread", q: "bread", lottie: "https://lottie.host/9f7ea7ab-5dd6-4fcd-ad85-7c8244c54dac/WlMSx8BBIk.lottie" },
+    { label: "Avocado Deals", q: "avocado", lottie: "https://lottie.host/736e3a5f-9eab-4b8b-866b-0301872e4c92/DjbQDgGUSm.lottie" },
+    { label: "Juices & Drinks", q: "juice", lottie: "https://lottie.host/98b439dc-9678-4c9c-b87b-3e1c561ed4c9/DxcNP1zSyZ.lottie" },
+    { label: "Cheese & Eggs", q: "cheese", lottie: "https://lottie.host/e4cec3f0-284f-4891-a49c-c76afd70f12b/xfPJdwijhn.lottie" },
+    { label: "Hygiene & Care", q: "shampoo", lottie: "https://lottie.host/4a8ad0e7-ca6f-4742-80a5-a01957ce54b7/JYH25k6PfB.lottie" },
   ];
 
   const faqData = [
