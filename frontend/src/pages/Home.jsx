@@ -461,10 +461,22 @@ export default function Home() {
                 border: "1.5px solid #10B981",
                 borderRadius: "16px",
                 padding: "16px",
-                boxShadow: "0 4px 12px rgba(16,185,129,0.12)"
+                boxShadow: "0 4px 12px rgba(16,185,129,0.12)",
+                display: "flex",
+                alignItems: "center",
+                gap: "12px"
               }}>
-                <span style={{ fontSize: "11px", color: "#047857", fontWeight: 800, textTransform: "uppercase" }}>⚡ AI 2-Store Split Trip</span>
-                <h4 style={{ fontSize: "20px", color: "#047857", fontWeight: 900, margin: "4px 0 0 0" }}>$32.70 <span style={{ fontSize: "11px", color: "#059669", fontWeight: 700 }}>(Save $15.80)</span></h4>
+                <div style={{ width: "46px", height: "46px", flexShrink: 0 }}>
+                  <DotLottieReact
+                    src="https://lottie.host/f25a559d-6876-4d3f-b931-60566b60fbb1/DMhJ0fO2hl.lottie"
+                    loop
+                    autoplay
+                  />
+                </div>
+                <div>
+                  <span style={{ fontSize: "11px", color: "#047857", fontWeight: 800, textTransform: "uppercase" }}>⚡ AI 2-Store Split Trip</span>
+                  <h4 style={{ fontSize: "20px", color: "#047857", fontWeight: 900, margin: "2px 0 0 0" }}>$32.70 <span style={{ fontSize: "11px", color: "#059669", fontWeight: 700 }}>(Save $15.80)</span></h4>
+                </div>
               </div>
             </div>
 
@@ -501,18 +513,18 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Right Column: Animated Lottie Shopping Cart */}
+          {/* Right Column: Animated Lottie Man with Laptop & Growing Dollar Graph */}
           <div style={{
-            flex: "0 0 240px",
+            flex: "0 0 280px",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
             margin: "0 auto"
           }}>
-            <div style={{ width: "220px", height: "220px" }}>
+            <div style={{ width: "280px", height: "280px" }}>
               <DotLottieReact
-                src="https://lottie.host/161951b7-a350-418e-8406-1065b078174c/4g1Qifp1X3.lottie"
+                src="https://lottie.host/b87cd432-b25d-41f3-8c5c-b058293c0717/XA8isWZ5vQ.lottie"
                 loop
                 autoplay
               />
