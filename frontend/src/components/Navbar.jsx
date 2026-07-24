@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation as useRouterLocation } from "react-router-dom";
 import { IoLocationOutline, IoMenuOutline, IoCloseOutline, IoCartOutline, IoPersonOutline } from "react-icons/io5";
-import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/clerk-react";
 import { useLocation } from "../contexts/LocationContext";
 import { useBasket } from "../contexts/BasketContext";
 import PostalCodeModal from "./PostalCodeModal";
@@ -9,6 +9,7 @@ import BasketModal from "./BasketModal";
 import AuthModal from "./AuthModal";
 
 export default function Navbar() {
+  const { user } = useUser();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
@@ -164,40 +165,8 @@ export default function Navbar() {
             <span>{cityName}, <strong>{postalCode}</strong></span>
           </button>
 
-          {/* Clerk Auth Integration */}
-          <SignedOut>
-            <button
-              onClick={() => setShowAuthModal(true)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                backgroundColor: "#059669",
-                color: "#FFFFFF",
-                border: "none",
-                padding: "7px 16px",
-                borderRadius: "var(--radius-full)",
-                fontSize: "13px",
-                fontWeight: 800,
-                cursor: "pointer",
-                boxShadow: "0 4px 12px rgba(5, 150, 105, 0.2)",
-                transition: "all 0.2s ease"
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#047857";
-                e.currentTarget.style.transform = "translateY(-1px)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#059669";
-                e.currentTarget.style.transform = "translateY(0)";
-              }}
-            >
-              <IoPersonOutline size={15} />
-              <span>Sign In</span>
-            </button>
-          </SignedOut>
-
-          <SignedIn>
+          {/* Always Visible Sign In / Account Button */}
+          {user ? (
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <span style={{
                 fontSize: "11px",
@@ -213,7 +182,37 @@ export default function Navbar() {
               </span>
               <UserButton afterSignOutUrl="/" />
             </div>
-          </SignedIn>
+          ) : (
+            <button
+              onClick={() => setShowAuthModal(true)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                backgroundColor: "#059669",
+                color: "#FFFFFF",
+                border: "none",
+                padding: "7px 18px",
+                borderRadius: "var(--radius-full)",
+                fontSize: "13px",
+                fontWeight: 800,
+                cursor: "pointer",
+                boxShadow: "0 4px 14px rgba(5, 150, 105, 0.25)",
+                transition: "all 0.2s ease"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#047857";
+                e.currentTarget.style.transform = "translateY(-1px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#059669";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              <IoPersonOutline size={16} />
+              <span>Sign In / Register</span>
+            </button>
+          )}
 
           {/* Hamburger Icon */}
           <button 

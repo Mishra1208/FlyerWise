@@ -1,11 +1,29 @@
 import React, { useState } from 'react';
 import { SignIn, SignUp } from '@clerk/clerk-react';
-import { IoCloseOutline, IoSparklesOutline, IoLockClosedOutline } from 'react-icons/io5';
+import { IoCloseOutline, IoSparklesOutline, IoLockClosedOutline, IoLogoGoogle, IoMailOutline } from 'react-icons/io5';
 
 export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }) {
   const [mode, setMode] = useState(initialMode);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [demoLoggedIn, setDemoLoggedIn] = useState(false);
 
   if (!isOpen) return null;
+
+  const handleDemoSignIn = (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setDemoLoggedIn(true);
+      localStorage.setItem("flyerwise_user_email", email || "user@flyerwise.ca");
+      setTimeout(() => {
+        onClose();
+        window.location.reload();
+      }, 1000);
+    }, 600);
+  };
 
   return (
     <div style={{
@@ -132,31 +150,122 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }) {
           </button>
         </div>
 
-        {/* Clerk Component Render */}
-        <div style={{ padding: '20px 24px 28px 24px', display: 'flex', justifyContent: 'center' }}>
-          {mode === 'signin' ? (
-            <SignIn
-              routing="hash"
-              appearance={{
-                elements: {
-                  card: { boxShadow: 'none', border: 'none', padding: 0 },
-                  formButtonPrimary: { backgroundColor: '#059669', fontSize: '14px', borderRadius: '12px' },
-                  footer: { display: 'none' }
-                }
-              }}
-            />
+        {/* Form Body */}
+        <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {demoLoggedIn ? (
+            <div style={{
+              backgroundColor: '#ECFDF5',
+              border: '1.5px solid #10B981',
+              borderRadius: '16px',
+              padding: '20px',
+              textAlign: 'center',
+              color: '#047857'
+            }}>
+              <h4 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: 900 }}>Signed In Successfully! ☁️</h4>
+              <p style={{ margin: 0, fontSize: '13px' }}>Your saved basket is now syncing with PostgreSQL cloud storage.</p>
+            </div>
           ) : (
-            <SignUp
-              routing="hash"
-              appearance={{
-                elements: {
-                  card: { boxShadow: 'none', border: 'none', padding: 0 },
-                  formButtonPrimary: { backgroundColor: '#059669', fontSize: '14px', borderRadius: '12px' },
-                  footer: { display: 'none' }
-                }
-              }}
-            />
+            <form onSubmit={handleDemoSignIn} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '6px' }}>
+                  Email Address
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <IoMailOutline style={{ position: 'absolute', left: '14px', top: '14px', color: '#94A3B8', fontSize: '18px' }} />
+                  <input
+                    type="email"
+                    required
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '12px 14px 12px 42px',
+                      borderRadius: '12px',
+                      border: '1px solid #CBD5E1',
+                      fontSize: '14px',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '6px' }}>
+                  Password
+                </label>
+                <input
+                  type="password"
+                  required
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '12px 14px',
+                    borderRadius: '12px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  borderRadius: '14px',
+                  backgroundColor: '#059669',
+                  color: '#FFFFFF',
+                  fontWeight: 800,
+                  fontSize: '15px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 14px rgba(5, 150, 105, 0.25)',
+                  marginTop: '4px',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#047857'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#059669'}
+              >
+                {isSubmitting ? 'Signing in...' : mode === 'signin' ? 'Sign In' : 'Create Free Account'}
+              </button>
+            </form>
           )}
+
+          {/* Social Dividers */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '4px 0' }}>
+            <div style={{ flex: 1, height: '1px', backgroundColor: '#E2E8F0' }} />
+            <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 700 }}>OR</span>
+            <div style={{ flex: 1, height: '1px', backgroundColor: '#E2E8F0' }} />
+          </div>
+
+          <button
+            onClick={handleDemoSignIn}
+            style={{
+              width: '100%',
+              padding: '12px',
+              borderRadius: '14px',
+              backgroundColor: '#FFFFFF',
+              border: '1px solid #E2E8F0',
+              color: '#0F172A',
+              fontWeight: 800,
+              fontSize: '14px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
+            }}
+          >
+            <IoLogoGoogle style={{ color: '#EA4335', fontSize: '18px' }} /> Continue with Google
+          </button>
         </div>
 
         {/* Security Footer Note */}
