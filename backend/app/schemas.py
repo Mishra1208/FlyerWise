@@ -147,3 +147,36 @@ class HealthResponse(BaseModel):
     stores_count: int
     products_count: int
     active_prices: int
+
+
+# ============================================
+# User Basket & Email Schemas
+# ============================================
+
+class UserBasketItemCreate(BaseModel):
+    user_id: str
+    product_name: str
+    product_id: int | None = None
+    quantity: int = 1
+    notes: str | None = None
+
+
+class UserBasketItemResponse(BaseModel):
+    id: int
+    user_id: str
+    product_name: str
+    product_id: int | None = None
+    quantity: int
+    notes: str | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserBasketSyncRequest(BaseModel):
+    user_id: str
+    items: list[UserBasketItemCreate]
+
+
+class WelcomeEmailRequest(BaseModel):
+    email: str
+    user_name: str | None = None

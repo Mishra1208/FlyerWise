@@ -66,6 +66,62 @@ export const BasketService = {
   },
 };
 
+export const UserBasketService = {
+  getBasket: async (userId) => {
+    try {
+      const response = await API.get(`/basket/${userId}`);
+      return response.data;
+    } catch {
+      return [];
+    }
+  },
+  syncBasket: async (userId, items) => {
+    try {
+      const payload = {
+        user_id: userId,
+        items: items.map((i) => ({
+          user_id: userId,
+          product_name: i.title || i.product_name,
+          quantity: i.quantity || 1,
+          notes: i.notes || null,
+        })),
+      };
+      const response = await API.post("/basket/sync", payload);
+      return response.data;
+    } catch (err) {
+      console.error("Failed to sync basket:", err);
+      return [];
+    }
+  },
+  deleteItem: async (itemId, userId) => {
+    try {
+      const response = await API.delete(`/basket/item/${itemId}`, { params: { user_id: userId } });
+      return response.data;
+    } catch (err) {
+      console.error("Failed to delete basket item:", err);
+    }
+  },
+  clearBasket: async (userId) => {
+    try {
+      const response = await API.delete(`/basket/user/${userId}`);
+      return response.data;
+    } catch (err) {
+      console.error("Failed to clear basket:", err);
+    }
+  },
+};
+
+export const UserService = {
+  sendWelcomeEmail: async (email, userName) => {
+    try {
+      const response = await API.post("/user/welcome-email", { email, user_name: userName });
+      return response.data;
+    } catch (err) {
+      console.error("Failed to send welcome email:", err);
+    }
+  },
+};
+
 export const IntelligenceService = {
   getIntelligence: async (productId) => {
     const response = await API.get(`/products/${productId}/intelligence`);
@@ -74,3 +130,4 @@ export const IntelligenceService = {
 };
 
 export default API;
+

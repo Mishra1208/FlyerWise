@@ -14,7 +14,7 @@ from app.config import get_settings
 from app.database import get_db, engine
 from app.models import Store, Product, Price
 from app.schemas import HealthResponse
-from app.routers import stores, products, prices, location
+from app.routers import stores, products, prices, location, basket, user
 
 from app.services.scheduler import start_scheduler, shutdown_scheduler, run_weekly_grocery_scrape, last_scrape_status, is_scraping_in_progress
 from fastapi import BackgroundTasks
@@ -70,6 +70,9 @@ app.include_router(stores.router, prefix="/api")
 app.include_router(products.router, prefix="/api")
 app.include_router(prices.router, prefix="/api")
 app.include_router(location.router, prefix="/api")
+app.include_router(basket.router, prefix="/api")
+app.include_router(user.router, prefix="/api")
+
 
 
 @app.get("/", tags=["root"])

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { BasketService } from "../services/api";
+import { useUser } from "@clerk/clerk-react";
+import { BasketService, UserBasketService, UserService } from "../services/api";
 
 const BasketContext = createContext(null);
 
@@ -10,12 +11,14 @@ const DEFAULT_ITEMS = [
 ];
 
 export function BasketProvider({ children }) {
+  const { isSignedIn, user } = useUser();
+  const userId = user?.id;
+
   const [basketItems, setBasketItems] = useState(() => {
     const saved = localStorage.getItem("flyerwise_basket_v2");
     if (!saved) return DEFAULT_ITEMS;
     try {
       const parsed = JSON.parse(saved);
-      // Migrate old string arrays to objects
       return parsed.map((item, idx) => {
         if (typeof item === "string") {
           return {
@@ -36,6 +39,37 @@ export function BasketProvider({ children }) {
 
   const [optimizationResult, setOptimizationResult] = useState(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
+
+  // Sync to PostgreSQL when user logs in
+  useEffect(() => {
+    if (isSignedIn && userId) {
+      // Send Welcome email once
+      const sentWelcome = localStorage.getItem(`flyerwise_welcome_sent_${userId}`);
+      if (!sentWelcome && user?.primaryEmailAddress?.emailAddress) {
+        UserService.sendWelcomeEmail(
+          user.primaryEmailAddress.emailAddress,
+          user.fullName || user.firstName
+        );
+        localStorage.setItem(`flyerwise_welcome_sent_${userId}`, "true");
+      }
+
+      // Sync local basket with database
+      UserBasketService.syncBasket(userId, basketItems).then((syncedItems) => {
+        if (syncedItems && syncedItems.length > 0) {
+          const formatted = syncedItems.map((dbItem) => ({
+            id: String(dbItem.id),
+            title: dbItem.product_name,
+            price: 3.99,
+            store_name: "Local Retailer",
+            quantity: dbItem.quantity || 1,
+            image_url: "",
+          }));
+          setBasketItems(formatted);
+          optimize(formatted.map((i) => i.title));
+        }
+      });
+    }
+  }, [isSignedIn, userId]);
 
   useEffect(() => {
     localStorage.setItem("flyerwise_basket_v2", JSON.stringify(basketItems));
@@ -92,6 +126,11 @@ export function BasketProvider({ children }) {
           ];
         }
       }
+
+      if (isSignedIn && userId) {
+        UserBasketService.syncBasket(userId, updated);
+      }
+
       optimize(updated.map((i) => i.title));
       return updated;
     });
@@ -109,6 +148,10 @@ export function BasketProvider({ children }) {
         })
         .filter(Boolean);
 
+      if (isSignedIn && userId) {
+        UserBasketService.syncBasket(userId, updated);
+      }
+
       optimize(updated.map((i) => i.title));
       return updated;
     });
@@ -121,6 +164,11 @@ export function BasketProvider({ children }) {
           String(i.id) !== String(itemIdOrTitle) &&
           i.title.toLowerCase() !== String(itemIdOrTitle).toLowerCase()
       );
+
+      if (isSignedIn && userId) {
+        UserBasketService.syncBasket(userId, updated);
+      }
+
       if (updated.length > 0) {
         optimize(updated.map((i) => i.title));
       } else {
@@ -133,6 +181,9 @@ export function BasketProvider({ children }) {
   const clearBasket = () => {
     setBasketItems([]);
     setOptimizationResult(null);
+    if (isSignedIn && userId) {
+      UserBasketService.clearBasket(userId);
+    }
   };
 
   const optimize = async (listToOptimize = basketItems, postalCode = null) => {

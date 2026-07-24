@@ -1,0 +1,180 @@
+import React, { useState } from 'react';
+import { SignIn, SignUp } from '@clerk/clerk-react';
+import { IoCloseOutline, IoSparklesOutline, IoLockClosedOutline } from 'react-icons/io5';
+
+export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }) {
+  const [mode, setMode] = useState(initialMode);
+
+  if (!isOpen) return null;
+
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      zIndex: 9999,
+      backgroundColor: 'rgba(15, 23, 42, 0.65)',
+      backdropFilter: 'blur(10px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px',
+      animation: 'fadeIn 0.2s ease-out'
+    }}>
+      <div style={{
+        backgroundColor: '#FFFFFF',
+        borderRadius: '28px',
+        maxWidth: '460px',
+        width: '100%',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        border: '1px solid rgba(16, 185, 129, 0.2)',
+        overflow: 'hidden',
+        position: 'relative'
+      }}>
+        {/* Top Header Banner */}
+        <div style={{
+          background: 'linear-gradient(135deg, #059669 0%, #10B981 100%)',
+          padding: '24px 28px',
+          color: '#FFFFFF',
+          position: 'relative',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <div>
+            <span style={{
+              fontSize: '11px',
+              fontWeight: 800,
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              padding: '3px 10px',
+              borderRadius: '14px',
+              letterSpacing: '1px',
+              textTransform: 'uppercase',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}>
+              <IoSparklesOutline /> FLYERWISE CLOUD SYNC
+            </span>
+            <h3 style={{ fontSize: '22px', fontWeight: 900, margin: '6px 0 0 0', fontFamily: 'var(--font-headings)' }}>
+              {mode === 'signin' ? 'Welcome Back!' : 'Create Free Account'}
+            </h3>
+            <p style={{ fontSize: '13px', margin: '4px 0 0 0', opacity: 0.9 }}>
+              Sync your saved grocery basket across phone, desktop & tablet.
+            </p>
+          </div>
+
+          <button
+            onClick={onClose}
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              border: 'none',
+              borderRadius: '50%',
+              width: '36px',
+              height: '36px',
+              color: '#FFFFFF',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              fontSize: '20px',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.35)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}
+          >
+            <IoCloseOutline />
+          </button>
+        </div>
+
+        {/* Tab Toggle */}
+        <div style={{
+          display: 'flex',
+          backgroundColor: '#F1F5F9',
+          padding: '4px',
+          margin: '20px 24px 0 24px',
+          borderRadius: '16px'
+        }}>
+          <button
+            onClick={() => setMode('signin')}
+            style={{
+              flex: 1,
+              padding: '10px',
+              borderRadius: '12px',
+              border: 'none',
+              fontSize: '13px',
+              fontWeight: 800,
+              cursor: 'pointer',
+              backgroundColor: mode === 'signin' ? '#FFFFFF' : 'transparent',
+              color: mode === 'signin' ? '#059669' : '#64748B',
+              boxShadow: mode === 'signin' ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            Sign In
+          </button>
+          <button
+            onClick={() => setMode('signup')}
+            style={{
+              flex: 1,
+              padding: '10px',
+              borderRadius: '12px',
+              border: 'none',
+              fontSize: '13px',
+              fontWeight: 800,
+              cursor: 'pointer',
+              backgroundColor: mode === 'signup' ? '#FFFFFF' : 'transparent',
+              color: mode === 'signup' ? '#059669' : '#64748B',
+              boxShadow: mode === 'signup' ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            Create Account
+          </button>
+        </div>
+
+        {/* Clerk Component Render */}
+        <div style={{ padding: '20px 24px 28px 24px', display: 'flex', justifyContent: 'center' }}>
+          {mode === 'signin' ? (
+            <SignIn
+              routing="hash"
+              appearance={{
+                elements: {
+                  card: { boxShadow: 'none', border: 'none', padding: 0 },
+                  formButtonPrimary: { backgroundColor: '#059669', fontSize: '14px', borderRadius: '12px' },
+                  footer: { display: 'none' }
+                }
+              }}
+            />
+          ) : (
+            <SignUp
+              routing="hash"
+              appearance={{
+                elements: {
+                  card: { boxShadow: 'none', border: 'none', padding: 0 },
+                  formButtonPrimary: { backgroundColor: '#059669', fontSize: '14px', borderRadius: '12px' },
+                  footer: { display: 'none' }
+                }
+              }}
+            />
+          )}
+        </div>
+
+        {/* Security Footer Note */}
+        <div style={{
+          backgroundColor: '#F8FAFC',
+          padding: '12px 24px',
+          borderTop: '1px solid #E2E8F0',
+          textAlign: 'center',
+          fontSize: '12px',
+          color: '#64748B',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '6px'
+        }}>
+          <IoLockClosedOutline style={{ color: '#059669' }} /> Secure 256-bit encrypted authentication powered by Clerk & PostgreSQL
+        </div>
+      </div>
+    </div>
+  );
+}

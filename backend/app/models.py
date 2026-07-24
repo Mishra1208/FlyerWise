@@ -242,3 +242,22 @@ class ScrapeLog(Base):
     status: Mapped[str] = mapped_column(String(20), default="running")
     items_scraped: Mapped[int] = mapped_column(Integer, default=0)
     error_message: Mapped[str | None] = mapped_column(Text)
+
+
+class UserBasketItem(Base):
+    """User saved basket item synced to PostgreSQL for cross-device persistence."""
+
+    __tablename__ = "user_basket_items"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
+    product_name: Mapped[str] = mapped_column(String(500), nullable=False)
+    product_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    quantity: Mapped[int] = mapped_column(Integer, default=1)
+    notes: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )

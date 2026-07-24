@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation as useRouterLocation } from "react-router-dom";
-import { IoLocationOutline, IoMenuOutline, IoCloseOutline, IoCartOutline } from "react-icons/io5";
+import { IoLocationOutline, IoMenuOutline, IoCloseOutline, IoCartOutline, IoPersonOutline } from "react-icons/io5";
+import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
 import { useLocation } from "../contexts/LocationContext";
 import { useBasket } from "../contexts/BasketContext";
 import PostalCodeModal from "./PostalCodeModal";
 import BasketModal from "./BasketModal";
+import AuthModal from "./AuthModal";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showBasketModal, setShowBasketModal] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const location = useRouterLocation();
   const { postalCode, cityName } = useLocation();
   const { basketItems } = useBasket();
@@ -131,7 +134,7 @@ export default function Navbar() {
             <span>Basket <strong>({basketItems.length})</strong></span>
           </button>
 
-          {/* Location details — NOW CLICKABLE */}
+          {/* Location details */}
           <button
             onClick={() => setShowLocationModal(true)}
             style={{
@@ -161,6 +164,57 @@ export default function Navbar() {
             <span>{cityName}, <strong>{postalCode}</strong></span>
           </button>
 
+          {/* Clerk Auth Integration */}
+          <SignedOut>
+            <button
+              onClick={() => setShowAuthModal(true)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                backgroundColor: "#059669",
+                color: "#FFFFFF",
+                border: "none",
+                padding: "7px 16px",
+                borderRadius: "var(--radius-full)",
+                fontSize: "13px",
+                fontWeight: 800,
+                cursor: "pointer",
+                boxShadow: "0 4px 12px rgba(5, 150, 105, 0.2)",
+                transition: "all 0.2s ease"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#047857";
+                e.currentTarget.style.transform = "translateY(-1px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#059669";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              <IoPersonOutline size={15} />
+              <span>Sign In</span>
+            </button>
+          </SignedOut>
+
+          <SignedIn>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <span style={{
+                fontSize: "11px",
+                fontWeight: 800,
+                color: "#047857",
+                backgroundColor: "#D1FAE5",
+                border: "1px solid #A7F3D0",
+                padding: "3px 10px",
+                borderRadius: "20px",
+                letterSpacing: "0.5px"
+              }}>
+                ☁️ Synced
+              </span>
+              <UserButton afterSignOutUrl="/" />
+            </div>
+          </SignedIn>
+
           {/* Hamburger Icon */}
           <button 
             className="mobile-toggle"
@@ -169,7 +223,7 @@ export default function Navbar() {
               padding: "6px",
               cursor: "pointer",
               color: "var(--text-primary)",
-              display: "none", // Will be shown via CSS media query
+              display: "none",
             }}
           >
             {menuOpen ? <IoCloseOutline size={26} /> : <IoMenuOutline size={26} />}
@@ -233,6 +287,12 @@ export default function Navbar() {
       <BasketModal
         isOpen={showBasketModal}
         onClose={() => setShowBasketModal(false)}
+      />
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
       />
 
       {/* Quick injection of responsive styles for navbar & mobile toggle */}
