@@ -133,15 +133,15 @@ export default function Home() {
         {/* Floating Left Lottie Animation */}
         <div style={{
           position: "absolute",
-          top: "25px",
-          left: "25px",
-          width: "200px",
-          height: "200px",
+          top: "15px",
+          left: "20px",
+          width: "240px",
+          height: "240px",
           pointerEvents: "none",
-          filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.06))"
+          filter: "drop-shadow(0 12px 24px rgba(16,185,129,0.12))"
         }}>
           <DotLottieReact
-            src="https://lottie.host/509d2a12-45cc-465a-9d82-4b81de56c0be/ZDfdiZjsbN.lottie"
+            src="https://lottie.host/736e3a5f-9eab-4b8b-866b-0301872e4c92/DjbQDgGUSm.lottie"
             loop
             autoplay
           />
