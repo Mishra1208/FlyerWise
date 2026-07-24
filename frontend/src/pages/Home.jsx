@@ -133,10 +133,10 @@ export default function Home() {
         {/* Floating Left Lottie Animation */}
         <div style={{
           position: "absolute",
-          top: "15px",
-          left: "20px",
-          width: "240px",
-          height: "240px",
+          top: "20px",
+          left: "15px",
+          width: "200px",
+          height: "200px",
           pointerEvents: "none",
           filter: "drop-shadow(0 12px 24px rgba(16,185,129,0.12))"
         }}>
@@ -151,9 +151,9 @@ export default function Home() {
         <div style={{
           position: "absolute",
           top: "15px",
-          right: "20px",
-          width: "240px",
-          height: "240px",
+          right: "15px",
+          width: "200px",
+          height: "200px",
           pointerEvents: "none",
           filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.06))"
         }}>
@@ -167,12 +167,14 @@ export default function Home() {
         <div style={{ maxWidth: "1180px", width: "100%", display: "flex", flexDirection: "column", gap: "20px", zIndex: 2 }}>
 
           <h1 style={{
-            fontSize: "54px",
+            fontSize: "42px",
             fontWeight: 900,
             color: "#0F172A",
-            lineHeight: "1.12",
-            letterSpacing: "-1.5px",
+            lineHeight: "1.25",
+            letterSpacing: "-1px",
             fontFamily: "var(--font-headings)",
+            maxWidth: "760px",
+            margin: "0 auto"
           }}>
             Compare Grocery Prices Instantly Across <span style={{
               color: "#059669"
@@ -180,9 +182,9 @@ export default function Home() {
           </h1>
 
           <p style={{
-            fontSize: "19px",
+            fontSize: "18px",
             color: "#475569",
-            maxWidth: "700px",
+            maxWidth: "680px",
             margin: "0 auto",
             lineHeight: "1.6",
             fontWeight: 500,
