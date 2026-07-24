@@ -133,12 +133,12 @@ export default function Home() {
         {/* Floating Left Lottie Animation */}
         <div style={{
           position: "absolute",
-          top: "60px",
-          left: "50px",
-          width: "130px",
-          height: "130px",
+          top: "25px",
+          left: "25px",
+          width: "200px",
+          height: "200px",
           pointerEvents: "none",
-          filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.06))"
+          filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.06))"
         }}>
           <DotLottieReact
             src="https://lottie.host/509d2a12-45cc-465a-9d82-4b81de56c0be/ZDfdiZjsbN.lottie"
@@ -150,12 +150,12 @@ export default function Home() {
         {/* Floating Right Lottie Animation */}
         <div style={{
           position: "absolute",
-          top: "60px",
-          right: "50px",
-          width: "130px",
-          height: "130px",
+          top: "15px",
+          right: "20px",
+          width: "240px",
+          height: "240px",
           pointerEvents: "none",
-          filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.06))"
+          filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.06))"
         }}>
           <DotLottieReact
             src="https://lottie.host/f6fa258a-bd79-45f3-8f14-8123528a082d/uzg1C6ki2P.lottie"
@@ -164,36 +164,7 @@ export default function Home() {
           />
         </div>
 
-        <div style={{ maxWidth: "880px", width: "100%", display: "flex", flexDirection: "column", gap: "22px", zIndex: 2 }}>
-          
-          {/* Live Pulse Badge */}
-          <span style={{
-            fontSize: "12px",
-            fontWeight: 800,
-            color: "#047857",
-            backgroundColor: "#D1FAE5",
-            border: "1px solid #A7F3D0",
-            padding: "6px 18px",
-            borderRadius: "30px",
-            width: "fit-content",
-            margin: "0 auto",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "8px",
-            boxShadow: "0 2px 10px rgba(16, 185, 129, 0.15)",
-            letterSpacing: "0.5px",
-            textTransform: "uppercase"
-          }}>
-            <span style={{
-              width: "8px",
-              height: "8px",
-              borderRadius: "50%",
-              backgroundColor: "#10B981",
-              boxShadow: "0 0 10px #10B981",
-              animation: "pulse 1.5s infinite"
-            }} />
-            ⚡ 12,500+ Live Weekly Flyer Deals Indexed Across Canada
-          </span>
+        <div style={{ maxWidth: "880px", width: "100%", display: "flex", flexDirection: "column", gap: "20px", zIndex: 2 }}>
 
           <h1 style={{
             fontSize: "54px",
