@@ -78,8 +78,8 @@ export default function Home() {
       a: "While Flipp lists static PDFs and requires manual page turning, FlyerWise uses AI automation to index individual product prices side-by-side across 60+ retailers (Walmart, Maxi, Metro, IGA, Super C, Costco, Provigo). We automatically highlight the #1 lowest price and compute smart multi-store split trip savings."
     },
     {
-      q: "Are Costco Canada deals included?",
-      a: "Yes! FlyerWise indexes live Costco Canada warehouse coupons and prices alongside standard grocery chains, letting you compare unit costs between Costco bulk packaging and weekly supermarket sales."
+      q: "Which grocery stores and retailers are included in FlyerWise?",
+      a: "FlyerWise indexes live weekly flyer prices and coupons across all major Canadian grocery chains including Walmart Canada, Maxi, Metro, IGA, Super C, Costco Canada, Provigo, Marché Adonis, and 60+ discount supermarkets across Canada."
     },
     {
       q: "How often is the flyer data updated?",
