@@ -394,9 +394,131 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 4. SMART BASKET OPTIMIZER SECTION */}
+      {/* 4. ULTRA-AESTHETIC AI BASKET SAVINGS SHOWCASE CARD */}
       <section className="container">
-        <SmartBasketOptimizer />
+        <div style={{
+          backgroundColor: "#FFFFFF",
+          borderRadius: "28px",
+          border: "1px solid rgba(16, 185, 129, 0.25)",
+          padding: "40px",
+          boxShadow: "0 20px 45px -10px rgba(16, 185, 129, 0.08)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "32px",
+          position: "relative",
+          overflow: "hidden",
+          background: "linear-gradient(135deg, #FFFFFF 0%, #F0FDF4 100%)"
+        }}>
+          {/* Left Column: AI Pitch & Live Example */}
+          <div style={{ flex: "1 1 450px", display: "flex", flexDirection: "column", gap: "16px" }}>
+            <span style={{
+              fontSize: "11px",
+              fontWeight: 800,
+              color: "#059669",
+              backgroundColor: "#D1FAE5",
+              padding: "4px 12px",
+              borderRadius: "20px",
+              width: "fit-content",
+              textTransform: "uppercase",
+              letterSpacing: "1px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px"
+            }}>
+              <IoSparklesOutline size={14} /> AI MULTI-STORE BASKET OPTIMIZER
+            </span>
+
+            <h2 style={{ fontSize: "32px", fontWeight: 900, color: "#0F172A", lineHeight: "1.2", fontFamily: "var(--font-headings)" }}>
+              Save Up to <span style={{ color: "#059669" }}>$45/Week</span> with Smart Split Trips
+            </h2>
+
+            <p style={{ fontSize: "16px", color: "#475569", lineHeight: "1.6" }}>
+              Don't buy all groceries at one store. FlyerWise analyzes your saved basket items and calculates the optimal 2-store split trip so you get maximum flyer discounts every week.
+            </p>
+
+            {/* Quick Live Preview Box */}
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+              gap: "14px",
+              marginTop: "8px"
+            }}>
+              <div style={{
+                backgroundColor: "#FFFFFF",
+                border: "1px solid #E2E8F0",
+                borderRadius: "16px",
+                padding: "16px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.03)"
+              }}>
+                <span style={{ fontSize: "11px", color: "#64748B", fontWeight: 700, textTransform: "uppercase" }}>Single Store Trip</span>
+                <h4 style={{ fontSize: "20px", color: "#0F172A", fontWeight: 900, margin: "4px 0 0 0" }}>$48.50 <span style={{ fontSize: "11px", color: "#94A3B8", fontWeight: 500 }}>(Maxi)</span></h4>
+              </div>
+
+              <div style={{
+                backgroundColor: "#ECFDF5",
+                border: "1.5px solid #10B981",
+                borderRadius: "16px",
+                padding: "16px",
+                boxShadow: "0 4px 12px rgba(16,185,129,0.12)"
+              }}>
+                <span style={{ fontSize: "11px", color: "#047857", fontWeight: 800, textTransform: "uppercase" }}>⚡ AI 2-Store Split Trip</span>
+                <h4 style={{ fontSize: "20px", color: "#047857", fontWeight: 900, margin: "4px 0 0 0" }}>$32.70 <span style={{ fontSize: "11px", color: "#059669", fontWeight: 700 }}>(Save $15.80)</span></h4>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: "flex", gap: "14px", flexWrap: "wrap", marginTop: "12px" }}>
+              <button
+                onClick={() => handleSearch("butter")}
+                style={{
+                  padding: "14px 28px",
+                  borderRadius: "16px",
+                  backgroundColor: "#059669",
+                  color: "#FFFFFF",
+                  fontWeight: 800,
+                  fontSize: "15px",
+                  border: "none",
+                  cursor: "pointer",
+                  boxShadow: "0 8px 20px rgba(5, 150, 105, 0.25)",
+                  transition: "all 0.25s ease",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px"
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#047857";
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "#059669";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
+              >
+                <IoSearchOutline size={18} /> Start Comparing Flyer Prices
+              </button>
+            </div>
+          </div>
+
+          {/* Right Column: Animated Lottie Shopping Cart */}
+          <div style={{
+            flex: "0 0 240px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            margin: "0 auto"
+          }}>
+            <div style={{ width: "220px", height: "220px" }}>
+              <DotLottieReact
+                src="https://lottie.host/161951b7-a350-418e-8406-1065b078174c/4g1Qifp1X3.lottie"
+                loop
+                autoplay
+              />
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* 5. 3D HOW IT WORKS SECTION WITH MAIN ANIMATIONS (SALE, SHOPPING CART, SAVING) */}
