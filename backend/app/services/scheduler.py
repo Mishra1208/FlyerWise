@@ -55,17 +55,17 @@ def run_weekly_grocery_scrape():
 
 
 def start_scheduler():
-    """Start the background scheduler for Thursday morning flyer scraping."""
-    # Schedule every Thursday at 6:00 AM EST
-    trigger = CronTrigger(day_of_week="thu", hour=6, minute=0)
+    """Start the background scheduler for daily 6:00 AM EST grocery flyer scraping."""
+    # Schedule every day at 6:00 AM EST (catches daily price updates, flash sales & new products)
+    trigger = CronTrigger(hour=6, minute=0)
     scheduler.add_job(
         run_weekly_grocery_scrape,
         trigger=trigger,
-        id="weekly_thursday_grocery_scrape",
+        id="daily_grocery_scrape",
         replace_existing=True,
     )
     scheduler.start()
-    logger.info("📅 Weekly FlyerScraper APScheduler started (Cron: Thursday at 6:00 AM EST).")
+    logger.info("📅 Daily Grocery Scraper APScheduler started (Cron: Every Day at 6:00 AM EST).")
 
 
 def shutdown_scheduler():
