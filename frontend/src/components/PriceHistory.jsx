@@ -59,29 +59,64 @@ export default function PriceHistory({ productId }) {
   useEffect(() => {
     if (!rawHistory.length) return;
 
-    // Filter by store
-    let filtered = rawHistory;
+    const now = new Date();
+    
+    // Calculate cutoff date based on selectedRange
+    let cutoffDate = null;
+    if (selectedRange === "1D") {
+      cutoffDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000);
+    } else if (selectedRange === "5D") {
+      cutoffDate = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000);
+    } else if (selectedRange === "1M") {
+      cutoffDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    } else if (selectedRange === "1Y") {
+      cutoffDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+    } // Max = null
+
+    // 1. Filter by range
+    let rangeFiltered = rawHistory;
+    if (cutoffDate) {
+      rangeFiltered = rawHistory.filter((p) => {
+        const itemDate = p.raw_date ? new Date(p.raw_date) : (p.scraped_at ? new Date(p.scraped_at) : new Date());
+        return itemDate >= cutoffDate;
+      });
+    }
+
+    if (!rangeFiltered.length) {
+      rangeFiltered = rawHistory; // fallback if no points within tight window
+    }
+
+    // 2. Filter by store
+    let storeFiltered = rangeFiltered;
     if (selectedStore !== "ALL") {
-      filtered = rawHistory.filter(
+      storeFiltered = rangeFiltered.filter(
         (p) => (p.store_name || "").toLowerCase() === selectedStore.toLowerCase()
       );
     }
 
-    if (!filtered.length) {
-      filtered = rawHistory; // fallback if store has no specific data
+    if (!storeFiltered.length) {
+      storeFiltered = rangeFiltered;
     }
 
-    // Group & sort chronologically
+    // 3. Sort chronologically ascending by raw_date / date
+    const sortedPoints = [...storeFiltered].sort((a, b) => {
+      const dA = a.raw_date ? new Date(a.raw_date) : new Date(a.date);
+      const dB = b.raw_date ? new Date(b.raw_date) : new Date(b.date);
+      return dA - dB;
+    });
+
+    // Group & map datasets
     const storeGroups = {};
-    const datesSet = new Set();
+    const datesMap = new Map();
 
-    filtered.forEach((price) => {
-      const dateStr = price.date || (price.scraped_at ? new Date(price.scraped_at).toLocaleDateString("en-CA", {
-        month: "short",
-        day: "numeric",
-      }) : "Today");
+    sortedPoints.forEach((price) => {
+      const dateStr = price.date || "Today";
+      const rawDate = price.raw_date || dateStr;
+      
+      if (!datesMap.has(dateStr)) {
+        datesMap.set(dateStr, rawDate);
+      }
 
-      datesSet.add(dateStr);
       const storeName = price.store_name || "Maxi";
       const storeColor = price.store_color || (storeName === "Walmart" ? "#0071CE" : storeName === "Maxi" ? "#ED1C24" : storeName === "Metro" ? "#003DA5" : storeName === "IGA" ? "#C8102E" : storeName === "Super C" ? "#E31837" : "#059669");
 
@@ -98,7 +133,7 @@ export default function PriceHistory({ productId }) {
       });
     });
 
-    const labels = Array.from(datesSet);
+    const labels = Array.from(datesMap.keys());
     
     const datasets = Object.values(storeGroups).map((group) => {
       const alignedData = labels.map((label) => {
@@ -118,9 +153,9 @@ export default function PriceHistory({ productId }) {
           return gradient;
         },
         fill: true,
-        tension: 0.4, // Smooth financial curve
+        tension: 0.4,
         spanGaps: true,
-        pointRadius: 4,
+        pointRadius: 5,
         pointHoverRadius: 7,
         borderWidth: 3,
       };

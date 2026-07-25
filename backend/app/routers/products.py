@@ -369,42 +369,25 @@ def get_product_price_history(product_id: int, db: Session = Depends(get_db)):
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Product not found")
 
-    # Find all related product IDs sharing normalized_name, raw_name, or French/English synonyms
-    target_name = (product.normalized_name or product.raw_name or "").strip().lower()
+    # Extract product search phrase (e.g., 'cuisses de poulet', 'chicken thighs', 'lactantia milk', 'persil')
+    raw_title = (product.normalized_name or product.raw_name or "").strip().lower()
     
-    SYNONYM_MAP = {
-        "cuisses": ["chicken", "poulet", "cuisses"],
-        "poulet": ["chicken", "poulet"],
-        "chicken": ["chicken", "poulet"],
-        "lait": ["milk", "lait"],
-        "milk": ["milk", "lait"],
-        "beurre": ["butter", "beurre"],
-        "butter": ["butter", "beurre"],
-        "boeuf": ["beef", "boeuf"],
-        "beef": ["beef", "boeuf"],
-        "porc": ["pork", "porc"],
-        "pork": ["pork", "porc"],
-        "tomate": ["tomato", "tomate"],
-        "tomato": ["tomato", "tomate"],
-        "pomme": ["apple", "pomme"],
-        "apple": ["apple", "pomme"]
-    }
-
-    # Extract search tokens
-    clean_words = [w for w in re.sub(r'[^a-zA-Z]', ' ', target_name).split() if len(w) >= 3 and w not in ["fresh", "format", "club", "super", "size", "pack", "caisse", "avec", "frais"]]
+    # Strip generic noise words
+    words = [w for w in re.sub(r'[^a-zA-Z0-9]', ' ', raw_title).split() if w not in ["fresh", "format", "club", "super", "size", "pack", "caisse", "avec", "frais", "boneless", "sans"]]
     
-    search_keywords = set()
-    for w in clean_words:
-        if w in SYNONYM_MAP:
-            search_keywords.update(SYNONYM_MAP[w])
-        else:
-            search_keywords.add(w)
+    # Build 2-word phrase or fallback to raw title
+    search_phrase = " ".join(words[:2]) if len(words) >= 2 else raw_title
 
     matching_product_ids = [product.id]
-    if search_keywords:
-        filters = [func.lower(Product.raw_name).contains(kw) for kw in search_keywords] + \
-                  [func.lower(Product.normalized_name).contains(kw) for kw in search_keywords]
-        related_prods = db.query(Product.id).filter(or_(*filters)).all()
+    if len(search_phrase) >= 3:
+        related_prods = (
+            db.query(Product.id)
+            .filter(
+                (func.lower(Product.normalized_name).contains(search_phrase)) |
+                (func.lower(Product.raw_name).contains(search_phrase))
+            )
+            .all()
+        )
         matching_product_ids = list(set([r[0] for r in related_prods] + [product.id]))
 
     # Query chronological price observations across all historical flyers
@@ -419,7 +402,8 @@ def get_product_price_history(product_id: int, db: Session = Depends(get_db)):
 
     # Sort prices chronologically by valid_from or scraped_at
     def get_price_date(p):
-        return p.valid_from or p.scraped_at or datetime.utcnow().date()
+        d = p.valid_from or (p.scraped_at.date() if p.scraped_at else datetime.utcnow().date())
+        return d
 
     prices_sorted = sorted(prices, key=get_price_date)
 
@@ -432,13 +416,15 @@ def get_product_price_history(product_id: int, db: Session = Depends(get_db)):
         price_val = float(p.current_price) if p.current_price else 0.0
         p_date = get_price_date(p)
         date_str = p_date.strftime("%b %d") if hasattr(p_date, "strftime") else str(p_date)
+        raw_date_iso = p_date.isoformat() if hasattr(p_date, "isoformat") else str(p_date)
         
         # Deduplicate same date + store points
-        key = (date_str, store_name, price_val)
+        key = (raw_date_iso, store_name, price_val)
         if key not in seen_keys:
             seen_keys.add(key)
             history_points.append({
                 "date": date_str,
+                "raw_date": raw_date_iso,
                 "price": price_val,
                 "store_name": store_name,
                 "store_color": st.color if st and hasattr(st, "color") else "#10B981",
