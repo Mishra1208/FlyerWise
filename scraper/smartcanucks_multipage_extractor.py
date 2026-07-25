@@ -36,26 +36,40 @@ HEADERS = {
 }
 
 
+from PIL import ImageEnhance
+
 def extract_items_from_text(text: str) -> list[dict]:
     """
-    Extract product titles and prices from OCR text output using regex patterns.
+    Extract product titles and prices from OCR text output using French & Canadian regex patterns.
+    Handles formats like '4,17$', '$4.17', '4.17', '2,99 $', and 'Economisez 48%'.
     """
     items = []
-    lines = [line.strip() for line in text.split("\n") if len(line.strip()) > 3]
+    lines = [line.strip() for line in text.split("\n") if len(line.strip()) > 2]
 
-    price_pattern = re.compile(r'\$?\s*(\d{1,3}\.\d{2})\b')
+    # Pattern matches 4,17$ or 4.17$ or $4.17 or 4,17
+    price_pattern = re.compile(r'\b(\d{1,3})[,\.](\d{2})\s*\$?', re.IGNORECASE)
 
     for i, line in enumerate(lines):
         match = price_pattern.search(line)
         if match:
-            price_val = float(match.group(1))
-            if 0.25 <= price_val <= 150.0:
-                # Title is usually the preceding text or adjacent line
-                clean_title = price_pattern.sub("", line).strip()
-                if len(clean_title) < 4 and i > 0:
-                    clean_title = lines[i - 1].strip()
+            dollars = match.group(1)
+            cents = match.group(2)
+            try:
+                price_val = float(f"{dollars}.{cents}")
+            except ValueError:
+                continue
 
-                if len(clean_title) >= 4 and not clean_title.startswith("http"):
+            if 0.25 <= price_val <= 150.0:
+                clean_title = price_pattern.sub("", line).strip()
+                # Clean up OCR noise
+                clean_title = re.sub(r'[^a-zA-ZàâäéèêëîïôöùûüçÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ0-9\s-]', '', clean_title).strip()
+
+                # If current line has no good title, pick preceding line
+                if len(clean_title) < 4 and i > 0:
+                    prev_line = lines[i - 1].strip()
+                    clean_title = re.sub(r'[^a-zA-ZàâäéèêëîïôöùûüçÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ0-9\s-]', '', prev_line).strip()
+
+                if len(clean_title) >= 4 and not clean_title.lower().startswith("http"):
                     items.append({
                         "raw_name": clean_title,
                         "price": price_val,
@@ -98,8 +112,10 @@ def process_multipage_flyer(flyer_id: int, flyer_url: str, store_slug: str = "ma
             try:
                 img_res = session.get(full_img_url, timeout=10)
                 if img_res.status_code == 200:
-                    image = Image.open(BytesIO(img_res.content))
-                    ocr_text = pytesseract.image_to_string(image)
+                    raw_img = Image.open(BytesIO(img_res.content)).convert("L")
+                    enhancer = ImageEnhance.Contrast(raw_img)
+                    enhanced_img = enhancer.enhance(2.0)
+                    ocr_text = pytesseract.image_to_string(enhanced_img, config="--psm 6")
                     page_items = extract_items_from_text(ocr_text)
 
                     for item in page_items:
