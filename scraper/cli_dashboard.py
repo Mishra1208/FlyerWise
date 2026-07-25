@@ -8,12 +8,17 @@ PostgreSQL product/price totals, and live extracted items!
 import sys
 import os
 import time
+import logging
 from datetime import datetime
 
 # Add root directory to sys.path
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
+
+from app.database import SessionLocal, engine
+engine.echo = False
+logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 
 from app.database import SessionLocal
 from app.models import Product, Price, Flyer, Store

@@ -41,15 +41,22 @@ from PIL import ImageEnhance
 def extract_items_from_text(text: str) -> list[dict]:
     """
     Extract product titles and prices from OCR text output using French & Canadian regex patterns.
-    Handles formats like '4,17$', '$4.17', '4.17', '2,99 $', and 'Economisez 48%'.
+    Filters out flyer boilerplate text (e.g. 'limite', 'apres', 'economisez') to ensure clean products.
     """
     items = []
     lines = [line.strip() for line in text.split("\n") if len(line.strip()) > 2]
+
+    # Stopwords/Boilerplate to ignore
+    ignore_words = ["limite", "apres", "aprè", "jusqu", "economisez", "économisez", "rabais", "page", "valide", "du jeudi", "mercredi"]
 
     # Pattern matches 4,17$ or 4.17$ or $4.17 or 4,17
     price_pattern = re.compile(r'\b(\d{1,3})[,\.](\d{2})\s*\$?', re.IGNORECASE)
 
     for i, line in enumerate(lines):
+        line_lower = line.lower()
+        if any(bad in line_lower for bad in ignore_words):
+            continue
+
         match = price_pattern.search(line)
         if match:
             dollars = match.group(1)
@@ -61,19 +68,24 @@ def extract_items_from_text(text: str) -> list[dict]:
 
             if 0.25 <= price_val <= 150.0:
                 clean_title = price_pattern.sub("", line).strip()
-                # Clean up OCR noise
                 clean_title = re.sub(r'[^a-zA-ZàâäéèêëîïôöùûüçÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ0-9\s-]', '', clean_title).strip()
 
-                # If current line has no good title, pick preceding line
+                # Pick preceding line if current line has no product text
                 if len(clean_title) < 4 and i > 0:
                     prev_line = lines[i - 1].strip()
-                    clean_title = re.sub(r'[^a-zA-ZàâäéèêëîïôöùûüçÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ0-9\s-]', '', prev_line).strip()
+                    if not any(bad in prev_line.lower() for bad in ignore_words):
+                        clean_title = re.sub(r'[^a-zA-ZàâäéèêëîïôöùûüçÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ0-9\s-]', '', prev_line).strip()
 
-                if len(clean_title) >= 4 and not clean_title.lower().startswith("http"):
-                    items.append({
-                        "raw_name": clean_title,
-                        "price": price_val,
-                    })
+                # Validate title length and non-url
+                if len(clean_title) >= 5 and not clean_title.lower().startswith("http"):
+                    # Additional noise filter: check title has valid characters
+                    words = clean_title.split()
+                    valid_words = [w for w in words if len(w) >= 2]
+                    if len(valid_words) >= 1:
+                        items.append({
+                            "raw_name": " ".join(valid_words),
+                            "price": price_val,
+                        })
 
     return items
 
