@@ -260,8 +260,8 @@ class DatabaseWriter:
             import json
             for scraped in products:
                 try:
-                    product = self.get_or_create_product(session, scraped)
-                    self.save_price(session, store, flyer, product, scraped)
+                    product = self.find_or_create_product(session, scraped)
+                    self.insert_price(session, product, store, flyer, scraped)
 
                     # Preserve raw crawler record in raw_product_records
                     raw_rec = RawProductRecord(
