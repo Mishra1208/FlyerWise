@@ -4,6 +4,7 @@ Products Router
 Endpoints for searching products and retrieving product details.
 """
 
+import re
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import text, func
@@ -361,56 +362,75 @@ def get_product(product_id: int, db: Session = Depends(get_db)):
 def get_product_price_history(product_id: int, db: Session = Depends(get_db)):
     """
     Get chronological price history and ML price trend analytics for a product.
-    Returns 30-day price trend timeline, lowest/highest price bounds, and AI deal recommendation badge.
+    Queries cross-store historical flyer prices by normalized_name and valid_from dates.
     """
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Product not found")
 
-    # Query chronological price observations
+    # Find all related product IDs sharing the same normalized_name, raw_name, or main product keyword
+    target_name = (product.normalized_name or product.raw_name or "").strip().lower()
+    
+    # Extract key product word (e.g. 'grapes', 'chicken', 'milk', 'butter', 'beef', 'tomato')
+    words = [w for w in re.sub(r'[^a-zA-Z]', ' ', target_name).split() if len(w) >= 4 and w not in ["fresh", "format", "club", "super", "size", "pack", "caisse"]]
+    primary_kw = words[0] if words else target_name
+
+    matching_product_ids = [product.id]
+    if len(primary_kw) >= 3:
+        related_prods = (
+            db.query(Product.id)
+            .filter(
+                (func.lower(Product.normalized_name).contains(primary_kw)) |
+                (func.lower(Product.raw_name).contains(primary_kw))
+            )
+            .all()
+        )
+        matching_product_ids = list(set([r[0] for r in related_prods] + [product.id]))
+
+    # Query chronological price observations across all historical flyers
     prices = (
         db.query(Price)
-        .filter(Price.product_id == product_id)
-        .order_by(Price.scraped_at.asc())
+        .filter(Price.product_id.in_(matching_product_ids))
         .all()
     )
 
     if not prices:
-        # Fallback if no history points yet: generate realistic baseline curve for demonstration
-        from datetime import datetime, timedelta
-        import random
-        base_price = 4.99
-        history_points = []
-        now = datetime.utcnow()
-        for days in range(14, -1, -2):
-            point_date = (now - timedelta(days=days)).strftime("%b %d")
-            variation = round(base_price + random.choice([-0.8, -0.5, 0.0, 0.3, 0.7]), 2)
-            history_points.append({
-                "date": point_date,
-                "price": max(0.99, variation),
-                "store_name": "Walmart",
-                "is_lowest": False
-            })
-    else:
-        history_points = []
-        for p in prices:
-            st = db.query(Store).filter(Store.id == p.store_id).first()
-            store_name = st.name if st else "Store"
-            price_val = float(p.current_price) if p.current_price else 0.0
-            date_str = p.scraped_at.strftime("%b %d") if p.scraped_at else "Today"
+        prices = db.query(Price).filter(Price.product_id == product_id).all()
+
+    # Sort prices chronologically by valid_from or scraped_at
+    def get_price_date(p):
+        return p.valid_from or p.scraped_at or datetime.utcnow().date()
+
+    prices_sorted = sorted(prices, key=get_price_date)
+
+    history_points = []
+    seen_keys = set()
+
+    for p in prices_sorted:
+        st = db.query(Store).filter(Store.id == p.store_id).first()
+        store_name = st.name if st else "Store"
+        price_val = float(p.current_price) if p.current_price else 0.0
+        p_date = get_price_date(p)
+        date_str = p_date.strftime("%b %d") if hasattr(p_date, "strftime") else str(p_date)
+        
+        # Deduplicate same date + store points
+        key = (date_str, store_name, price_val)
+        if key not in seen_keys:
+            seen_keys.add(key)
             history_points.append({
                 "date": date_str,
                 "price": price_val,
                 "store_name": store_name,
+                "store_color": st.color if st and hasattr(st, "color") else "#10B981",
                 "is_lowest": False
             })
 
     # Find min/max and mark lowest point
     valid_prices = [p["price"] for p in history_points if p["price"] > 0]
-    lowest_price = min(valid_prices) if valid_prices else 0.0
-    highest_price = max(valid_prices) if valid_prices else 0.0
-    current_price = history_points[-1]["price"] if history_points else 0.0
+    lowest_price = min(valid_prices) if valid_prices else float(product.current_price or 0.0)
+    highest_price = max(valid_prices) if valid_prices else float(product.current_price or 0.0)
+    current_price = history_points[-1]["price"] if history_points else float(product.current_price or 0.0)
 
     for pt in history_points:
         if pt["price"] == lowest_price:

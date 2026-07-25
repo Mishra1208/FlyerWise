@@ -37,31 +37,36 @@ export default function PriceHistory({ productId }) {
         
         setIntelligence(intel);
 
-        // Group prices by store_id
+        const historyList = Array.isArray(data) ? data : (data?.history || []);
+        
+        // Group prices by store_name
         const storeGroups = {};
         const datesSet = new Set();
         
-        data.forEach((price) => {
-          const dateStr = new Date(price.scraped_at).toLocaleDateString("en-CA", {
+        historyList.forEach((price) => {
+          const dateStr = price.date || (price.scraped_at ? new Date(price.scraped_at).toLocaleDateString("en-CA", {
             month: "short",
             day: "numeric",
-          });
-          datesSet.add(dateStr);
+          }) : "Today");
           
-          if (!storeGroups[price.store_id]) {
-            storeGroups[price.store_id] = {
-              label: price.store_id === 1 ? "Walmart" : price.store_id === 2 ? "Maxi" : price.store_id === 3 ? "Metro" : price.store_id === 4 ? "IGA" : price.store_id === 5 ? "Super C" : "Provigo",
+          datesSet.add(dateStr);
+          const storeName = price.store_name || (price.store_id === 1 ? "Walmart" : price.store_id === 2 ? "Maxi" : price.store_id === 3 ? "Metro" : price.store_id === 4 ? "IGA" : price.store_id === 5 ? "Super C" : "Provigo");
+          const storeColor = price.store_color || (storeName === "Walmart" ? "#0071CE" : storeName === "Maxi" ? "#ED1C24" : storeName === "Metro" ? "#003DA5" : storeName === "IGA" ? "#C8102E" : storeName === "Super C" ? "#E31837" : "#059669");
+
+          if (!storeGroups[storeName]) {
+            storeGroups[storeName] = {
+              label: storeName,
               prices: [],
-              color: price.store_id === 1 ? "#0071CE" : price.store_id === 2 ? "#ED1C24" : price.store_id === 3 ? "#003DA5" : price.store_id === 4 ? "#C8102E" : price.store_id === 5 ? "#E31837" : "#000000",
+              color: storeColor,
             };
           }
-          storeGroups[price.store_id].prices.push({
+          storeGroups[storeName].prices.push({
             date: dateStr,
-            value: parseFloat(price.current_price),
+            value: parseFloat(price.price || price.current_price || 0),
           });
         });
 
-        const labels = Array.from(datesSet).sort((a, b) => new Date(a) - new Date(b));
+        const labels = Array.from(datesSet);
         
         const datasets = Object.values(storeGroups).map((group) => {
           const alignedData = labels.map((label) => {
