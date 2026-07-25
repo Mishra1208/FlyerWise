@@ -1,0 +1,173 @@
+"""
+FlyerWise — SmartCanucks Multi-Page Historical Flyer OCR & Price Ingestor
+
+Scrapes EVERY page (1 to N) of cataloged historical flyers from SmartCanucks,
+performs OCR & regex price extraction, and writes products/prices into PostgreSQL.
+"""
+
+import sys
+import os
+import re
+import time
+import logging
+import requests
+from io import BytesIO
+from bs4 import BeautifulSoup
+from PIL import Image
+import pytesseract
+from datetime import datetime
+
+# Add root directory to sys.path
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+
+from app.database import SessionLocal
+from app.models import Store, Flyer, Product, Price
+from scraper.base_scraper import ScrapedProduct
+from scraper.utils.db_writer import DatabaseWriter
+from scraper.utils.parser import parse_price, parse_unit, parse_quantity
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger("flyerwise.multipage_ocr")
+
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+}
+
+
+def extract_items_from_text(text: str) -> list[dict]:
+    """
+    Extract product titles and prices from OCR text output using regex patterns.
+    """
+    items = []
+    lines = [line.strip() for line in text.split("\n") if len(line.strip()) > 3]
+
+    price_pattern = re.compile(r'\$?\s*(\d{1,3}\.\d{2})\b')
+
+    for i, line in enumerate(lines):
+        match = price_pattern.search(line)
+        if match:
+            price_val = float(match.group(1))
+            if 0.25 <= price_val <= 150.0:
+                # Title is usually the preceding text or adjacent line
+                clean_title = price_pattern.sub("", line).strip()
+                if len(clean_title) < 4 and i > 0:
+                    clean_title = lines[i - 1].strip()
+
+                if len(clean_title) >= 4 and not clean_title.startswith("http"):
+                    items.append({
+                        "raw_name": clean_title,
+                        "price": price_val,
+                    })
+
+    return items
+
+
+def process_multipage_flyer(flyer_id: int, flyer_url: str, store_slug: str = "maxi"):
+    """
+    Fetch all pages (1 to N) of a historical flyer and run OCR price extraction.
+    """
+    session = requests.Session()
+    session.headers.update(HEADERS)
+    db_writer = DatabaseWriter()
+
+    all_url = flyer_url.rstrip("/") + "/all"
+    logger.info(f"📰 Processing Multi-Page Flyer #{flyer_id} ({all_url})...")
+
+    try:
+        r = session.get(all_url, timeout=12)
+        if r.status_code != 200:
+            logger.warning(f"Failed to load flyer all-pages view: HTTP {r.status_code}")
+            return 0
+
+        soup = BeautifulSoup(r.text, "html.parser")
+        page_imgs = [img.get("src") for img in soup.find_all("img") if "uploads/pages/" in img.get("src", "")]
+
+        if not page_imgs:
+            logger.warning(f"No flyer page images found for Flyer #{flyer_id}")
+            return 0
+
+        logger.info(f"  └─ Found {len(page_imgs)} total page images for Flyer #{flyer_id}!")
+
+        extracted_products = []
+        for page_num, img_url in enumerate(page_imgs, 1):
+            full_img_url = img_url if img_url.startswith("http") else f"https://flyers.smartcanucks.ca{img_url}"
+            logger.info(f"     📷 Processing Page {page_num}/{len(page_imgs)}: {full_img_url}...")
+
+            try:
+                img_res = session.get(full_img_url, timeout=10)
+                if img_res.status_code == 200:
+                    image = Image.open(BytesIO(img_res.content))
+                    ocr_text = pytesseract.image_to_string(image)
+                    page_items = extract_items_from_text(ocr_text)
+
+                    for item in page_items:
+                        sp = ScrapedProduct(
+                            raw_name=item["raw_name"],
+                            current_price=item["price"],
+                            original_price=None,
+                            savings=None,
+                            unit="ea",
+                            quantity=1,
+                            price_text=f"${item['price']:.2f}",
+                            description=f"Extracted from {store_slug.title()} Flyer #{flyer_id} Page {page_num}",
+                            image_url=full_img_url,
+                            valid_from=datetime.now().date(),
+                            valid_until=datetime.now().date(),
+                        )
+                        extracted_products.append(sp)
+
+            except Exception as img_err:
+                logger.warning(f"OCR Error on Page {page_num}: {img_err}")
+
+        if extracted_products:
+            db = SessionLocal()
+            flyer_obj = db.query(Flyer).filter(Flyer.id == flyer_id).first()
+            start_date = flyer_obj.start_date if flyer_obj else datetime.now().date()
+            end_date = flyer_obj.end_date if flyer_obj else datetime.now().date()
+            db.close()
+
+            db_writer.save_scraped_data(
+                store_slug=store_slug,
+                store_name=store_slug.title(),
+                flyer_start=start_date,
+                flyer_end=end_date,
+                products=extracted_products,
+            )
+            logger.info(f"✅ Ingested {len(extracted_products)} items across all {len(page_imgs)} pages for Flyer #{flyer_id}!")
+
+        return len(extracted_products)
+
+    except Exception as e:
+        logger.error(f"Error processing Flyer #{flyer_id}: {e}")
+        return 0
+
+
+def run_all_multipage_ingestion(max_flyers: int = 10):
+    """
+    Iterate over cataloged historical flyers in PostgreSQL and process all pages.
+    """
+    db = SessionLocal()
+    maxi = db.query(Store).filter(Store.slug == "maxi").first()
+    historical_flyers = (
+        db.query(Flyer)
+        .filter(Flyer.store_id == maxi.id, Flyer.flyer_url.isnot(None))
+        .order_by(Flyer.id.desc())
+        .limit(max_flyers)
+        .all()
+    )
+    db.close()
+
+    logger.info(f"🚀 Starting Multi-Page Flyer Ingestion for {len(historical_flyers)} historical Maxi flyer editions...")
+
+    total_items = 0
+    for f in historical_flyers:
+        count = process_multipage_flyer(flyer_id=f.id, flyer_url=f.flyer_url, store_slug="maxi")
+        total_items += count
+
+    logger.info(f"🎉 Multi-Page Ingestion Complete! Extracted {total_items} items across all flyer pages into PostgreSQL.")
+
+
+if __name__ == "__main__":
+    run_all_multipage_ingestion(max_flyers=5)
