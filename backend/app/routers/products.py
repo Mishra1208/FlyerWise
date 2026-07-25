@@ -7,7 +7,7 @@ Endpoints for searching products and retrieving product details.
 import re
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import text, func
+from sqlalchemy import text, func, or_
 from decimal import Decimal
 
 from app.database import get_db
@@ -369,23 +369,42 @@ def get_product_price_history(product_id: int, db: Session = Depends(get_db)):
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Product not found")
 
-    # Find all related product IDs sharing the same normalized_name, raw_name, or main product keyword
+    # Find all related product IDs sharing normalized_name, raw_name, or French/English synonyms
     target_name = (product.normalized_name or product.raw_name or "").strip().lower()
     
-    # Extract key product word (e.g. 'grapes', 'chicken', 'milk', 'butter', 'beef', 'tomato')
-    words = [w for w in re.sub(r'[^a-zA-Z]', ' ', target_name).split() if len(w) >= 4 and w not in ["fresh", "format", "club", "super", "size", "pack", "caisse"]]
-    primary_kw = words[0] if words else target_name
+    SYNONYM_MAP = {
+        "cuisses": ["chicken", "poulet", "cuisses"],
+        "poulet": ["chicken", "poulet"],
+        "chicken": ["chicken", "poulet"],
+        "lait": ["milk", "lait"],
+        "milk": ["milk", "lait"],
+        "beurre": ["butter", "beurre"],
+        "butter": ["butter", "beurre"],
+        "boeuf": ["beef", "boeuf"],
+        "beef": ["beef", "boeuf"],
+        "porc": ["pork", "porc"],
+        "pork": ["pork", "porc"],
+        "tomate": ["tomato", "tomate"],
+        "tomato": ["tomato", "tomate"],
+        "pomme": ["apple", "pomme"],
+        "apple": ["apple", "pomme"]
+    }
+
+    # Extract search tokens
+    clean_words = [w for w in re.sub(r'[^a-zA-Z]', ' ', target_name).split() if len(w) >= 3 and w not in ["fresh", "format", "club", "super", "size", "pack", "caisse", "avec", "frais"]]
+    
+    search_keywords = set()
+    for w in clean_words:
+        if w in SYNONYM_MAP:
+            search_keywords.update(SYNONYM_MAP[w])
+        else:
+            search_keywords.add(w)
 
     matching_product_ids = [product.id]
-    if len(primary_kw) >= 3:
-        related_prods = (
-            db.query(Product.id)
-            .filter(
-                (func.lower(Product.normalized_name).contains(primary_kw)) |
-                (func.lower(Product.raw_name).contains(primary_kw))
-            )
-            .all()
-        )
+    if search_keywords:
+        filters = [func.lower(Product.raw_name).contains(kw) for kw in search_keywords] + \
+                  [func.lower(Product.normalized_name).contains(kw) for kw in search_keywords]
+        related_prods = db.query(Product.id).filter(or_(*filters)).all()
         matching_product_ids = list(set([r[0] for r in related_prods] + [product.id]))
 
     # Query chronological price observations across all historical flyers
