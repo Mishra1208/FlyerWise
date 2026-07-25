@@ -43,14 +43,12 @@ export function BasketProvider({ children }) {
   // Sync to PostgreSQL when user logs in
   useEffect(() => {
     if (isSignedIn && userId) {
-      // Send Welcome email once
-      const sentWelcome = localStorage.getItem(`flyerwise_welcome_sent_${userId}`);
-      if (!sentWelcome && user?.primaryEmailAddress?.emailAddress) {
+      // Send Welcome email automatically on sign in
+      if (user?.primaryEmailAddress?.emailAddress) {
         UserService.sendWelcomeEmail(
           user.primaryEmailAddress.emailAddress,
-          user.fullName || user.firstName
+          user.fullName || user.firstName || "Smart Saver"
         );
-        localStorage.setItem(`flyerwise_welcome_sent_${userId}`, "true");
       }
 
       // Sync local basket with database

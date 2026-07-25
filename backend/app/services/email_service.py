@@ -6,17 +6,18 @@ Sends brand-tailored welcome emails and grocery deal alerts using Resend API.
 
 import os
 import resend
+from dotenv import load_dotenv
 
-RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
-if RESEND_API_KEY:
-    resend.api_key = RESEND_API_KEY
-
+load_dotenv()
 
 def send_welcome_email(to_email: str, user_name: str | None = None) -> dict:
     """Send a FlyerWise welcome email to newly registered users."""
-    if not RESEND_API_KEY:
+    api_key = os.getenv("RESEND_API_KEY", "")
+    if not api_key:
         print(f"⚠️ RESEND_API_KEY not set. Simulating welcome email send to {to_email}")
         return {"status": "simulated", "message": f"Welcome email simulated for {to_email}"}
+
+    resend.api_key = api_key
 
     name_display = user_name if user_name else "Smart Saver"
     
