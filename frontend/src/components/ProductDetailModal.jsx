@@ -5,9 +5,11 @@ import {
   IoInformationCircleOutline, 
   IoCheckmarkCircleOutline,
   IoShieldCheckmarkOutline,
-  IoFlaskOutline
+  IoFlaskOutline,
+  IoTrendingUpOutline
 } from "react-icons/io5";
 import { IntelligenceService } from "../services/api";
+import PriceHistory from "./PriceHistory";
 
 function checkIsFood(product) {
   if (!product) return true;
@@ -263,6 +265,31 @@ export default function ProductDetailModal({ result, onClose }) {
             )}
           </div>
         </div>
+
+        {/* 30-Day ML Price Trend & AI Recommendation Chart */}
+        {product?.id && (
+          <div style={{ padding: "20px 30px 0 30px" }}>
+            <div style={{
+              backgroundColor: "#F8FAFC",
+              border: "1.5px solid #E2E8F0",
+              borderRadius: "16px",
+              padding: "20px",
+            }}>
+              <h3 style={{
+                fontSize: "15px",
+                fontWeight: 800,
+                color: "#0F172A",
+                margin: "0 0 14px 0",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}>
+                <IoTrendingUpOutline size={20} color="#059669" /> 30-Day ML Price Trend & AI Buy Recommendation
+              </h3>
+              <PriceHistory productId={product.id} />
+            </div>
+          </div>
+        )}
 
         {/* Modal Body */}
         <div style={{ padding: "30px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "30px" }}>

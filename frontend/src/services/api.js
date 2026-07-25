@@ -35,6 +35,10 @@ export const ProductService = {
     const response = await API.get(`/products/${id}`);
     return response.data;
   },
+  getHistory: async (id) => {
+    const response = await API.get(`/products/${id}/history`);
+    return response.data;
+  },
 };
 
 export const PriceService = {
