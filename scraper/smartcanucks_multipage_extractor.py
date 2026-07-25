@@ -38,16 +38,38 @@ HEADERS = {
 
 from PIL import ImageEnhance
 
+GROCERY_DICTIONARY_WHITELIST = [
+    # English & French Grocery & Personal Care Terms
+    "chicken", "poulet", "beef", "boeuf", "pork", "porc", "turkey", "dindon", "fish", "poisson", "salmon", "saumon", "tuna", "thon", "shrimp", "crevette",
+    "milk", "lait", "butter", "beurre", "margarine", "cheese", "fromage", "yogurt", "yogourt", "yoghurt", "cream", "creme", "egg", "oeuf", "oeufs",
+    "apple", "pomme", "banana", "banane", "orange", "berry", "fraise", "bleuet", "grape", "raisin", "tomato", "tomate", "potato", "patate", "onion", "oignon", "garlic", "ail", "carrot", "carotte",
+    "spinach", "epinard", "lettuce", "laitue", "rice", "riz", "pasta", "pate", "spaghetti", "macaroni", "noodle", "nouille", "sauce", "oil", "huile",
+    "sugar", "sucre", "salt", "sel", "pepper", "poivre", "soup", "soupe", "cereal", "cereale", "oat", "avoine", "juice", "jus", "coffee", "cafe",
+    "tea", "the", "water", "eau", "soda", "cola", "pop", "chip", "snack", "nut", "noix", "almond", "amande", "chocolate", "chocolat", "biscuit", "cookie",
+    "detergent", "lessive", "softener", "assouplissant", "dish", "vaisselle", "finish", "cleaner", "nettoyant", "paper", "papier", "towel", "essuie", "tissue", "mouchoir",
+    "shampoo", "shampooing", "soap", "savon", "lotion", "deodorant", "deodorant", "toothpaste", "dentifrice", "diaper", "couche", "wipes", "lingettes",
+    "coors", "bud", "budweiser", "miller", "beer", "biere", "seltzer", "wine", "vin", "breyers", "st-hubert", "st hubert", "lactantia", "natrel", "quaker", "kraft"
+]
+
+
+from rapidfuzz import process, fuzz
+from scraper.maxi_master_catalog import load_master_catalog, harvest_maxi_catalog
+
+MASTER_CATALOG = load_master_catalog()
+if not MASTER_CATALOG:
+    MASTER_CATALOG = harvest_maxi_catalog()
+
+
 def extract_items_from_text(text: str) -> list[dict]:
     """
     Extract product titles and prices from OCR text output using French & Canadian regex patterns.
-    Filters out flyer boilerplate text (e.g. 'limite', 'apres', 'economisez') to ensure clean products.
+    Fuzzy matches raw titles against the official 556 Maxi product catalog for clean names.
     """
     items = []
     lines = [line.strip() for line in text.split("\n") if len(line.strip()) > 2]
 
     # Stopwords/Boilerplate to ignore
-    ignore_words = ["limite", "apres", "aprè", "jusqu", "economisez", "économisez", "rabais", "page", "valide", "du jeudi", "mercredi"]
+    ignore_words = ["limite", "apres", "aprè", "jusqu", "economisez", "économisez", "rabais", "page", "valide", "du jeudi", "mercredi", "prix reg"]
 
     # Pattern matches 4,17$ or 4.17$ or $4.17 or 4,17
     price_pattern = re.compile(r'\b(\d{1,3})[,\.](\d{2})\s*\$?', re.IGNORECASE)
@@ -76,16 +98,21 @@ def extract_items_from_text(text: str) -> list[dict]:
                     if not any(bad in prev_line.lower() for bad in ignore_words):
                         clean_title = re.sub(r'[^a-zA-ZàâäéèêëîïôöùûüçÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ0-9\s-]', '', prev_line).strip()
 
-                # Validate title length and non-url
-                if len(clean_title) >= 5 and not clean_title.lower().startswith("http"):
-                    # Additional noise filter: check title has valid characters
-                    words = clean_title.split()
-                    valid_words = [w for w in words if len(w) >= 2]
-                    if len(valid_words) >= 1:
-                        items.append({
-                            "raw_name": " ".join(valid_words),
-                            "price": price_val,
-                        })
+                clean_lower = clean_title.lower()
+                if len(clean_title) >= 5 and not clean_lower.startswith("http"):
+                    # Fuzzy match raw OCR against official Maxi catalog
+                    if MASTER_CATALOG:
+                        best_match, score, _ = process.extractOne(clean_title, MASTER_CATALOG, scorer=fuzz.token_set_ratio)
+                        if score >= 55:
+                            items.append({
+                                "raw_name": best_match,
+                                "price": price_val,
+                            })
+                        elif any(kw in clean_lower for kw in GROCERY_DICTIONARY_WHITELIST):
+                            items.append({
+                                "raw_name": clean_title,
+                                "price": price_val,
+                            })
 
     return items
 
@@ -198,4 +225,4 @@ def run_all_multipage_ingestion(max_flyers: int = 10):
 
 
 if __name__ == "__main__":
-    run_all_multipage_ingestion(max_flyers=5)
+    run_all_multipage_ingestion(max_flyers=30)
