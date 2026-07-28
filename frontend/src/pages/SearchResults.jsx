@@ -1,13 +1,35 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { IoArrowBackOutline, IoFunnelOutline } from "react-icons/io5";
+import { IoArrowBackOutline, IoFunnelOutline, IoSearchOutline, IoCheckmarkDoneOutline, IoCloseOutline } from "react-icons/io5";
 import SearchBar from "../components/SearchBar";
 import ProductCard from "../components/ProductCard";
 import PriceComparison from "../components/PriceComparison";
 import ProductDetailModal from "../components/ProductDetailModal";
 import SmartBasketOptimizer from "../components/SmartBasketOptimizer";
-import { ProductService } from "../services/api";
+import { ProductService, StoreService } from "../services/api";
 import { useLocation } from "../contexts/LocationContext";
+
+const DEFAULT_MAJOR_STORES = [
+  { slug: "walmart", name: "Walmart" },
+  { slug: "maxi", name: "Maxi" },
+  { slug: "metro", name: "Metro" },
+  { slug: "iga", name: "IGA" },
+  { slug: "superc", name: "Super C" },
+  { slug: "provigo", name: "Provigo" },
+  { slug: "costco", name: "Costco Canada" },
+  { slug: "pharmaprix", name: "Pharmaprix" },
+  { slug: "shoppers-drug-mart", name: "Shoppers Drug Mart" },
+  { slug: "jean-coutu", name: "Jean Coutu" },
+  { slug: "adonis", name: "Adonis" },
+  { slug: "pasquier", name: "Pasquier" },
+  { slug: "les-marches-tradition", name: "Les Marchés Tradition" },
+  { slug: "supermarche-pa", name: "Supermarché PA" },
+  { slug: "tt-supermarket", name: "T&T Supermarket" },
+  { slug: "food-basics", name: "Food Basics" },
+  { slug: "sobeys", name: "Sobeys" },
+  { slug: "loblaws", name: "Loblaws" },
+  { slug: "kim-phat", name: "Kim Phat" },
+];
 
 export default function SearchResults() {
   const navigate = useNavigate();
@@ -21,17 +43,9 @@ export default function SearchResults() {
   const [selectedDetailResult, setSelectedDetailResult] = useState(null);
 
   const [flyerFilter, setFlyerFilter] = useState("all");
-
-  // Store filters state for 6 major Quebec retailers
-  const [activeStores, setActiveStores] = useState({
-    walmart: true,
-    maxi: true,
-    metro: true,
-    iga: true,
-    superc: true,
-    provigo: true,
-    costco: true,
-  });
+  const [allStores, setAllStores] = useState(DEFAULT_MAJOR_STORES);
+  const [storeSearchTerm, setStoreSearchTerm] = useState("");
+  const [activeStores, setActiveStores] = useState({});
 
   const handleSearch = (newQuery) => {
     if (!newQuery || !newQuery.trim()) {
@@ -40,6 +54,21 @@ export default function SearchResults() {
       navigate(`/search?q=${encodeURIComponent(newQuery.trim())}`);
     }
   };
+
+  // Fetch all tracked stores from backend API on mount
+  useEffect(() => {
+    async function fetchStores() {
+      try {
+        const data = await StoreService.list();
+        if (Array.isArray(data) && data.length > 0) {
+          setAllStores(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch stores list:", err);
+      }
+    }
+    fetchStores();
+  }, []);
 
   useEffect(() => {
     async function performSearch() {
@@ -61,39 +90,84 @@ export default function SearchResults() {
     performSearch();
   }, [query, flyerFilter, postalCode]);
 
-  // Filter results based on selected stores checkbox status
+  // Extract all unique stores present in current search results to merge into allStores
+  const displayStores = useMemo(() => {
+    const storeMap = new Map();
+    // Add default / API stores
+    allStores.forEach((st) => {
+      if (st.slug && st.name) storeMap.set(st.slug, st.name);
+    });
+    // Add any stores present in search results
+    results.forEach((r) => {
+      (r.prices || []).forEach((p) => {
+        if (p.store && p.store.slug && p.store.name) {
+          storeMap.set(p.store.slug, p.store.name);
+        }
+      });
+    });
+
+    const storeArray = Array.from(storeMap.entries()).map(([slug, name]) => ({ slug, name }));
+
+    // Priority sorting: Put top Quebec retailers at the top
+    const priority = ["superc", "maxi", "metro", "iga", "provigo", "walmart", "costco", "pharmaprix", "shoppers-drug-mart", "jean-coutu", "adonis", "pasquier"];
+    storeArray.sort((a, b) => {
+      const idxA = priority.indexOf(a.slug);
+      const idxB = priority.indexOf(b.slug);
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+      if (idxA !== -1) return -1;
+      if (idxB !== -1) return 1;
+      return a.name.localeCompare(b.name);
+    });
+
+    return storeArray;
+  }, [allStores, results]);
+
+  // Filter stores list based on storeSearchTerm input
+  const filteredStoresList = useMemo(() => {
+    if (!storeSearchTerm.trim()) return displayStores;
+    const term = storeSearchTerm.toLowerCase().trim();
+    return displayStores.filter((st) =>
+      st.name.toLowerCase().includes(term) || st.slug.toLowerCase().includes(term)
+    );
+  }, [displayStores, storeSearchTerm]);
+
+  // Store checkbox toggle helper
+  const toggleStore = (slug) => {
+    setActiveStores((prev) => {
+      const isCurrentlyActive = prev[slug] !== false; // Default is active/true
+      return { ...prev, [slug]: !isCurrentlyActive };
+    });
+  };
+
+  const handleSelectAllStores = () => {
+    const updated = {};
+    displayStores.forEach((st) => { updated[st.slug] = true; });
+    setActiveStores(updated);
+  };
+
+  const handleClearAllStores = () => {
+    const updated = {};
+    displayStores.forEach((st) => { updated[st.slug] = false; });
+    setActiveStores(updated);
+  };
+
+  // Check if any checkbox is turned off
   const isAnyStoreUnchecked = Object.values(activeStores).some((v) => v === false);
 
   const filteredResults = results.map((result) => {
     const filteredPrices = result.prices.filter((p) => {
-      if (!isAnyStoreUnchecked) return true; // Show all stores if no filter checkboxes are unchecked
-
+      if (!isAnyStoreUnchecked) return true;
       const storeSlug = (p.store.slug || "").toLowerCase();
-      const storeName = (p.store.name || "").toLowerCase();
-
-      const isRetailerMatch = (key, keywords) => {
-        if (!activeStores[key]) return false;
-        return keywords.some((kw) => storeSlug.includes(kw) || storeName.includes(kw));
-      };
-
-      return (
-        isRetailerMatch("walmart", ["walmart"]) ||
-        isRetailerMatch("maxi", ["maxi"]) ||
-        isRetailerMatch("metro", ["metro"]) ||
-        isRetailerMatch("iga", ["iga"]) ||
-        isRetailerMatch("superc", ["super-c", "super c", "superc"]) ||
-        isRetailerMatch("provigo", ["provigo"]) ||
-        isRetailerMatch("costco", ["costco"])
-      );
+      // If store is explicitly set to false, filter it out
+      if (activeStores[storeSlug] === false) return false;
+      return true;
     });
-    
+
     if (filteredPrices.length === 0) return null;
 
-    // Recalculate lowest price and savings potential
     const lowest = Math.min(...filteredPrices.map((p) => parseFloat(p.current_price)));
     const highest = Math.max(...filteredPrices.map((p) => parseFloat(p.current_price)));
-    
-    // Mark the lowest price item
+
     const updatedPrices = filteredPrices.map((p) => ({
       ...p,
       is_lowest: parseFloat(p.current_price) === lowest,
@@ -107,13 +181,6 @@ export default function SearchResults() {
       savings_potential: highest - lowest,
     };
   }).filter(Boolean);
-
-  const toggleStore = (storeSlug) => {
-    setActiveStores((prev) => ({
-      ...prev,
-      [storeSlug]: !prev[storeSlug],
-    }));
-  };
 
   return (
     <div style={{ padding: "50px 0", backgroundColor: "var(--bg-body)", minHeight: "80vh" }}>
@@ -226,50 +293,140 @@ export default function SearchResults() {
             </h3>
 
             <div>
-              <span style={{
-                fontSize: "11px",
-                fontWeight: 700,
-                textTransform: "uppercase",
-                color: "var(--text-muted)",
-                letterSpacing: "0.8px",
-                display: "block",
-                marginBottom: "14px",
-              }}>Stores (Major Retailers)</span>
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "10px",
+              }}>
+                <span style={{
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  color: "var(--text-muted)",
+                  letterSpacing: "0.8px",
+                }}>Stores ({displayStores.length})</span>
+                
+                <div style={{ display: "flex", gap: "6px" }}>
+                  <button
+                    onClick={handleSelectAllStores}
+                    title="Select all stores"
+                    style={{
+                      border: "none",
+                      background: "none",
+                      color: "var(--accent-hover)",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      padding: "2px 4px",
+                    }}
+                  >
+                    Select All
+                  </button>
+                  <span style={{ color: "#ccc", fontSize: "11px" }}>|</span>
+                  <button
+                    onClick={handleClearAllStores}
+                    title="Clear all store selections"
+                    style={{
+                      border: "none",
+                      background: "none",
+                      color: "#ef4444",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      padding: "2px 4px",
+                    }}
+                  >
+                    Clear All
+                  </button>
+                </div>
+              </div>
 
-              {/* Stores toggles */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                {[
-                  { slug: "walmart", name: "Walmart" },
-                  { slug: "maxi", name: "Maxi" },
-                  { slug: "metro", name: "Metro" },
-                  { slug: "iga", name: "IGA" },
-                  { slug: "superc", name: "Super C" },
-                  { slug: "provigo", name: "Provigo" },
-                  { slug: "costco", name: "Costco Canada" },
-                ].map((st) => (
-                  <label key={st.slug} style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    cursor: "pointer",
-                    fontSize: "14px",
-                    fontWeight: 500,
-                    color: activeStores[st.slug] ? "var(--text-primary)" : "var(--text-muted)",
-                  }}>
-                    <input
-                      type="checkbox"
-                      checked={!!activeStores[st.slug]}
-                      onChange={() => toggleStore(st.slug)}
-                      style={{
-                        accentColor: "var(--accent)",
-                        width: "16px",
-                        height: "16px",
+              {/* Store Filter Input with Live Matching Suggestions */}
+              <div style={{
+                position: "relative",
+                marginBottom: "14px",
+                display: "flex",
+                alignItems: "center",
+              }}>
+                <IoSearchOutline size={14} style={{ position: "absolute", left: "10px", color: "var(--text-muted)" }} />
+                <input
+                  type="text"
+                  value={storeSearchTerm}
+                  onChange={(e) => setStoreSearchTerm(e.target.value)}
+                  placeholder="Filter store name..."
+                  style={{
+                    width: "100%",
+                    padding: "7px 26px 7px 30px",
+                    fontSize: "12px",
+                    borderRadius: "6px",
+                    border: "1px solid var(--border-color)",
+                    backgroundColor: "#F9FAFB",
+                    color: "var(--text-primary)",
+                    outline: "none",
+                  }}
+                />
+                {storeSearchTerm && (
+                  <button
+                    onClick={() => setStoreSearchTerm("")}
+                    style={{
+                      position: "absolute",
+                      right: "8px",
+                      border: "none",
+                      background: "none",
+                      color: "var(--text-muted)",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    <IoCloseOutline size={14} />
+                  </button>
+                )}
+              </div>
+
+              {/* Stores toggles scrollable list */}
+              <div style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "10px",
+                maxHeight: "360px",
+                overflowY: "auto",
+                paddingRight: "4px",
+              }}>
+                {filteredStoresList.length === 0 ? (
+                  <span style={{ fontSize: "12px", color: "var(--text-muted)", fontStyle: "italic", padding: "8px 0" }}>
+                    No store matches "{storeSearchTerm}"
+                  </span>
+                ) : (
+                  filteredStoresList.map((st) => {
+                    const isChecked = activeStores[st.slug] !== false;
+                    return (
+                      <label key={st.slug} style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
                         cursor: "pointer",
-                      }}
-                    />
-                    <span>{st.name}</span>
-                  </label>
-                ))}
+                        fontSize: "13px",
+                        fontWeight: 500,
+                        color: isChecked ? "var(--text-primary)" : "var(--text-muted)",
+                      }}>
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleStore(st.slug)}
+                          style={{
+                            accentColor: "var(--accent)",
+                            width: "15px",
+                            height: "15px",
+                            cursor: "pointer",
+                          }}
+                        />
+                        <span>{st.name}</span>
+                      </label>
+                    );
+                  })
+                )}
               </div>
             </div>
           </aside>
