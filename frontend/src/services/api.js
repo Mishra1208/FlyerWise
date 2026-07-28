@@ -21,7 +21,7 @@ const API = axios.create({
 
 export const StoreService = {
   list: async () => {
-    const response = await API.get("/stores/");
+    const response = await API.get("/stores");
     return response.data;
   },
 };

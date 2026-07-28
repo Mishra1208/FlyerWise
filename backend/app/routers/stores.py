@@ -14,6 +14,7 @@ from app.schemas import StoreResponse
 router = APIRouter(prefix="/stores", tags=["stores"])
 
 
+@router.get("", response_model=list[StoreResponse])
 @router.get("/", response_model=list[StoreResponse])
 def list_stores(db: Session = Depends(get_db)):
     """Get all tracked grocery stores."""
