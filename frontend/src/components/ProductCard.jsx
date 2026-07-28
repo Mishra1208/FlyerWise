@@ -15,7 +15,7 @@ function getCleanItemName(rawName, brand) {
   return name.replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.substring(1).toLowerCase()).trim();
 }
 
-export default function ProductCard({ result, onClick, onCompare }) {
+export default function ProductCard({ result, onClick, onCompare, onDetail }) {
   const { product, prices, lowest_price, savings_potential, intelligence } = result;
   const { basketItems, addItem, removeItem } = useBasket();
 
@@ -47,10 +47,18 @@ export default function ProductCard({ result, onClick, onCompare }) {
     }
   };
 
+  const handleCardClick = () => {
+    if (onCompare) {
+      onCompare(result);
+    } else if (onClick) {
+      onClick(result);
+    }
+  };
+
   return (
     <div 
       className="card animate-fade" 
-      onClick={() => onClick(result)}
+      onClick={handleCardClick}
       style={{
         padding: "22px",
         cursor: "pointer",
@@ -244,7 +252,7 @@ export default function ProductCard({ result, onClick, onCompare }) {
         })}
       </div>
 
-      {/* Card Footer Actions (Details, Basket, Compare) */}
+      {/* Card Footer Actions (Price Trend & Facts, Basket, Compare Prices) */}
       <div style={{
         display: "flex",
         justifyContent: "space-between",
@@ -254,12 +262,15 @@ export default function ProductCard({ result, onClick, onCompare }) {
         fontSize: "13px",
       }}>
         <div style={{ display: "flex", gap: "8px" }}>
+          {/* Price Trend & Facts Modal Trigger */}
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              onClick(result);
+              if (onDetail) onDetail(result);
+              else if (onClick) onClick(result);
             }}
+            title="View Price Trend Graph, AI Recommendation & Nutrition Facts"
             style={{
               backgroundColor: "rgba(91, 140, 81, 0.08)",
               border: "1px solid rgba(91, 140, 81, 0.2)",
@@ -272,7 +283,7 @@ export default function ProductCard({ result, onClick, onCompare }) {
               transition: "all 0.2s",
             }}
           >
-            📖 Details
+            📈 Price Trend & Facts
           </button>
 
           {/* + Add to Basket Button */}

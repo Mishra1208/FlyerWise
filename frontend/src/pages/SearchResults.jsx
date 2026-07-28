@@ -468,8 +468,9 @@ export default function SearchResults() {
                   <ProductCard
                     key={result.product.id}
                     result={result}
-                    onClick={(res) => setSelectedDetailResult(res)}
+                    onClick={(res) => setSelectedCompareResult(res)}
                     onCompare={(res) => setSelectedCompareResult(res)}
+                    onDetail={(res) => setSelectedDetailResult(res)}
                   />
                 ))}
               </div>
