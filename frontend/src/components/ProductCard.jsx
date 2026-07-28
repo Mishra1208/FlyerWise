@@ -257,11 +257,13 @@ export default function ProductCard({ result, onClick, onCompare, onDetail }) {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
+        flexWrap: "wrap",
+        gap: "8px",
         borderTop: "1px solid var(--border-color)",
         paddingTop: "12px",
         fontSize: "13px",
       }}>
-        <div style={{ display: "flex", gap: "8px" }}>
+        <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
           {/* Price Trend & Facts Modal Trigger */}
           <button
             type="button"

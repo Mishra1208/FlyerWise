@@ -308,3 +308,116 @@ button, input, select {
   transition: width 0.8s var(--ease-elastic);
 }
 
+/* ==========================================================================
+   Comprehensive Mobile & Tablet Responsive Media Queries
+   ========================================================================== */
+
+/* Hide scrollbars for clean horizontal tab sliders */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Tablets (1024px and below) */
+@media (max-width: 1024px) {
+  .container {
+    padding: 0 16px;
+  }
+  .desktop-nav {
+    gap: 16px !important;
+  }
+  .search-layout {
+    grid-template-columns: 240px 1fr !important;
+    gap: 24px !important;
+  }
+}
+
+/* Mobile & Small Tablets (768px and below) */
+@media (max-width: 768px) {
+  .desktop-nav {
+    display: none !important;
+  }
+  
+  /* Container & Grid layout stacking */
+  .container {
+    padding: 0 14px;
+  }
+  
+  .search-layout {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+
+  .search-layout aside {
+    position: static !important;
+    width: 100% !important;
+    margin-bottom: 10px !important;
+  }
+
+  /* Hero Section Responsiveness */
+  .hero-title {
+    font-size: 32px !important;
+    line-height: 1.2 !important;
+  }
+  .hero-subtitle {
+    font-size: 15px !important;
+  }
+  .hero-search-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Product Card Grid */
+  .results-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+    gap: 16px !important;
+  }
+
+  /* Modals on Mobile */
+  .modal-container {
+    width: 95% !important;
+    max-width: 95% !important;
+    padding: 16px !important;
+    margin: 10px auto !important;
+    border-radius: 14px !important;
+    max-height: 92vh !important;
+  }
+
+  .modal-header {
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+
+  /* Responsive comparison table */
+  .table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Small Mobile Phones (480px and below) */
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 26px !important;
+  }
+  .hero-badge {
+    font-size: 11px !important;
+    padding: 4px 10px !important;
+  }
+  .results-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .card-action-btn {
+    font-size: 11px !important;
+    padding: 4px 8px !important;
+  }
+  .location-pill-text {
+    display: none !important;
+  }
+}
+

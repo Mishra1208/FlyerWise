@@ -162,7 +162,7 @@ export default function Navbar() {
             }}
           >
             <IoLocationOutline size={16} />
-            <span>{cityName}, <strong>{postalCode}</strong></span>
+            <span className="location-pill-text">{cityName}, <strong>{postalCode}</strong></span>
           </button>
 
           {/* Always Visible Sign In / Account / Log Out Button */}

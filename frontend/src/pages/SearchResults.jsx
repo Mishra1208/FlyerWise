@@ -219,24 +219,21 @@ export default function SearchResults() {
           <div style={{ flex: 1, maxWidth: "600px" }}>
             <SearchBar initialValue={query} onSearch={handleSearch} />
           </div>
-        </div>
-
-        {/* Flyer Status Filter Tabs */}
+        </div>        {/* Flyer period filter tabs */}
         <div style={{
           display: "flex",
           alignItems: "center",
-          gap: "10px",
-          marginBottom: "30px",
-          flexWrap: "wrap",
+          gap: "12px",
           backgroundColor: "#FFFFFF",
-          padding: "8px 14px",
+          padding: "8px 16px",
           borderRadius: "var(--radius-md)",
           border: "1px solid var(--border-color)",
+          marginBottom: "30px",
           boxShadow: "var(--shadow-sm)",
-        }}>
-          <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-secondary)", marginRight: "6px" }}>
-            Flyer Period:
-          </span>
+          overflowX: "auto",
+          whiteSpace: "nowrap",
+        }} className="no-scrollbar">
+          <span style={{ fontSize: "13px", color: "var(--text-muted)", fontWeight: 600, flexShrink: 0 }}>Flyer Period:</span>
           {[
             { id: "all", label: "🌟 All Deals (Current + Preview + Recent)" },
             { id: "active", label: "🟢 Active Flyers Only" },
@@ -256,6 +253,7 @@ export default function SearchResults() {
                 backgroundColor: flyerFilter === tab.id ? "rgba(91, 140, 81, 0.12)" : "transparent",
                 color: flyerFilter === tab.id ? "var(--accent-hover)" : "var(--text-secondary)",
                 transition: "var(--transition)",
+                flexShrink: 0,
               }}
             >
               {tab.label}

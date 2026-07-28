@@ -92,6 +92,7 @@ export default function PriceComparison({ product: rawProduct, prices: rawPrices
       onClick={onClose}
     >
       <div 
+        className="modal-container"
         style={{
           width: "100%",
           maxWidth: "820px",

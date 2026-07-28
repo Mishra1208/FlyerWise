@@ -109,6 +109,7 @@ export default function ProductDetailModal({ result, onClose }) {
       onClick={onClose}
     >
       <div 
+        className="modal-container"
         style={{
           backgroundColor: "#FFFFFF",
           borderRadius: "20px",
