@@ -34,12 +34,20 @@ export default function SearchResults() {
   });
 
   const handleSearch = (newQuery) => {
-    navigate(`/search?q=${encodeURIComponent(newQuery)}`);
+    if (!newQuery || !newQuery.trim()) {
+      navigate("/");
+    } else {
+      navigate(`/search?q=${encodeURIComponent(newQuery.trim())}`);
+    }
   };
 
   useEffect(() => {
     async function performSearch() {
-      if (!query) return;
+      if (!query || !query.trim()) {
+        setResults([]);
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       try {
         const data = await ProductService.search(query, flyerFilter, postalCode);

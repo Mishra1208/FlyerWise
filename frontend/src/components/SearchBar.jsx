@@ -1,15 +1,26 @@
-import React, { useState } from "react";
-import { IoSearchOutline, IoCameraOutline } from "react-icons/io5";
+import React, { useState, useEffect } from "react";
+import { IoSearchOutline, IoCameraOutline, IoCloseCircleOutline } from "react-icons/io5";
 import ScannerModal from "./ScannerModal";
 
 export default function SearchBar({ initialValue = "", onSearch, placeholder = "Search tomatoes, milk, chicken..." }) {
   const [query, setQuery] = useState(initialValue);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
+  useEffect(() => {
+    setQuery(initialValue || "");
+  }, [initialValue]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (query.trim()) {
+    if (onSearch) {
       onSearch(query.trim());
+    }
+  };
+
+  const handleClear = () => {
+    setQuery("");
+    if (onSearch) {
+      onSearch("");
     }
   };
 
@@ -64,6 +75,25 @@ export default function SearchBar({ initialValue = "", onSearch, placeholder = "
               fontWeight: 500,
             }}
           />
+          {query && (
+            <button
+              type="button"
+              onClick={handleClear}
+              title="Clear search"
+              style={{
+                border: "none",
+                background: "transparent",
+                color: "var(--text-muted)",
+                cursor: "pointer",
+                padding: "4px",
+                display: "flex",
+                alignItems: "center",
+                marginRight: "6px",
+              }}
+            >
+              <IoCloseCircleOutline size={18} />
+            </button>
+          )}
         </div>
         
         {/* Camera / Barcode Scanner Button */}
