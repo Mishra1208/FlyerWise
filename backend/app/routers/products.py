@@ -103,33 +103,83 @@ def search_products(
     # Translate bilingual query tokens
     q_translated = translate_query_to_english(q)
 
-    # Build bilingual query patterns
+    # Build bilingual query patterns & grocery concept expansions
     q_raw = q.lower().strip()
     q_trans = q_translated.lower().strip()
     equiv_terms = [q_raw, q_trans]
 
-    if q_raw in ("butter", "beurre") or q_trans in ("butter", "beurre"):
-        equiv_terms.extend(["butter", "beurre", "margarine", "ghee"])
+    CONCEPT_EQUIVALENTS = {
+        "spaghetti": ["spaghetti", "spaghettini", "pâtes", "pates", "pasta", "macaroni", "penne"],
+        "spaghettini": ["spaghetti", "spaghettini", "pâtes", "pates", "pasta"],
+        "pasta": ["pasta", "pâtes", "pates", "spaghetti", "spaghettini", "macaroni", "penne"],
+        "pâtes": ["pâtes", "pates", "pasta", "spaghetti", "spaghettini", "macaroni"],
+        "pates": ["pâtes", "pates", "pasta", "spaghetti", "spaghettini", "macaroni"],
+        "butter": ["butter", "beurre", "margarine", "ghee", "lactantia"],
+        "beurre": ["beurre", "butter", "margarine", "ghee", "lactantia"],
+        "chicken": ["chicken", "poulet", "cuisses", "volaille", "ailes", "hauts"],
+        "poulet": ["poulet", "chicken", "cuisses", "volaille", "ailes", "hauts"],
+        "milk": ["milk", "lait", "natrel", "lactantia"],
+        "lait": ["lait", "milk", "natrel", "lactantia"],
+        "beef": ["beef", "boeuf", "haché", "hache", "steak"],
+        "boeuf": ["boeuf", "beef", "haché", "hache", "steak"],
+        "cheese": ["cheese", "fromage", "cheddar", "mozzarella"],
+        "fromage": ["fromage", "cheese", "cheddar", "mozzarella"],
+    }
 
-    # Step 1: Search on raw_name, normalized_name, and search_tags
+    for term in [q_raw, q_trans]:
+        if term in CONCEPT_EQUIVALENTS:
+            equiv_terms.extend(CONCEPT_EQUIVALENTS[term])
+
+    # Step 1: Query products JOINED with prices valid in current/upcoming flyer period
+    today = date.today()
+    cutoff_past = today - timedelta(days=14)
+
+    title_conditions = [
+        Product.raw_name.ilike(f"%{term}%") | Product.normalized_name.ilike(f"%{term}%")
+        for term in set(equiv_terms)
+    ]
+
     fts_query = func.plainto_tsquery("english", q_translated)
     name_match = func.to_tsvector("english", Product.normalized_name).op("@@")(fts_query)
     tags_match = func.to_tsvector(
         "english", func.coalesce(Product.search_tags, "")
     ).op("@@")(fts_query)
 
-    from sqlalchemy import or_
-    title_conditions = [
-        Product.raw_name.ilike(f"%{term}%") | Product.normalized_name.ilike(f"%{term}%")
-        for term in set(equiv_terms)
-    ]
+    active_title_filter = or_(*title_conditions) | name_match | tags_match
 
-    fts_results = (
+    # Priority query: Products with active or upcoming flyer prices
+    active_fts_results = (
         db.query(Product)
-        .filter(or_(*title_conditions) | name_match | tags_match)
+        .join(Price, Price.product_id == Product.id)
+        .filter(
+            active_title_filter,
+            (Price.valid_until >= cutoff_past) | (Price.valid_until.is_(None))
+        )
+        .order_by(Price.valid_from.desc().nulls_last(), Price.current_price.asc())
         .limit(100)
         .all()
     )
+
+    # Deduplicate while preserving order
+    seen_ids = set()
+    fts_results = []
+    for p in active_fts_results:
+        if p.id not in seen_ids:
+            seen_ids.add(p.id)
+            fts_results.append(p)
+
+    # Fallback query if active items < 20
+    if len(fts_results) < 20:
+        fallback_results = (
+            db.query(Product)
+            .filter(active_title_filter)
+            .limit(100)
+            .all()
+        )
+        for p in fallback_results:
+            if p.id not in seen_ids:
+                seen_ids.add(p.id)
+                fts_results.append(p)
 
     # Step 2: If no FTS results, fall back to trigram similarity on name
     if not fts_results:
