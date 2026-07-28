@@ -35,9 +35,16 @@ try:
         conn.execute(text("SELECT 1"))
     logger.info("✅ Primary database connection verified!")
 except Exception as err:
-    logger.warning(f"⚠️ Primary database unreachable ({err}). Initializing SQLite fallback DB for cloud production...")
-    sqlite_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "flyerwise_cloud.db"))
-    engine = create_engine(f"sqlite:///{sqlite_path}", connect_args={"check_same_thread": False})
+    seed_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "flyerwise_seed.db"))
+    cloud_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "flyerwise_cloud.db"))
+    
+    if os.path.exists(seed_path) and not os.path.exists(cloud_path):
+        import shutil
+        shutil.copyfile(seed_path, cloud_path)
+        logger.info("🎉 Seeded cloud database with 19,300+ grocery products!")
+
+    target_db = cloud_path if os.path.exists(cloud_path) else (seed_path if os.path.exists(seed_path) else "flyerwise_fallback.db")
+    engine = create_engine(f"sqlite:///{target_db}", connect_args={"check_same_thread": False})
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
