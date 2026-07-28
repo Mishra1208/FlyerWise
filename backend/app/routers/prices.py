@@ -205,18 +205,16 @@ def get_price_history(
     db: Session = Depends(get_db),
 ):
     """
-    Get price history for a product across all stores and matching items.
-    Useful for rendering continuous stock-style price trend graphs.
+    Get exact price history for a product across tracked flyer dates and stores.
     """
     target = db.query(Product).filter(Product.id == product_id).first()
     if not target:
         return []
 
-    # Find matching products with same normalized name or category to build full multi-store timeline
+    # Match exact normalized name or identical raw name across stores
     matching_prods = db.query(Product).filter(
-        (Product.normalized_name == target.normalized_name) |
-        (Product.category == target.category)
-    ).limit(10).all()
+        Product.normalized_name == target.normalized_name
+    ).all()
 
     product_ids = list(set([p.id for p in matching_prods] + [product_id]))
 

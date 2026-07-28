@@ -59,13 +59,23 @@ export default function PriceHistory({ productId }) {
   useEffect(() => {
     if (!rawHistory.length) return;
 
-    // Build 5-point weekly timeline: Jul 7, Jul 14, Jul 21, Jul 28, Current Flyer
-    const timelineLabels = ["4 Wks Ago", "3 Wks Ago", "2 Wks Ago", "Last Wk", "Current Flyer"];
-
-    // Identify all unique stores in history
+    // Group actual price history entries by store
     const storeMap = {};
-    rawHistory.forEach((p) => {
-      const sName = p.store_name || "Super C";
+    const datesSet = new Set();
+
+    // Sort entries chronologically by valid_from / scraped_at
+    const sortedHistory = [...rawHistory].sort((a, b) => {
+      const dA = new Date(a.valid_from || a.scraped_at || Date.now());
+      const dB = new Date(b.valid_from || b.scraped_at || Date.now());
+      return dA - dB;
+    });
+
+    sortedHistory.forEach((p) => {
+      const sName = p.store_name || "Store";
+      const pVal = parseFloat(p.current_price || p.price || 0);
+      const dateLabel = p.valid_from ? new Date(p.valid_from).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Current";
+      datesSet.add(dateLabel);
+
       if (!storeMap[sName]) {
         storeMap[sName] = {
           name: sName,
@@ -78,23 +88,18 @@ export default function PriceHistory({ productId }) {
             sName.includes("Adonis") ? "#D97706" :
             sName.includes("Provigo") ? "#E11D48" : "#10B981"
           ),
-          prices: [],
+          priceMap: {},
         };
       }
-      storeMap[sName].prices.push(parseFloat(p.current_price || p.price || 0));
+      storeMap[sName].priceMap[dateLabel] = pVal;
     });
 
-    // Ensure at least 3 major stores exist for comparison view if rawHistory is sparse
-    const storeKeys = Object.keys(storeMap);
-    if (storeKeys.length === 1 && storeKeys[0] !== "Super C") {
-      storeMap["Super C"] = { name: "Super C", color: "#E31837", prices: [storeMap[storeKeys[0]].prices[0] * 1.05] };
-    }
-    if (!storeMap["Maxi"]) {
-      const baseP = storeMap[storeKeys[0]]?.prices[0] || 4.99;
-      storeMap["Maxi"] = { name: "Maxi", color: "#ED1C24", prices: [baseP * 0.95] };
+    let timelineLabels = Array.from(datesSet);
+    if (timelineLabels.length === 1) {
+      // Add 'Previous Flyer' and 'Current Flyer' for clean line rendering
+      timelineLabels = ["Previous Flyer", timelineLabels[0]];
     }
 
-    // Generate 5-point weekly curve for each store
     const storeDatasets = [];
 
     Object.values(storeMap).forEach((stGroup) => {
@@ -102,28 +107,14 @@ export default function PriceHistory({ productId }) {
         return;
       }
 
-      const latestPrice = stGroup.prices[0] || 4.99;
-      // Derive baseline historical prices if sparse
-      let points = [];
-      if (stGroup.prices.length >= 5) {
-        points = stGroup.prices.slice(-5);
-      } else if (stGroup.prices.length > 1) {
-        const p1 = stGroup.prices[0];
-        const p2 = stGroup.prices[stGroup.prices.length - 1];
-        points = [
-          Number((p1 * 1.15).toFixed(2)),
-          Number((p1 * 1.08).toFixed(2)),
-          Number((p2 * 1.12).toFixed(2)),
-          Number((p2 * 1.05).toFixed(2)),
-          p2
-        ];
-      } else {
-        // Standard flyer sale fluctuation model: Regular price -> Promo deal -> Regular -> Super Deal -> Current
-        const reg = Number((latestPrice * 1.25).toFixed(2));
-        const promo1 = Number((latestPrice * 1.10).toFixed(2));
-        const deal = Number((latestPrice * 0.92).toFixed(2));
-        points = [reg, promo1, reg, deal, latestPrice];
-      }
+      const points = timelineLabels.map((lbl) => {
+        if (stGroup.priceMap[lbl] !== undefined) {
+          return stGroup.priceMap[lbl];
+        }
+        // If single label fallback, extend existing price across the period
+        const firstVal = Object.values(stGroup.priceMap)[0];
+        return firstVal;
+      });
 
       storeDatasets.push({
         label: stGroup.name,
@@ -137,7 +128,7 @@ export default function PriceHistory({ productId }) {
           return gradient;
         },
         fill: true,
-        tension: 0.35,
+        tension: 0.3,
         spanGaps: true,
         pointRadius: 6,
         pointHoverRadius: 9,
