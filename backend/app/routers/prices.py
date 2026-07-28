@@ -198,20 +198,52 @@ def get_top_deals(
     return deals
 
 
-@router.get("/history/{product_id}", response_model=list[PriceResponse])
+@router.get("/history/{product_id}")
 def get_price_history(
     product_id: int,
     store_id: int | None = None,
     db: Session = Depends(get_db),
 ):
     """
-    Get price history for a product (optionally filtered by store).
-    Useful for showing price trends over time.
+    Get price history for a product across all stores and matching items.
+    Useful for rendering continuous stock-style price trend graphs.
     """
-    query = db.query(Price).filter(Price.product_id == product_id)
+    target = db.query(Product).filter(Product.id == product_id).first()
+    if not target:
+        return []
+
+    # Find matching products with same normalized name or category to build full multi-store timeline
+    matching_prods = db.query(Product).filter(
+        (Product.normalized_name == target.normalized_name) |
+        (Product.category == target.category)
+    ).limit(10).all()
+
+    product_ids = list(set([p.id for p in matching_prods] + [product_id]))
+
+    query = db.query(Price, Store).join(Store, Price.store_id == Store.id).filter(Price.product_id.in_(product_ids))
 
     if store_id:
         query = query.filter(Price.store_id == store_id)
 
-    prices = query.order_by(Price.valid_from.asc()).all()
-    return prices
+    prices_with_stores = query.order_by(Price.valid_from.asc(), Price.scraped_at.asc()).all()
+
+    result = []
+    for price, store in prices_with_stores:
+        result.append({
+            "id": price.id,
+            "product_id": price.product_id,
+            "current_price": float(price.current_price),
+            "original_price": float(price.original_price) if price.original_price else None,
+            "savings": price.savings,
+            "unit": price.unit,
+            "quantity": price.quantity,
+            "valid_from": str(price.valid_from) if price.valid_from else None,
+            "valid_until": str(price.valid_until) if price.valid_until else None,
+            "scraped_at": str(price.scraped_at) if price.scraped_at else None,
+            "store_id": store.id,
+            "store_name": store.name,
+            "store_slug": store.slug,
+            "store_color": store.color or "#10B981",
+        })
+
+    return result
