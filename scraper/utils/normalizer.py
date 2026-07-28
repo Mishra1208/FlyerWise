@@ -229,13 +229,15 @@ def normalize_product_name(raw_name: str) -> str:
             name = "salted butter"
         else:
             name = "butter"
-    elif "egg" in name or "eggs" in name or "oeuf" in name or "oeufs" in name:
-        if "large" in name or "gros" in name:
+    elif re.search(r"\b(egg|eggs|oeuf|oeufs)\b", name):
+        if any(w in name for w in ["large", "gros", "grosses"]):
             name = "large eggs"
-        elif "medium" in name or "moyen" in name:
+        elif any(w in name for w in ["medium", "moyen", "moyens"]):
             name = "medium eggs"
+        elif any(w in name for w in ["extra large", "extra gros", "tb"]):
+            name = "extra large eggs"
         else:
-            name = "eggs"
+            name = "white eggs"
     elif "banana" in name or "bananas" in name or "banane" in name or "bananes" in name:
         name = "bananas"
 
