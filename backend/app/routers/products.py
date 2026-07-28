@@ -201,13 +201,16 @@ def search_products(
         for term in set(equiv_terms)
     ]
 
-    fts_query = func.plainto_tsquery("english", q_translated)
-    name_match = func.to_tsvector("english", Product.normalized_name).op("@@")(fts_query)
-    tags_match = func.to_tsvector(
-        "english", func.coalesce(Product.search_tags, "")
-    ).op("@@")(fts_query)
-
-    active_title_filter = or_(*title_conditions) | name_match | tags_match
+    dialect_name = db.bind.dialect.name if (db.bind and hasattr(db.bind, "dialect")) else "postgresql"
+    if "postgres" in dialect_name:
+        fts_query = func.plainto_tsquery("english", q_translated)
+        name_match = func.to_tsvector("english", Product.normalized_name).op("@@")(fts_query)
+        tags_match = func.to_tsvector(
+            "english", func.coalesce(Product.search_tags, "")
+        ).op("@@")(fts_query)
+        active_title_filter = or_(*title_conditions) | name_match | tags_match
+    else:
+        active_title_filter = or_(*title_conditions)
 
     # Priority query: Products with active or upcoming flyer prices
     active_fts_results = (
@@ -257,15 +260,18 @@ def search_products(
                 seen_ids.add(p.id)
                 fts_results.append(p)
 
-    # Step 2: If no FTS results, fall back to trigram similarity on name
-    if not fts_results:
-        fts_results = (
-            db.query(Product)
-            .filter(Product.normalized_name.op("%")(q_translated))  # pg_trgm similarity
-            .order_by(func.similarity(Product.normalized_name, q_translated).desc())
-            .limit(100)
-            .all()
-        )
+    # Step 2: Trigram fallback if no FTS results (PostgreSQL only)
+    if not fts_results and "postgres" in dialect_name:
+        try:
+            fts_results = (
+                db.query(Product)
+                .filter(Product.normalized_name.op("%")(q_translated))
+                .order_by(func.similarity(Product.normalized_name, q_translated).desc())
+                .limit(100)
+                .all()
+            )
+        except Exception:
+            pass
 
     # Step 3: Build search results with prices from all stores
     results: list[SearchResult] = []
