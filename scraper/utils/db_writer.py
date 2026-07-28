@@ -59,10 +59,10 @@ class DatabaseWriter:
         store_name: Optional[str] = None,
         logo_url: Optional[str] = None,
     ) -> Store:
-        """Get a store by slug, or dynamically create if it doesn't exist."""
-        store = session.query(Store).filter(Store.slug == store_slug).first()
+        """Get a store by slug or name, or dynamically create if it doesn't exist."""
+        name = store_name or store_slug.replace("-", " ").title()
+        store = session.query(Store).filter((Store.slug == store_slug) | (Store.name == name)).first()
         if not store:
-            name = store_name or store_slug.replace("-", " ").title()
             logger.info(f"➕ Auto-creating missing store: {name} ({store_slug})")
             store = Store(
                 name=name,

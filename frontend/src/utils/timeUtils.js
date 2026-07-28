@@ -17,11 +17,12 @@ export function getFlyerCountdown(validUntilStr, validFromStr, flyerStatus) {
   if (flyerStatus === "upcoming") {
     let dateLabel = "Soon";
     if (validFromStr) {
-      const fromDate = new Date(validFromStr);
+      const dateStringClean = validFromStr.includes("T") ? validFromStr : `${validFromStr}T00:00:00`;
+      const fromDate = new Date(dateStringClean);
       dateLabel = fromDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
     }
     return {
-      text: `📅 Starts ${dateLabel}`,
+      text: `🗓️ Starts ${dateLabel}`,
       color: "#2563EB",
       bg: "#EFF6FF",
       isUrgent: false,
