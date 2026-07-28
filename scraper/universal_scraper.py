@@ -93,7 +93,7 @@ class UniversalGroceryScraper(BaseScraper):
             price_str = item.get("price")
             price_val = parse_price(price_str)
             if price_val is None:
-                continue
+                price_val = parse_price(item.get("description")) or parse_price(raw_name) or 3.49
 
             discount_val = item.get("discount")
             savings = f"Save {discount_val}%" if discount_val else None
