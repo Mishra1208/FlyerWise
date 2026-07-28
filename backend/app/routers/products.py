@@ -5,6 +5,7 @@ Endpoints for searching products and retrieving product details.
 """
 
 import re
+from typing import List, Optional, Any, Dict
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import text, func, or_
@@ -121,6 +122,8 @@ def search_products(
         "beurre": ["beurre", "butter", "margarine", "ghee", "lactantia"],
         "chicken": ["chicken", "poulet", "cuisses", "volaille", "ailes", "hauts"],
         "poulet": ["poulet", "chicken", "cuisses", "volaille", "ailes", "hauts"],
+        "bread": ["bread", "pain", "pains", "baguette", "bun", "buns", "brioche", "sliced", "tranché"],
+        "pain": ["pain", "bread", "pains", "baguette", "bun", "buns", "brioche", "sliced", "tranché"],
         "milk": ["milk", "lait", "natrel", "lactantia"],
         "lait": ["lait", "milk", "natrel", "lactantia"],
         "beef": ["beef", "boeuf", "haché", "hache", "steak"],
