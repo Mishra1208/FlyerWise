@@ -78,6 +78,9 @@ export default function SearchResults() {
         return;
       }
       setLoading(true);
+      // Reset store filter toggles when executing a new search query
+      setActiveStores({});
+      setStoreSearchTerm("");
       try {
         const data = await ProductService.search(query, flyerFilter, postalCode);
         setResults(data.results || []);
@@ -455,8 +458,36 @@ export default function SearchResults() {
                 border: "1px solid var(--border-color)",
                 boxShadow: "var(--shadow-sm)",
               }}>
-                <h3 style={{ fontSize: "18px", color: "var(--text-primary)", fontWeight: 700, marginBottom: "8px" }}>No results found</h3>
-                <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>Try checking spelling or using a simpler search keyword like 'tomato' or 'apple'.</p>
+                {results.length > 0 ? (
+                  <>
+                    <h3 style={{ fontSize: "18px", color: "var(--text-primary)", fontWeight: 700, marginBottom: "8px" }}>
+                      Results hidden by store filters
+                    </h3>
+                    <p style={{ color: "var(--text-muted)", fontSize: "14px", marginBottom: "16px" }}>
+                      Found {results.length} item(s) for "{query}", but your current store filter checkboxes hid them.
+                    </p>
+                    <button
+                      onClick={handleSelectAllStores}
+                      style={{
+                        backgroundColor: "var(--accent)",
+                        color: "#FFFFFF",
+                        padding: "8px 18px",
+                        borderRadius: "6px",
+                        border: "none",
+                        fontWeight: 700,
+                        fontSize: "13px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Reset Store Filters & Show All
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <h3 style={{ fontSize: "18px", color: "var(--text-primary)", fontWeight: 700, marginBottom: "8px" }}>No results found</h3>
+                    <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>Try checking spelling or using a simpler search keyword like 'corn', 'bread', or 'apple'.</p>
+                  </>
+                )}
               </div>
             ) : (
               <div style={{
