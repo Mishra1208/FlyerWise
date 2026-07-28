@@ -54,9 +54,30 @@ export default function SearchResults() {
   }, [query, flyerFilter, postalCode]);
 
   // Filter results based on selected stores checkbox status
+  const isAnyStoreUnchecked = Object.values(activeStores).some((v) => v === false);
+
   const filteredResults = results.map((result) => {
-    // Show all store prices by default unless explicitly set to false by checkbox
-    const filteredPrices = result.prices.filter((p) => activeStores[p.store.slug] !== false);
+    const filteredPrices = result.prices.filter((p) => {
+      if (!isAnyStoreUnchecked) return true; // Show all stores if no filter checkboxes are unchecked
+
+      const storeSlug = (p.store.slug || "").toLowerCase();
+      const storeName = (p.store.name || "").toLowerCase();
+
+      const isRetailerMatch = (key, keywords) => {
+        if (!activeStores[key]) return false;
+        return keywords.some((kw) => storeSlug.includes(kw) || storeName.includes(kw));
+      };
+
+      return (
+        isRetailerMatch("walmart", ["walmart"]) ||
+        isRetailerMatch("maxi", ["maxi"]) ||
+        isRetailerMatch("metro", ["metro"]) ||
+        isRetailerMatch("iga", ["iga"]) ||
+        isRetailerMatch("superc", ["super-c", "super c", "superc"]) ||
+        isRetailerMatch("provigo", ["provigo"]) ||
+        isRetailerMatch("costco", ["costco"])
+      );
+    });
     
     if (filteredPrices.length === 0) return null;
 
