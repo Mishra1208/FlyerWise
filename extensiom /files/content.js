@@ -18,13 +18,13 @@
 })();
 
 const NAME_KEY_RE = /^(name|title|item_name|product_name|description)$/i;
-const PRICE_KEY_RE = /price/i;
-const IMAGE_KEY_RE = /(image|thumbnail|photo|img)/i;
+const PRICE_KEY_RE = /(price|discount|savings|rebate|promo|deal)/i;
+const IMAGE_KEY_RE = /(image|thumbnail|photo|img|cutout)/i;
 const SKIP_KEY_RE = /^(id|url|slug|type|category|merchant_id|flyer_id)$/i;
 
 // Recursively walk parsed JSON, collecting anything that looks like a
 // flyer item: an object with a plausible name field AND a plausible
-// price field somewhere on it.
+// price field, discount field, or image.
 function extractItems(node, found = [], depth = 0) {
   if (!node || typeof node !== "object" || depth > 12) return found;
 
@@ -36,6 +36,7 @@ function extractItems(node, found = [], depth = 0) {
   const keys = Object.keys(node);
   let nameVal = null;
   let priceVal = null;
+  let discountVal = null;
   let imageVal = null;
 
   for (const k of keys) {
@@ -43,17 +44,24 @@ function extractItems(node, found = [], depth = 0) {
     if (nameVal === null && NAME_KEY_RE.test(k) && typeof v === "string" && v.trim()) {
       nameVal = v.trim();
     }
-    if (priceVal === null && PRICE_KEY_RE.test(k) && !SKIP_KEY_RE.test(k)) {
+    if (priceVal === null && k.toLowerCase().includes("price") && !SKIP_KEY_RE.test(k)) {
       if (typeof v === "number") priceVal = v;
-      else if (typeof v === "string" && /^\$?\s*\d/.test(v)) priceVal = v.trim();
+      else if (typeof v === "string" && v.trim() && /^\$?\s*\d/.test(v)) priceVal = v.trim();
+    }
+    if (discountVal === null && PRICE_KEY_RE.test(k) && !SKIP_KEY_RE.test(k)) {
+      if (typeof v === "number" || typeof v === "string") discountVal = String(v).trim();
     }
     if (imageVal === null && IMAGE_KEY_RE.test(k) && typeof v === "string" && v.startsWith("http")) {
       imageVal = v;
     }
   }
 
-  if (nameVal && priceVal !== null) {
-    found.push({ name: nameVal, price: priceVal, image: imageVal });
+  // If item has a valid name and either price, discount, or image, capture it!
+  if (nameVal && nameVal.length >= 3 && !nameVal.startsWith("83477_") && nameVal !== "moi") {
+    const finalPrice = priceVal !== null ? priceVal : (discountVal ? `Promo (${discountVal})` : "Special Deal");
+    if (priceVal !== null || discountVal || imageVal) {
+      found.push({ name: nameVal, price: finalPrice, image: imageVal });
+    }
   }
 
   // Keep walking children regardless — items are often nested inside
