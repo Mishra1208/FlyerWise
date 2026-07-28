@@ -594,3 +594,72 @@ def get_product_price_history(product_id: int, db: Session = Depends(get_db)):
         "history": history_points
     }
 
+
+from pydantic import BaseModel
+from typing import Optional, Any
+
+class ExtensionItemPayload(BaseModel):
+    name: str
+    price: Any
+    image: Optional[str] = None
+    store_slug: Optional[str] = "universal"
+    store_name: Optional[str] = "Supermarket"
+
+
+@router.post("/ingest_extension_json")
+def ingest_extension_json(
+    items: List[ExtensionItemPayload],
+    store_slug: str = Query("provigo"),
+    store_name: str = Query("Provigo"),
+    db: Session = Depends(get_db),
+):
+    """
+    Ingest items extracted by FlyerWise Chrome Extension into PostgreSQL database.
+    """
+    from scraper.utils.db_writer import DatabaseWriter
+    from scraper.base_scraper import ScrapedProduct
+    from scraper.utils.parser import parse_price, parse_unit, parse_quantity
+    from datetime import date
+
+    scraped_prods = []
+    v_from = date.today()
+    v_until = v_from + timedelta(days=7)
+
+    for item in items:
+        price_val = parse_price(str(item.price))
+        if item.name and price_val is not None:
+            scraped_prods.append(
+                ScrapedProduct(
+                    raw_name=item.name,
+                    current_price=price_val,
+                    original_price=None,
+                    savings=None,
+                    unit=parse_unit(item.name),
+                    quantity=parse_quantity(item.name),
+                    price_text=str(item.price),
+                    description=None,
+                    image_url=item.image,
+                    brand=None,
+                    valid_from=v_from,
+                    valid_until=v_until
+                )
+            )
+
+    writer = DatabaseWriter()
+    saved = writer.save_scraped_data(
+        store_slug=store_slug,
+        store_name=store_name,
+        logo_url=None,
+        products=scraped_prods,
+        flyer_start=v_from,
+        flyer_end=v_until,
+        postal_code_fsa="H4G"
+    )
+
+    return {
+        "status": "success",
+        "items_received": len(items),
+        "items_saved": saved,
+        "store": store_name
+    }
+

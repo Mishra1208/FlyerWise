@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "FlyerWise Flipp Extractor",
+  "version": "1.0.0",
+  "description": "Extracts product name, price, and image for every item on a Flipp flyer page.",
+  "permissions": ["activeTab", "storage", "scripting", "downloads"],
+  "host_permissions": [
+    "https://flipp.com/*",
+    "https://www.flipp.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "FlyerWise Extractor"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://flipp.com/*", "https://www.flipp.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["inject.js"],
+      "matches": ["https://flipp.com/*", "https://www.flipp.com/*"]
+    }
+  ]
+}
