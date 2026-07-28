@@ -225,6 +225,17 @@ def search_products(
             seen_ids.add(p.id)
             fts_results.append(p)
 
+    # Step 1.5: AI Semantic Vector Search Integration
+    from app.services.embedding_search import search_semantic_products
+    ai_matched_ids = search_semantic_products(db, q, top_k=50, min_similarity=0.35)
+    if ai_matched_ids:
+        ai_products = db.query(Product).filter(Product.id.in_(ai_matched_ids)).all()
+        ai_map = {p.id: p for p in ai_products}
+        for pid in ai_matched_ids:
+            if pid in ai_map and pid not in seen_ids:
+                seen_ids.add(pid)
+                fts_results.append(ai_map[pid])
+
     # Fallback query if active items < 20
     if len(fts_results) < 20:
         fallback_results = (
