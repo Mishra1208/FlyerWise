@@ -26,13 +26,15 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown events."""
-    # Startup: verify database connection & start scheduler
+    # Startup: verify database connection & create tables if needed
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
-        print("✅ Database connection verified")
+        from app.database import Base
+        Base.metadata.create_all(bind=engine)
+        print("✅ Database connection & tables verified")
     except Exception as e:
-        print(f"❌ Database connection failed: {e}")
+        print(f"❌ Database setup notice: {e}")
 
     start_scheduler()
 
