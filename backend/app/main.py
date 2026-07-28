@@ -35,6 +35,19 @@ async def lifespan(app: FastAPI):
         print(f"❌ Database connection failed: {e}")
 
     start_scheduler()
+
+    # Pre-warm AI Semantic Search model in non-blocking background thread
+    import threading
+    def prewarm_ai():
+        try:
+            from app.services.embedding_search import get_embedding_model
+            get_embedding_model()
+            print("🧠 AI Semantic Search model pre-warmed successfully!")
+        except Exception as err:
+            print(f"⚠️ AI model pre-warming skipped: {err}")
+
+    threading.Thread(target=prewarm_ai, daemon=True).start()
+
     yield
 
     # Shutdown: cleanup
