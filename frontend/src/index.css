@@ -357,6 +357,17 @@ button, input, select {
     margin-bottom: 10px !important;
   }
 
+  .mobile-only-toggle {
+    display: inline-block !important;
+  }
+
+  .store-filter-container {
+    display: none;
+  }
+  .store-filter-container.open {
+    display: block !important;
+  }
+
   /* Hero Section Responsiveness */
   .hero-title {
     font-size: 32px !important;
@@ -418,6 +429,12 @@ button, input, select {
   }
   .location-pill-text {
     display: none !important;
+  }
+  .floating-basket-pill {
+    bottom: 12px !important;
+    right: 12px !important;
+    padding: 8px 14px !important;
+    font-size: 11px !important;
   }
 }
 

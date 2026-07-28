@@ -317,25 +317,26 @@ export default function PriceComparison({ product: rawProduct, prices: rawPrices
                         }} />
 
                         <div>
-                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <strong style={{ fontSize: "16px", color: "#0F172A", fontWeight: 800 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                            <strong style={{ fontSize: "15px", color: "#0F172A", fontWeight: 800 }}>
                               {storeName}
                             </strong>
 
                             {isLowest && (
                               <span style={{
-                                fontSize: "11px",
+                                fontSize: "10px",
                                 fontWeight: 800,
                                 background: "linear-gradient(135deg, #059669 0%, #10B981 100%)",
                                 color: "#FFFFFF",
-                                padding: "3px 10px",
+                                padding: "2px 8px",
                                 borderRadius: "12px",
-                                boxShadow: "0 2px 8px rgba(16, 185, 129, 0.3)",
+                                boxShadow: "0 2px 6px rgba(16, 185, 129, 0.25)",
                                 display: "inline-flex",
                                 alignItems: "center",
-                                gap: "4px"
+                                gap: "3px",
+                                whiteSpace: "nowrap",
                               }}>
-                                <IoRibbonOutline size={13} /> CHEAPEST ACTIVE DEAL
+                                <IoRibbonOutline size={12} /> LOWEST PRICE
                               </span>
                             )}
 

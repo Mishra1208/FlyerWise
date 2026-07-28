@@ -167,14 +167,14 @@ export default function Navbar() {
 
           {/* Always Visible Sign In / Account / Log Out Button */}
           {user || (() => { try { return JSON.parse(localStorage.getItem("flyerwise_user_session")); } catch { return null; } })() ? (
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <span style={{
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span className="location-pill-text" style={{
                 fontSize: "11px",
                 fontWeight: 800,
                 color: "#047857",
                 backgroundColor: "#D1FAE5",
                 border: "1px solid #A7F3D0",
-                padding: "4px 10px",
+                padding: "4px 8px",
                 borderRadius: "20px",
                 letterSpacing: "0.5px"
               }}>
@@ -193,15 +193,12 @@ export default function Navbar() {
                     backgroundColor: "#F1F5F9",
                     color: "#475569",
                     border: "1px solid #CBD5E1",
-                    padding: "5px 12px",
+                    padding: "5px 10px",
                     borderRadius: "var(--radius-full)",
                     fontSize: "12px",
                     fontWeight: 700,
                     cursor: "pointer",
-                    transition: "all 0.2s ease"
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#E2E8F0"}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#F1F5F9"}
                 >
                   Log Out
                 </button>
@@ -214,28 +211,20 @@ export default function Navbar() {
                 display: "flex",
                 alignItems: "center",
                 gap: "6px",
-                backgroundColor: "#059669",
+                backgroundColor: "var(--accent)",
                 color: "#FFFFFF",
-                border: "none",
-                padding: "7px 18px",
+                padding: "6px 12px",
                 borderRadius: "var(--radius-full)",
                 fontSize: "13px",
-                fontWeight: 800,
+                fontWeight: 700,
                 cursor: "pointer",
-                boxShadow: "0 4px 14px rgba(5, 150, 105, 0.25)",
-                transition: "all 0.2s ease"
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#047857";
-                e.currentTarget.style.transform = "translateY(-1px)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#059669";
-                e.currentTarget.style.transform = "translateY(0)";
+                boxShadow: "0 2px 8px rgba(91, 140, 81, 0.2)",
+                transition: "all 0.2s ease",
+                whiteSpace: "nowrap",
               }}
             >
               <IoPersonOutline size={16} />
-              <span>Sign In / Register</span>
+              <span className="location-pill-text">Sign In</span>
             </button>
           )}
 

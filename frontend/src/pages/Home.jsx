@@ -131,7 +131,7 @@ export default function Home() {
         </div>
 
         {/* Floating Left Lottie Animation */}
-        <div style={{
+        <div className="desktop-nav" style={{
           position: "absolute",
           top: "20px",
           left: "15px",
@@ -148,7 +148,7 @@ export default function Home() {
         </div>
 
         {/* Floating Right Lottie Animation */}
-        <div style={{
+        <div className="desktop-nav" style={{
           position: "absolute",
           top: "15px",
           right: "15px",

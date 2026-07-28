@@ -14,6 +14,7 @@ export default function FloatingBasketButton() {
   return (
     <>
       <button
+        className="floating-basket-pill"
         onClick={() => setModalOpen(true)}
         style={{
           position: "fixed",

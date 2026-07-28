@@ -46,6 +46,7 @@ export default function SearchResults() {
   const [allStores, setAllStores] = useState(DEFAULT_MAJOR_STORES);
   const [storeSearchTerm, setStoreSearchTerm] = useState("");
   const [activeStores, setActiveStores] = useState({});
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const handleSearch = (newQuery) => {
     if (!newQuery || !newQuery.trim()) {
@@ -271,29 +272,38 @@ export default function SearchResults() {
           {/* Filters Sidebar */}
           <aside style={{
             backgroundColor: "#FFFFFF",
-            padding: "24px",
+            padding: "16px 20px",
             borderRadius: "var(--radius-md)",
             border: "1px solid var(--border-color)",
             position: "sticky",
             top: "100px",
             boxShadow: "var(--shadow-sm)",
           }}>
-            <h3 style={{
-              fontSize: "16px",
-              fontWeight: 700,
-              color: "var(--text-primary)",
-              marginBottom: "20px",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              borderBottom: "1px solid var(--border-color)",
-              paddingBottom: "12px",
-            }}>
-              <IoFunnelOutline style={{ color: "var(--accent)" }} />
-              <span>Filters</span>
-            </h3>
+            <div
+              onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
+              style={{
+                fontSize: "16px",
+                fontWeight: 700,
+                color: "var(--text-primary)",
+                marginBottom: mobileFiltersOpen ? "16px" : "0",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                borderBottom: mobileFiltersOpen ? "1px solid var(--border-color)" : "none",
+                paddingBottom: mobileFiltersOpen ? "12px" : "0",
+                cursor: "pointer",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <IoFunnelOutline style={{ color: "var(--accent)" }} />
+                <span>Filters ({displayStores.length} Stores)</span>
+              </div>
+              <span className="mobile-only-toggle" style={{ fontSize: "12px", color: "var(--accent)", fontWeight: 700 }}>
+                {mobileFiltersOpen ? "Hide ▲" : "Show Filters ▼"}
+              </span>
+            </div>
 
-            <div>
+            <div className={`store-filter-container ${mobileFiltersOpen ? "open" : ""}`}>
               <div style={{
                 display: "flex",
                 alignItems: "center",
