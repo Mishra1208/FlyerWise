@@ -72,22 +72,31 @@ def send_welcome_email(to_email: str, user_name: str | None = None) -> dict:
 
     # 1. Try Gmail SMTP if credentials provided (Works 100% Free to ANY email address)
     if smtp_email and smtp_password:
+        clean_pwd = smtp_password.replace(" ", "")
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = "Welcome to FlyerWise — Your AI Grocery Savings Hub 🛒"
+        msg["From"] = f"FlyerWise <{smtp_email}>"
+        msg["To"] = to_email
+        msg.attach(MIMEText(html_content, "html"))
+
+        # Try SSL port 465 first
         try:
-            msg = MIMEMultipart("alternative")
-            msg["Subject"] = "Welcome to FlyerWise — Your AI Grocery Savings Hub 🛒"
-            msg["From"] = f"FlyerWise <{smtp_email}>"
-            msg["To"] = to_email
-            msg.attach(MIMEText(html_content, "html"))
-
-            with smtplib.SMTP("smtp.gmail.com", 587) as server:
-                server.starttls()
-                server.login(smtp_email, smtp_password.replace(" ", ""))
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=8) as server:
+                server.login(smtp_email, clean_pwd)
                 server.sendmail(smtp_email, [to_email], msg.as_string())
-
-            print(f"✅ Welcome email sent via Gmail SMTP to {to_email}")
-            return {"status": "sent", "provider": "gmail_smtp"}
-        except Exception as err:
-            print(f"⚠️ Gmail SMTP send failed: {err}")
+            print(f"✅ Welcome email sent via Gmail SMTP (SSL 465) to {to_email}")
+            return {"status": "sent", "provider": "gmail_smtp_ssl"}
+        except Exception as err465:
+            print(f"⚠️ Gmail SSL 465 failed ({err465}), trying TLS 587...")
+            try:
+                with smtplib.SMTP("smtp.gmail.com", 587, timeout=8) as server:
+                    server.starttls()
+                    server.login(smtp_email, clean_pwd)
+                    server.sendmail(smtp_email, [to_email], msg.as_string())
+                print(f"✅ Welcome email sent via Gmail SMTP (TLS 587) to {to_email}")
+                return {"status": "sent", "provider": "gmail_smtp_tls"}
+            except Exception as err587:
+                print(f"❌ Gmail SMTP failed on both SSL & TLS: {err587}")
 
     # 2. Try Resend API if API key provided
     if resend_api_key:
