@@ -60,15 +60,30 @@ export default function ProductCard({ result, onClick, onCompare, onDetail }) {
       className="card animate-fade" 
       onClick={handleCardClick}
       style={{
-        padding: "22px",
+        padding: "20px",
         cursor: "pointer",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        gap: "16px",
+        gap: "14px",
         height: "100%",
         position: "relative",
         overflow: "hidden",
+        backgroundColor: "#FFFFFF",
+        borderRadius: "var(--radius-md)",
+        border: "1px solid #EFEFEF",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.03)",
+        transition: "all 0.25s ease",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = "translateY(-3px)";
+        e.currentTarget.style.boxShadow = "0 12px 30px rgba(0,0,0,0.08)";
+        e.currentTarget.style.borderColor = "#FFC43F";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = "translateY(0)";
+        e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.03)";
+        e.currentTarget.style.borderColor = "#EFEFEF";
       }}
     >
       {/* Product Image, Title, & Savings/Intelligence Badges Header */}

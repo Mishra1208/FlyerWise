@@ -1,51 +1,51 @@
 /* ==========================================================================
-   FlyerWise Premium UI Design System
-   Inspired by Feastly Grocery Template
+   FlyerWise x FoodMart Clean Design System
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Lexend:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&family=Open+Sans:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* Color Palette - Feastly Inspired (Light Theme default) */
-  --primary: #1B365D;       /* Premium Deep Navy */
-  --primary-light: #2C4A75;
-  --primary-hover: #122543;
-  --primary-glow: rgba(27, 54, 93, 0.1);
+  /* FoodMart Theme Variables */
+  --accent-color: #FFC43F;         /* FoodMart Warm Amber */
+  --accent-color-hover: #F7A422;
+  --dark-color: #222222;           /* Deep Charcoal */
+  --light-dark-color: #727272;
+  --light-color: #FFFFFF;
+  --grey-color: #EFEFEF;
+  --light-grey-color: #F8F9FA;
+  --primary-color: #5B8C51;        /* Natural Leaf Green */
+  --light-primary-color: #EEF5E4;   /* Soft Pastel Green */
+  --light-secondary-color: #E6F3FB; /* Soft Pastel Blue */
+  --light-warning-color: #FFF9EB;   /* Soft Pastel Yellow */
 
-  --accent: #5B8C51;        /* Muted Natural Green */
-  --accent-light: #6FA264;
+  --primary: #222222;
+  --accent: #5B8C51;
   --accent-hover: #48703F;
-  --accent-glow: rgba(91, 140, 81, 0.12);
+  --accent-amber: #FFC43F;
 
-  --accent-red: #E53E3E;    /* Bold Alert Red for Deals */
-  --accent-red-glow: rgba(229, 62, 62, 0.1);
-
-  /* Neutrals */
-  --bg-body: #F4F6FA;       /* Very Soft Blue-Gray */
-  --bg-card: #FFFFFF;       /* Pure White */
-  --bg-card-hover: #F8FAFC;
-  --border-color: #E2E8F0;  /* Clean slate borders */
+  --bg-body: #FAFAFA;
+  --bg-card: #FFFFFF;
+  --border-color: #EFEFEF;
   
-  --text-primary: #1B365D;   /* Dark Navy for maximum contrast */
-  --text-secondary: #5A6B80; /* Slate Gray for body */
-  --text-muted: #8B99A8;     /* Light Gray-Slate for subtexts */
+  --text-primary: #222222;
+  --text-secondary: #555555;
+  --text-muted: #888888;
 
-  /* Border Radius */
+  --heading-font: "Nunito", sans-serif;
+  --body-font: "Open Sans", sans-serif;
+
   --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-lg: 24px;
   --radius-full: 9999px;
 
-  /* Transitions */
   --ease-fast: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-elastic: cubic-bezier(0.34, 1.56, 0.64, 1);
   --transition: all 0.3s var(--ease-fast);
 
-  /* Shadows */
-  --shadow-sm: 0 2px 6px rgba(27, 54, 93, 0.05);
-  --shadow-md: 0 10px 30px rgba(27, 54, 93, 0.06);
-  --shadow-lg: 0 20px 40px rgba(27, 54, 93, 0.1);
-  --shadow-glow: 0 0 20px rgba(91, 140, 81, 0.2);
+  --shadow-sm: 0 2px 10px rgba(0,0,0,0.03);
+  --shadow-md: 0 10px 25px rgba(0,0,0,0.06);
+  --shadow-lg: 0 20px 40px rgba(0,0,0,0.1);
 }
 
 /* Dark mode overrides (optional fallback if user switches) */
@@ -73,10 +73,11 @@
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--bg-body);
   color: var(--text-secondary);
   line-height: 1.6;
+  letter-spacing: 0.02em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
@@ -85,8 +86,8 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Lexend', sans-serif;
-  font-weight: 700;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
   color: var(--text-primary);
   line-height: 1.25;
 }

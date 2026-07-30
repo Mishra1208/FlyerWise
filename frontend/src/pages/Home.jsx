@@ -167,33 +167,36 @@ export default function Home() {
         <div style={{ maxWidth: "1180px", width: "100%", display: "flex", flexDirection: "column", gap: "20px", zIndex: 2 }}>
 
           <h1 style={{
-            fontSize: "42px",
+            fontSize: "44px",
             fontWeight: 900,
-            color: "#0F172A",
-            lineHeight: "1.25",
-            letterSpacing: "-1px",
-            fontFamily: "var(--font-headings)",
-            maxWidth: "760px",
+            color: "#222222",
+            lineHeight: "1.2",
+            letterSpacing: "-0.5px",
+            fontFamily: "var(--heading-font)",
+            maxWidth: "800px",
             margin: "0 auto"
           }}>
             Compare Grocery Prices Instantly Across <span style={{
-              color: "#059669"
+              color: "#5B8C51",
+              borderBottom: "4px solid #FFC43F",
+              paddingBottom: "2px"
             }}>60+ Canadian Retailers</span>
           </h1>
 
           <p style={{
-            fontSize: "18px",
-            color: "#475569",
+            fontSize: "17px",
+            color: "#555555",
             maxWidth: "680px",
             margin: "0 auto",
             lineHeight: "1.6",
             fontWeight: 500,
+            fontFamily: "var(--body-font)",
           }}>
             Never overpay at checkout. Search any product to compare flyer prices across Walmart, Maxi, Metro, IGA, Super C, Costco, and Provigo with AI basket optimization.
           </p>
 
           {/* Search bar */}
-          <div style={{ maxWidth: "680px", width: "100%", margin: "8px auto 0 auto" }}>
+          <div style={{ maxWidth: "680px", width: "100%", margin: "10px auto 0 auto" }}>
             <SearchBar onSearch={handleSearch} />
           </div>
 
@@ -201,53 +204,58 @@ export default function Home() {
           <div style={{
             display: "grid",
             gridTemplateColumns: "repeat(5, 1fr)",
-            gap: "14px",
+            gap: "12px",
             maxWidth: "1160px",
             width: "100%",
-            margin: "24px auto 0 auto"
+            margin: "28px auto 0 auto"
           }}>
-            {quickCategories.map((cat) => (
-              <button
-                key={cat.q}
-                onClick={() => handleSearch(cat.q)}
-                style={{
-                  fontSize: "13px",
-                  fontWeight: 800,
-                  color: "#0F172A",
-                  backgroundColor: "#FFFFFF",
-                  border: "1px solid #E2E8F0",
-                  padding: "10px 14px",
-                  borderRadius: "24px",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "8px",
-                  width: "100%",
-                  transition: "all 0.25s ease",
-                  boxShadow: "0 2px 10px rgba(0, 0, 0, 0.04)"
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#ECFDF5";
-                  e.currentTarget.style.borderColor = "#10B981";
-                  e.currentTarget.style.color = "#047857";
-                  e.currentTarget.style.transform = "translateY(-3px) scale(1.03)";
-                  e.currentTarget.style.boxShadow = "0 8px 22px rgba(16, 185, 129, 0.18)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "#FFFFFF";
-                  e.currentTarget.style.borderColor = "#E2E8F0";
-                  e.currentTarget.style.color = "#0F172A";
-                  e.currentTarget.style.transform = "translateY(0) scale(1)";
-                  e.currentTarget.style.boxShadow = "0 2px 10px rgba(0, 0, 0, 0.04)";
-                }}
-              >
-                <div style={{ width: "32px", height: "32px", flexShrink: 0 }}>
-                  <DotLottieReact src={cat.lottie} loop autoplay />
-                </div>
-                <span style={{ whiteSpace: "nowrap" }}>{cat.label}</span>
-              </button>
-            ))}
+            {quickCategories.map((cat, idx) => {
+              const bgColors = ["#EEF5E4", "#E6F3FB", "#FFF9EB", "#FFEADA", "#F3E8FF", "#EEF5E4", "#E6F3FB", "#FFF9EB", "#FFEADA", "#EEF5E4"];
+              const catBg = bgColors[idx % bgColors.length];
+
+              return (
+                <button
+                  key={cat.q}
+                  onClick={() => handleSearch(cat.q)}
+                  style={{
+                    fontSize: "13px",
+                    fontWeight: 800,
+                    color: "#222222",
+                    backgroundColor: catBg,
+                    border: "1px solid #EFEFEF",
+                    padding: "10px 14px",
+                    borderRadius: "var(--radius-md)",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    width: "100%",
+                    transition: "all 0.25s ease",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.02)"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#FFC43F";
+                    e.currentTarget.style.borderColor = "#FFC43F";
+                    e.currentTarget.style.color = "#222222";
+                    e.currentTarget.style.transform = "translateY(-3px)";
+                    e.currentTarget.style.boxShadow = "0 8px 20px rgba(255, 196, 63, 0.3)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = catBg;
+                    e.currentTarget.style.borderColor = "#EFEFEF";
+                    e.currentTarget.style.color = "#222222";
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.02)";
+                  }}
+                >
+                  <div style={{ width: "30px", height: "30px", flexShrink: 0 }}>
+                    <DotLottieReact src={cat.lottie} loop autoplay />
+                  </div>
+                  <span style={{ whiteSpace: "nowrap" }}>{cat.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </section>

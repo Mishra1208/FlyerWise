@@ -39,19 +39,19 @@ export default function SearchBar({ initialValue = "", onSearch, placeholder = "
         display: "flex",
         alignItems: "center",
         background: "#FFFFFF",
-        borderRadius: "var(--radius-md)",
-        border: "1px solid var(--border-color)",
-        padding: "6px",
-        boxShadow: "var(--shadow-sm)",
+        borderRadius: "var(--radius-lg)",
+        border: "2px solid #EFEFEF",
+        padding: "6px 8px",
+        boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
         transition: "var(--transition)",
       }}
       onFocusCapture={(e) => {
-        e.currentTarget.style.borderColor = "var(--accent)";
-        e.currentTarget.style.boxShadow = "0 0 0 4px var(--accent-glow)";
+        e.currentTarget.style.borderColor = "var(--accent-amber)";
+        e.currentTarget.style.boxShadow = "0 4px 25px rgba(255, 196, 63, 0.25)";
       }}
       onBlurCapture={(e) => {
-        e.currentTarget.style.borderColor = "var(--border-color)";
-        e.currentTarget.style.boxShadow = "var(--shadow-sm)";
+        e.currentTarget.style.borderColor = "#EFEFEF";
+        e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.04)";
       }}
       >
         <div style={{
@@ -61,7 +61,7 @@ export default function SearchBar({ initialValue = "", onSearch, placeholder = "
           paddingLeft: "12px",
           gap: "10px",
         }}>
-          <IoSearchOutline size={20} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
+          <IoSearchOutline size={22} style={{ color: "#222222", flexShrink: 0 }} />
           <input
             type="text"
             value={query}
@@ -71,8 +71,8 @@ export default function SearchBar({ initialValue = "", onSearch, placeholder = "
               width: "100%",
               padding: "12px 6px",
               fontSize: "15px",
-              color: "var(--text-primary)",
-              fontWeight: 500,
+              color: "#222222",
+              fontWeight: 600,
             }}
           />
           {query && (
@@ -83,7 +83,7 @@ export default function SearchBar({ initialValue = "", onSearch, placeholder = "
               style={{
                 border: "none",
                 background: "transparent",
-                color: "var(--text-muted)",
+                color: "#888888",
                 cursor: "pointer",
                 padding: "4px",
                 display: "flex",
@@ -103,12 +103,12 @@ export default function SearchBar({ initialValue = "", onSearch, placeholder = "
           title="Scan barcode or photo"
           style={{
             padding: "10px 14px",
-            borderRadius: "8px",
-            fontSize: "14px",
-            fontWeight: 600,
-            color: "var(--accent-hover)",
-            backgroundColor: "rgba(91, 140, 81, 0.08)",
-            border: "1px solid rgba(91, 140, 81, 0.2)",
+            borderRadius: "var(--radius-md)",
+            fontSize: "13px",
+            fontWeight: 700,
+            color: "#222222",
+            backgroundColor: "#F8F9FA",
+            border: "1px solid #EFEFEF",
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
@@ -118,26 +118,36 @@ export default function SearchBar({ initialValue = "", onSearch, placeholder = "
             transition: "var(--transition)",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "rgba(91, 140, 81, 0.16)";
+            e.currentTarget.style.backgroundColor = "#EEF5E4";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "rgba(91, 140, 81, 0.08)";
+            e.currentTarget.style.backgroundColor = "#F8F9FA";
           }}
         >
-          <IoCameraOutline size={18} />
-          <span style={{ fontSize: "12px", fontWeight: 700 }}>Scan</span>
+          <IoCameraOutline size={18} color="#5B8C51" />
+          <span style={{ fontSize: "12px", fontWeight: 800 }}>Scan</span>
         </button>
 
         <button 
           type="submit" 
-          className="btn btn-primary"
           style={{
-            padding: "10px 24px",
-            borderRadius: "8px",
+            padding: "10px 26px",
+            borderRadius: "var(--radius-md)",
             fontSize: "14px",
-            fontWeight: 700,
-            letterSpacing: "0.2px",
+            fontWeight: 800,
+            backgroundColor: "#FFC43F",
+            color: "#222222",
+            border: "none",
+            cursor: "pointer",
+            boxShadow: "0 4px 14px rgba(255, 196, 63, 0.4)",
+            transition: "all 0.2s ease",
             flexShrink: 0,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#F7A422";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "#FFC43F";
           }}
         >
           Search
