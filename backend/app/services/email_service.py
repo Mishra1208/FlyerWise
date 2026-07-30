@@ -70,6 +70,31 @@ def send_welcome_email(to_email: str, user_name: str | None = None) -> dict:
     </html>
     """
 
+    # 0. Try Brevo HTTPS REST API if BREVO_API_KEY provided (100% Free, NO domain required, Port 443 HTTPS)
+    brevo_api_key = os.getenv("BREVO_API_KEY", "").strip()
+    if brevo_api_key:
+        try:
+            import requests
+            headers = {
+                "accept": "application/json",
+                "api-key": brevo_api_key,
+                "content-type": "application/json"
+            }
+            body = {
+                "sender": {"name": "FlyerWise", "email": smtp_email or "mishranarendra1208@gmail.com"},
+                "to": [{"email": to_email, "name": name_display}],
+                "subject": "Welcome to FlyerWise — Your AI Grocery Savings Hub 🛒",
+                "htmlContent": html_content
+            }
+            resp = requests.post("https://api.brevo.com/v3/smtp/email", json=body, headers=headers, timeout=10)
+            if resp.status_code in (200, 201, 202):
+                print(f"✅ Welcome email sent via Brevo HTTPS API to {to_email}")
+                return {"status": "sent", "provider": "brevo_api"}
+            else:
+                print(f"⚠️ Brevo API response {resp.status_code}: {resp.text}")
+        except Exception as err:
+            print(f"⚠️ Brevo API request failed: {err}")
+
     # 1. Try Gmail SMTP if credentials provided (Works 100% Free to ANY email address)
     if smtp_email and smtp_password:
         clean_pwd = smtp_password.replace(" ", "")
