@@ -112,6 +112,12 @@ def calculate_price_intelligence(db: Session, product_id: int) -> Dict[str, Any]
         "average_price": round(avg_price, 2),
         "discount_pct_from_median": discount_pct,
         "deal_score": deal_score,
+        "badge": badge,
+        "badge_text": badge_text,
+        "recommendation": recommendation,
+    }
+
+
 def calculate_price_intelligence_fast(
     product_id: int,
     product_name: str,
