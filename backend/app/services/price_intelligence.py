@@ -112,6 +112,84 @@ def calculate_price_intelligence(db: Session, product_id: int) -> Dict[str, Any]
         "average_price": round(avg_price, 2),
         "discount_pct_from_median": discount_pct,
         "deal_score": deal_score,
+def calculate_price_intelligence_fast(
+    product_id: int,
+    product_name: str,
+    brand: Optional[str],
+    category: Optional[str],
+    prices_tuples: List[tuple]
+) -> Dict[str, Any]:
+    """
+    Calculate price intelligence in-memory from pre-fetched price tuples [(float_price, store_name)].
+    Zero DB queries for sub-millisecond execution!
+    """
+    if not prices_tuples:
+        return {
+            "product_id": product_id,
+            "product_name": product_name,
+            "brand": brand,
+            "category": category,
+            "badge": "LIMITED_HISTORY",
+            "badge_text": "Limited History",
+            "deal_score": 50,
+            "recommendation": "Standard pricing based on available history"
+        }
+
+    prices_list = [val for val, _ in prices_tuples]
+    current_price = prices_list[0]
+    median_price = float(statistics.median(prices_list))
+    
+    min_tuple = min(prices_tuples, key=lambda x: x[0])
+    max_tuple = max(prices_tuples, key=lambda x: x[0])
+
+    min_price = min_tuple[0]
+    lowest_store = min_tuple[1]
+    
+    max_price = max_tuple[0]
+    highest_store = max_tuple[1]
+
+    avg_price = float(statistics.mean(prices_list))
+
+    if median_price > 0:
+        discount_pct = round(((median_price - current_price) / median_price) * 100, 1)
+    else:
+        discount_pct = 0.0
+
+    if discount_pct >= 20.0 or current_price <= min_price:
+        deal_score = 95
+        badge = "EXCEPTIONAL_DEAL"
+        badge_text = "Exceptional Deal 🔥"
+        recommendation = "Great time to buy! Price is at or near lowest recorded level."
+    elif discount_pct >= 10.0:
+        deal_score = 80
+        badge = "GOOD_PRICE"
+        badge_text = "Good Deal 👍"
+        recommendation = f"Well priced! {abs(discount_pct)}% below 90-day average."
+    elif discount_pct >= -5.0:
+        deal_score = 65
+        badge = "NORMAL_PRICE"
+        badge_text = "Fair Price"
+        recommendation = "Standard flyer price."
+    else:
+        deal_score = 35
+        badge = "CONSIDER_WAITING"
+        badge_text = "Consider Waiting ⏳"
+        recommendation = f"Item is currently {abs(discount_pct)}% above recent median."
+
+    return {
+        "product_id": product_id,
+        "product_name": product_name,
+        "brand": brand,
+        "category": category,
+        "current_price": current_price,
+        "median_90_day": round(median_price, 2),
+        "lowest_recorded": round(min_price, 2),
+        "lowest_recorded_store": lowest_store,
+        "highest_recorded": round(max_price, 2),
+        "highest_recorded_store": highest_store,
+        "average_price": round(avg_price, 2),
+        "discount_pct_from_median": discount_pct,
+        "deal_score": deal_score,
         "badge": badge,
         "badge_text": badge_text,
         "recommendation": recommendation

@@ -18,7 +18,7 @@ from app.schemas import (
     PriceWithStore, StoreResponse
 )
 from app.services.nutrition_helper import generate_product_details, generate_fast_product_details
-from app.services.price_intelligence import calculate_price_intelligence
+from app.services.price_intelligence import calculate_price_intelligence, calculate_price_intelligence_fast
 
 from unidecode import unidecode
 
@@ -395,7 +395,18 @@ def search_products(
                 p_entry.is_lowest = True
 
         details = generate_fast_product_details(product.raw_name, product.category, product.brand)
-        intel = calculate_price_intelligence(db, product.id)
+        price_tuples_in_mem = [
+            (float(p_e.current_price), p_e.store.name)
+            for p_e in price_entries
+            if p_e.current_price is not None
+        ]
+        intel = calculate_price_intelligence_fast(
+            product.id,
+            product.raw_name,
+            product.brand,
+            product.category,
+            price_tuples_in_mem
+        )
         results.append(
             SearchResult(
                 product=ProductResponse(
