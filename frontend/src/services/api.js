@@ -6,14 +6,14 @@ const getBaseURL = () => {
     return import.meta.env.VITE_API_URL;
   }
   if (typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
-    return "/api";
+    return "https://flyerwise.onrender.com/api";
   }
   return "http://localhost:8000/api";
 };
 
 const API = axios.create({
   baseURL: getBaseURL(),
-  timeout: 15000,
+  timeout: 60000,
   headers: {
     "Content-Type": "application/json",
   },
