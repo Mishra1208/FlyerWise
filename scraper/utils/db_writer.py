@@ -43,11 +43,23 @@ class DatabaseWriter:
     """
 
     def __init__(self, database_url: str = None):
-        url = database_url or ScraperConfig.DATABASE_URL
-        if url.startswith("postgresql://"):
+        from app.database import engine as fallback_engine, SessionLocal as FallbackSession
+        url = database_url or os.getenv("DATABASE_URL") or ScraperConfig.DATABASE_URL
+        if url and url.startswith("postgresql://"):
             url = url.replace("postgresql://", "postgresql+psycopg://", 1)
-        self.engine = create_engine(url, echo=False)
-        self.SessionLocal = sessionmaker(bind=self.engine)
+
+        try:
+            if url and "sqlite" in url:
+                self.engine = create_engine(url, connect_args={"check_same_thread": False})
+            else:
+                self.engine = create_engine(url, connect_args={"connect_timeout": 2})
+            with self.engine.connect() as conn:
+                pass
+            self.SessionLocal = sessionmaker(bind=self.engine)
+        except Exception as err:
+            logger.info(f"⚠️ Primary DB unreachable in DatabaseWriter ({err}). Falling back to backend database engine.")
+            self.engine = fallback_engine
+            self.SessionLocal = FallbackSession
 
     def get_session(self) -> Session:
         return self.SessionLocal()
