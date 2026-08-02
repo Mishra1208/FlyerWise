@@ -24,7 +24,7 @@ class StoreBase(BaseModel):
 
 class StoreResponse(StoreBase):
     id: int
-    created_at: datetime
+    created_at: datetime | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -47,7 +47,7 @@ class ProductBase(BaseModel):
 
 class ProductResponse(ProductBase):
     id: int
-    created_at: datetime
+    created_at: datetime | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

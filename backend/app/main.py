@@ -70,14 +70,8 @@ app = FastAPI(
 # CORS — allow React frontend & Vercel production deployments to call the API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://flyer-wise.vercel.app",
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "http://127.0.0.1:5173",
-    ],
-    allow_origin_regex=r"https://.*\.vercel\.app",
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
